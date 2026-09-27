@@ -94,6 +94,7 @@
 | doc-erd-logical.html | project-docs | 28.09.2026 |
 | diagram-07a עד 07f (ERD לוגי, שישה תחומים) | project-docs/mermaid | 28.09.2026 |
 | doc-module-map.md | project-docs | 28.09.2026 (גרסה 1) |
+| CLAUDE.md (מסמך הבנייה) | שורש המאגר | 28.09.2026 (גרסה 1) |
 | diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 28.09.2026 |
 | prototype-fitness-app.html | project-docs | 28.09.2026 (גרסה 1). פורסם: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
