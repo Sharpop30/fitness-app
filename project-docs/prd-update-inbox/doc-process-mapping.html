@@ -1,0 +1,102 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>מיפוי תהליכים</title>
+<style>body{font-family:Heebo,Arial,sans-serif;max-width:900px;margin:24px auto;padding:0 16px;background:#fff;color:#161916;line-height:1.5}
+.box{border:1px solid #ddd;border-radius:12px;padding:16px;margin:16px 0} td,th{border:1px solid #ddd;padding:6px 8px;text-align:right} table{border-collapse:collapse;width:100%}</style></head><body>
+<h1>מיפוי תהליכים: הקיים מול הרצוי</h1>
+<p>מאושר, 27.09.2026. צעד 22 במדריך, ממלא את סעיף 5 ב-PRD. מקורות: PRD סעיף 4, doc-need-vs-want, doc-ideas, doc-stakeholder-map, story-all-requirements.</p>
+<div class="box"><h2>תרשים 1: התהליך הקיים</h2><p>המאמן עובד ידנית ובכמה אפליקציות, והמתאמן שלא מדווח נושר.</p><pre class="mermaid">---
+title: תרשים 1 - התהליך הקיים היום
+---
+flowchart TD
+    S([המאמן מתחיל לעבוד עם מתאמן]) --&gt; A1
+
+    subgraph Coach[המאמן]
+        A1[בונה תוכנית אימון בעבודה ידנית]
+        A2[גובה תשלום ומפיק חשבונית ידנית]
+        A4[מחפש את נתוני ההתקדמות בכמה מקומות]
+    end
+
+    subgraph Trainee[המתאמן]
+        B1[מתאמן לפי התוכנית]
+        B2{מדווח ידנית על האימון?}
+    end
+
+    subgraph Tools[אפליקציות נפרדות - אילו: טרם נקבע]
+        T1[(נתונים מפוזרים: תוכניות, תשלומים, תוצאות)]
+    end
+
+    A1 --&gt; B1
+    A1 --&gt; A2
+    A2 --&gt; T1
+    B1 --&gt; B2
+    B2 --&gt;|כן| T1
+    B2 --&gt;|לא, עומס דיווח| X([המתאמן נושר])
+    T1 --&gt; A4
+    A4 --&gt; E([המאמן בלי תמונה אחת של המתאמן])
+
+    class A1,A2,A4,B1,B2 person
+    class T1 data
+    class S,E,X system
+
+classDef person fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+classDef agent fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
+classDef system fill:#F5F5F5,stroke:#424242,stroke-width:2px
+classDef data fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+classDef external fill:#FFF3E0,stroke:#E65100,stroke-width:2px
+</pre></div>
+<div class="box"><h2>תרשים 2: התהליך הרצוי</h2><p>כל הנתונים במקום אחד, והמתאמן מקבל משוב ותגמול שמחזירים אותו.</p><pre class="mermaid">---
+title: תרשים 2 - התהליך הרצוי עם האפליקציה
+---
+flowchart TD
+    S([המאמן מתחיל לעבוד עם מתאמן]) --&gt; A1
+
+    subgraph Coach[המאמן]
+        A1[בונה תוכנית אימון ומחליף תרגיל במהירות]
+        A5[רואה את ההתקדמות של כל מתאמן במסך אחד]
+    end
+
+    subgraph Trainee[המתאמן]
+        B1[רואה את התוכנית ומתאמן]
+        B2[מזין תוצאות אימון]
+        B3[מקבל משוב, מטבעות ואתגר שבועי]
+    end
+
+    subgraph App[האפליקציה]
+        P1[סליקה מדומה וחשבונית אוטומטית]
+        D1[(כל הנתונים במקום אחד)]
+    end
+
+    A1 --&gt; D1
+    A1 --&gt; P1
+    P1 --&gt; D1
+    D1 --&gt; B1
+    B1 --&gt; B2
+    B2 --&gt; D1
+    B2 --&gt; B3
+    B3 --&gt;|טריגר יומי לחזרה| B1
+    D1 --&gt; A5
+    A5 --&gt; E([המאמן מתאים את התוכנית, והמתאמן ממשיך])
+
+    class A1,A5,B1,B2,B3 person
+    class P1 system
+    class D1 data
+    class S,E system
+
+classDef person fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+classDef agent fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
+classDef system fill:#F5F5F5,stroke:#424242,stroke-width:2px
+classDef data fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+classDef external fill:#FFF3E0,stroke:#E65100,stroke-width:2px
+</pre></div>
+<h2>איפה הפער ואיפה הפתרון נכנס</h2>
+<table><tr><th>הפער היום</th><th>הפתרון</th><th>הדרישה</th><th>המקור</th></tr>
+<tr><td>בניית תוכנית ידנית ומסורבלת</td><td>בניית תוכנית והחלפת תרגיל מהירה</td><td>ניהול תוכניות אימון (Must)</td><td>story 1, doc-ideas</td></tr>
+<tr><td>גבייה וחשבוניות בניירת</td><td>סליקה וחשבונית אוטומטית (בגרסה הראשונה: סליקה מדומה)</td><td>סליקה וחשבוניות (Must)</td><td>story 2</td></tr>
+<tr><td>נתונים מפוזרים בכמה אפליקציות</td><td>כל הנתונים במקום אחד</td><td>ניהול תפעולי מאוחד (Must)</td><td>PRD סעיף 4, story 19</td></tr>
+<tr><td>אין מעקב ארוך טווח אחרי תוצאות</td><td>המתאמן מזין תוצאות והמאמן רואה התקדמות</td><td>הזנת תוצאות אימון (Must)</td><td>story 12</td></tr>
+<tr><td>המתאמן נושר מעומס דיווח ובלי משוב</td><td>משוב מיידי, מטבעות, אתגר שבועי וטריגר יומי</td><td>דרישות Should</td><td>stories 5, 6, 21, 25</td></tr></table>
+<h2>מה עדיין לא נקבע</h2>
+<ul><li>אילו אפליקציות המאמן משתמש בהן היום: [טרם נקבע]. המסמכים אומרים "כמה אפליקציות" בלי שמות.</li>
+<li>התהליך הקיים לא נצפה בשטח. הוא נגזר מהבזבוזים ומהכישלונות שתועדו במסמכים.</li>
+<li>המעקב האוטומטי (בלי הזנה ידנית) לא נכנס לתרשים הרצוי, כי העדיפות שלו טרם נקבעה. ייקבע בגבולות הגרסה הראשונה.</li></ul>
+<script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({startOnLoad:true});</script>
+</body></html>

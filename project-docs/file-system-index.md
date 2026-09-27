@@ -70,6 +70,9 @@
 | file-system-index.md | project-docs | 27.09.2026 |
 | doc-work-plan-fitness-app.md | project-docs | 27.09.2026 |
 | doc-project-definition.md | project-docs | 27.09.2026 |
+| doc-process-mapping.html | project-docs | 27.09.2026 |
+| diagram-01-current-process.mmd | project-docs/mermaid | 27.09.2026 |
+| diagram-02-desired-process.mmd | project-docs/mermaid | 27.09.2026 |
 
 ## 6. כללי העבודה
 
