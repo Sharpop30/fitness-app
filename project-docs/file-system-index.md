@@ -80,7 +80,7 @@
 | story-04-progress-tracking.md | project-docs | 28.09.2026 |
 | story-05-weekly-challenge.md | project-docs | 28.09.2026 |
 | story-06-coins-rewards.md | project-docs | 28.09.2026 |
-| story-10-demo-videos.md | project-docs | 27.09.2026 |
+| story-10-demo-videos.md | project-docs | 28.09.2026 |
 | story-12-results-entry.md | project-docs | 28.09.2026 |
 | story-19-unified-operations.md | project-docs | 28.09.2026 |
 | story-21-instant-feedback.md | project-docs | 27.09.2026 |
@@ -105,6 +105,8 @@
 | diagram-uc08-weekly-challenge.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-09-daily-trigger.md | project-docs | 28.09.2026 |
 | diagram-uc09-daily-trigger.mmd | project-docs/mermaid | 28.09.2026 |
+| usecase-10-demo-videos.md | project-docs | 28.09.2026 |
+| diagram-uc10-demo-videos.mmd | project-docs/mermaid | 28.09.2026 |
 
 ## 6. כללי העבודה
 
