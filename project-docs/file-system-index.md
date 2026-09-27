@@ -60,7 +60,7 @@
 
 | השם הקנוני | המיקום | תאריך הגרסה הפעילה |
 | :-- | :-- | :-- |
-| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.7) |
+| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.8) |
 | doc-stakeholder-map.docx | project-docs | 18.07.2026 |
 | doc-requirements-prioritization.docx | project-docs | 18.07.2026 |
 | story-all-requirements.docx | project-docs | 18.07.2026 |
@@ -77,6 +77,7 @@
 | doc-mlp-scope.md | project-docs | 27.09.2026 |
 | story-01-training-programs.md | project-docs | 27.09.2026 |
 | story-02-payments-invoices.md | project-docs | 27.09.2026 |
+| story-12-results-entry.md | project-docs | 27.09.2026 |
 | story-30-class-registration.md | project-docs | 27.09.2026 |
 
 ## 6. כללי העבודה
