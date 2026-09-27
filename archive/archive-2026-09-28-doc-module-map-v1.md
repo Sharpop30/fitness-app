@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: מאושר, 28.09.2026, גרסה 2. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 28.09.2026, גרסה 1. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -10,7 +10,7 @@
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
 | המקורות | PRD גרסה 1.19; doc-mlp-scope; 11 סיפורי משתמש ו-11 מקרי שימוש (usecase-01 עד 11); doc-erd-conceptual ו-doc-erd-logical; prototype-fitness-app גרסה 1 |
-| גרסה ותאריך | 2, 28.09.2026 |
+| גרסה ותאריך | 1, 28.09.2026 |
 
 ## 2. הליבה
 
@@ -103,7 +103,6 @@
 | challenges | create_challenge, get_current_challenge, check_progress, list_completions, mark_prize_delivered | UC8 | check: results בלבד |
 | payments | create_payment_request, list_payments, pay_demo | UC2 | מאמן; pay_demo: מתאמן (שלו) |
 | payment_gateway | charge | UC2 | payments בלבד |
-| invite_channel | send_invite | UC4 | trainees בלבד |
 | invoices | create_invoice, list_invoices | UC2 | create: payments בלבד |
 | classes | publish_class, cancel_class, list_upcoming_classes, register, cancel_registration, list_registrations, mark_attendance, respond_to_spot_offer, request_late_cancel, decide_late_cancel | UC11 | לפי מקרה שימוש 11 |
 | notifications | notify_in_app, list_notifications, mark_read | UC6, UC9, UC11 | notify: classes, feedback בלבד |
@@ -140,7 +139,7 @@
 | S22 | trainees.accept_invite |
 | S23 | (שירות הזהות בלבד) |
 
-### קודי השגיאה, רשימה סגורה (28 קודים)
+### קודי השגיאה, רשימה סגורה
 
 | הקוד | ההסבר לקוד | ההסבר לבני אדם |
 | :-- | :-- | :-- |
@@ -148,7 +147,6 @@
 | CALLER_INVALID | הפונה אינו ברשימה הסגורה | משהו השתבש. נסה שוב |
 | ACTION_NOT_ALLOWED | אין שורה ב-Registry | הפעולה הזו אינה זמינה כאן |
 | AUDIT_FAILED | הרישום ביומן נכשל, והבקשה לא נותבה | הפעולה לא בוצעה. נסה שוב בעוד רגע |
-| UNEXPECTED_ERROR | תקלה לא צפויה במודול, שאינה תקלת מסד | משהו השתבש. נסה שוב |
 | NOT_ALLOWED | הפונה אינו מורשה על הנתון הזה | אין לך גישה לזה |
 | STORAGE_UNAVAILABLE | המסד לא החזיר תשובה | השינוי לא נשמר כרגע. נסה שוב |
 | VALUE_NOT_SET | ערך נדרש חסר ב-SETTINGS ("עדיין לא") | הערך עוד לא הוגדר בהגדרות |
@@ -231,5 +229,4 @@
 
 | גרסה | תאריך | מה השתנה | מי אישר |
 | :-- | :-- | :-- | :-- |
-| 1 | 28.09.2026 | המפה המקורית. הכרעות: GitHub Pages; חשבון Supabase קיים של הצוות | הצוות |
-| 2 | 28.09.2026 | מפערי דוח שלב 1: נוסף קוד השגיאה UNEXPECTED_ERROR, ונוספה הפעולה invite_channel.send_invite. מה לא השתנה: הליבה, המודולים, שאר הפעולות והקודים, וסדר הבנייה | הצוות |
+| 1 | 28.09.2026 | המפה המקורית. הכרעות: GitHub Pages; חשבון Supabase קיים של הצוות, בבדיקה | הצוות |
