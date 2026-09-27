@@ -4,9 +4,11 @@ import { audit } from "./audit.ts";
 import { type Envelope, fail, type Reply } from "./errors.ts";
 import { handle, type Modules } from "./orchestrator.ts";
 import { createRepository, StorageUnavailable } from "./repository.ts";
+import { exercises } from "./modules/exercises.ts";
+import { programs } from "./modules/programs.ts";
 import { settings } from "./modules/settings.ts";
 
-const modules: Modules = { settings };
+const modules: Modules = { exercises, programs, settings };
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",

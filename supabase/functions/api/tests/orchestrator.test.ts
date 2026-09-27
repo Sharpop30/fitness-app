@@ -7,10 +7,18 @@ import { type Actor, type AuditRecord, type Repository, StorageUnavailable } fro
 
 const coach: Actor = { role: "coach", coachID: "coach-1", traineeID: null };
 
+// The training operations are not reached by these tests.
+const notUsed = () => Promise.reject(new Error("not used in orchestrator tests"));
+const trainingNotUsed = {
+  isActiveTraineeOfCoach: notUsed, listExercisesForCoach: notUsed, getActiveProgram: notUsed, listInactivePrograms: notUsed,
+  saveProgram: notUsed, swapExercise: notUsed, startNewProgram: notUsed,
+};
+
 function fakeRepo(opts: { rows?: string[]; auditFails?: boolean } = {}) {
   const audits: AuditRecord[] = [];
   const rows = new Set(opts.rows ?? []);
   const repo: Repository = {
+    ...trainingNotUsed,
     findActorByAuthUser: () => Promise.resolve(coach),
     isRegistered: (c, m, a, r) => Promise.resolve(rows.has(`${c}|${m}|${a}|${r}`)),
     writeAudit: (e) => {
@@ -20,6 +28,7 @@ function fakeRepo(opts: { rows?: string[]; auditFails?: boolean } = {}) {
     },
     getCoachSettings: () => Promise.resolve({ cancelHours: "24" }),
   };
+
   return { repo, audits };
 }
 
