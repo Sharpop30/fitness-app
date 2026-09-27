@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ERD לוגי</title>
+<style>body{font-family:Heebo,Arial,sans-serif;max-width:1000px;margin:24px auto;padding:0 16px;background:#fff;color:#161916;line-height:1.5}
+h1{font-size:26px;margin-bottom:4px} h2{font-size:19px;margin:0 0 4px} h3{font-size:17px;margin-top:24px}
+.box{border:1px solid #ddd;border-radius:12px;padding:16px;margin:16px 0;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid #ddd;padding:6px 8px;text-align:right;vertical-align:top} th{background:#f4f4f1}
+.muted{color:#555a53;font-size:13px}</style></head><body>
+<h1>מודל הנתונים: הרמה הלוגית</h1>
+<p class="muted">מאושר, 28.09.2026. תרשים 7, תרשימי בנים לפי תחום, לפי מדריך התרשימים (פריט 24), חלק ג. נגזר מהרמה הרעיונית המאושרת (doc-erd-conceptual) ומ-11 מקרי השימוש. ניטרלי לפלטפורמה, ויתורגם ל-Supabase ברמה הפיזית.</p>
+<h3>איך קוראים</h3>
+<ul class="muted">
+<li>לכל טבלה מפתח ראשי בשם הישות ו-ID, וכל מפתח זר נושא את שם המקור שלו.</li>
+<li>כל שדה הוא חובה, אלא אם כתוב לידו "רשות".</li>
+<li>שדה סטטוס מחזיק רשימה סגורה שכתובה לידו. אלה מצבים של Business Logic, ולא ערכים שהמאמן משנה, ולכן הם באילוץ במסד ולא בטבלת ייחוס.</li>
+<li>ערכים שהמאמן משנה (מטבעות, מחירים, חלון ביטול, רצף, נוסחים, תוקף הזמנה) יושבים ב-SETTINGS.</li>
+<li>אין מחיקה פיזית. ישות שיוצאת משימוש מסומנת לא פעילה (isActive, או סטטוס).</li>
+</ul>
+<div class="box"><h2>תרשים 07a: אנשים וגישה</h2><p class="muted">המאמן, המתאמנים וההזמנות. פרטי הכניסה בשירות הזהות, והטבלאות מפנות אליו.</p><pre class="mermaid">erDiagram
+    COACHES ||--o{ TRAINEES : coaches
+    COACHES ||--o{ INVITES : sends
+    TRAINEES |o--o| INVITES : accepts
+    COACHES {
+        uuid CoachID PK
+        uuid authUserID UK &quot;שירות הזהות&quot;
+        text fullName
+        text email
+        boolean isActive
+        timestamptz createdAt
+    }
+    TRAINEES {
+        uuid TraineeID PK
+        uuid CoachID FK
+        uuid authUserID UK &quot;שירות הזהות&quot;
+        text fullName
+        text email
+        boolean isActive
+        timestamptz joinedAt
+    }
+    INVITES {
+        uuid InviteID PK
+        uuid CoachID FK
+        uuid TraineeID FK &quot;רשות, עד ההצטרפות&quot;
+        text inviteeName
+        text inviteeEmail &quot;רשות&quot;
+        text token UK
+        text status &quot;open, accepted, expired&quot;
+        timestamptz expiresAt
+        timestamptz createdAt
+    }</pre></div><div class="box"><h2>תרשים 07b: אימון</h2><p class="muted">תוכניות, אימונים, יעדים לתרגיל, אימונים שבוצעו ותוצאה לכל סט. WORKOUT_ITEMS מפרקת את הקשר רבים לרבים בין אימונים לתרגילים.</p><pre class="mermaid">erDiagram
+    COACHES ||--o{ EXERCISES : adds
+    TRAINEES ||--o{ PROGRAMS : follows
+    PROGRAMS ||--|{ WORKOUTS : contains
+    WORKOUTS ||--|{ WORKOUT_ITEMS : lists
+    EXERCISES ||--o{ WORKOUT_ITEMS : fills
+    TRAINEES ||--o{ WORKOUT_LOGS : performs
+    WORKOUTS ||--o{ WORKOUT_LOGS : records
+    WORKOUT_LOGS ||--|{ SET_RESULTS : holds
+    EXERCISES ||--o{ SET_RESULTS : measures
+    WORKOUT_LOGS ||--o{ COACH_NOTES : receives
+    EXERCISES {
+        uuid ExerciseID PK
+        uuid CoachID FK &quot;רשות, ריק ברשימה המוכנה&quot;
+        text exerciseName
+        boolean isBodyweight
+        text videoType &quot;רשות: youtube, upload&quot;
+        text videoUrl &quot;רשות&quot;
+        boolean isActive
+    }
+    PROGRAMS {
+        uuid ProgramID PK
+        uuid TraineeID FK
+        text programName
+        boolean isActive &quot;אחת פעילה למתאמן&quot;
+        timestamptz createdAt
+        timestamptz deactivatedAt &quot;רשות&quot;
+    }
+    WORKOUTS {
+        uuid WorkoutID PK
+        uuid ProgramID FK
+        text workoutName
+        integer sortOrder
+    }
+    WORKOUT_ITEMS {
+        uuid WorkoutItemID PK
+        uuid WorkoutID FK
+        uuid ExerciseID FK
+        integer sortOrder &quot;המקום נשמר בהחלפה&quot;
+        integer targetSets
+        integer targetReps
+        numeric targetWeight &quot;0 במשקל גוף&quot;
+    }
+    WORKOUT_LOGS {
+        uuid WorkoutLogID PK
+        uuid TraineeID FK
+        uuid WorkoutID FK
+        timestamptz performedAt
+    }
+    SET_RESULTS {
+        uuid SetResultID PK
+        uuid WorkoutLogID FK
+        uuid ExerciseID FK
+        integer setNumber
+        integer reps
+        numeric weight
+        boolean isDone
+        boolean isCorrected
+        timestamptz correctedAt &quot;רשות&quot;
+    }
+    COACH_NOTES {
+        uuid CoachNoteID PK
+        uuid WorkoutLogID FK
+        uuid CoachID FK
+        text noteText
+        timestamptz createdAt
+    }</pre></div><div class="box"><h2>תרשים 07c: מוטיבציה</h2><p class="muted">יעד אישי, יומן המטבעות, תגמולים ומימושים, ואתגר שבועי. היתרה מחושבת מהיומן.</p><pre class="mermaid">erDiagram
+    TRAINEES ||--o{ PERSONAL_GOALS : pursues
+    EXERCISES ||--o{ PERSONAL_GOALS : targets
+    TRAINEES ||--o{ COIN_TRANSACTIONS : earns
+    COACHES ||--o{ REWARDS : offers
+    REWARDS ||--o{ REDEMPTIONS : fulfills
+    TRAINEES ||--o{ REDEMPTIONS : requests
+    COIN_TRANSACTIONS ||--o| REDEMPTIONS : pays_for
+    COACHES ||--o{ CHALLENGES : creates
+    CHALLENGES ||--o{ CHALLENGE_COMPLETIONS : records
+    TRAINEES ||--o{ CHALLENGE_COMPLETIONS : achieves
+    PERSONAL_GOALS {
+        uuid PersonalGoalID PK
+        uuid TraineeID FK
+        uuid ExerciseID FK
+        numeric targetWeight
+        text status &quot;active, achieved&quot;
+        timestamptz achievedAt &quot;רשות&quot;
+    }
+    COIN_TRANSACTIONS {
+        uuid CoinTransactionID PK
+        uuid TraineeID FK
+        text eventType &quot;workout, goal, challenge, attendance, redeem&quot;
+        text eventRef &quot;ייחודי עם eventType&quot;
+        integer amount &quot;שלילי במימוש&quot;
+        timestamptz createdAt
+    }
+    REWARDS {
+        uuid RewardID PK
+        uuid CoachID FK
+        text rewardName
+        integer priceCoins
+        boolean isActive
+    }
+    REDEMPTIONS {
+        uuid RedemptionID PK
+        uuid TraineeID FK
+        uuid RewardID FK
+        uuid CoinTransactionID FK
+        text status &quot;pending, delivered&quot;
+        timestamptz deliveredAt &quot;רשות&quot;
+    }
+    CHALLENGES {
+        uuid ChallengeID PK
+        uuid CoachID FK
+        text challengeName
+        text challengeType &quot;count, exercise&quot;
+        numeric targetValue
+        uuid ExerciseID FK &quot;רשות, רק ביעד בתרגיל&quot;
+        text extraPrize &quot;רשות&quot;
+        date weekStart &quot;יום ראשון, ייחודי למאמן&quot;
+    }
+    CHALLENGE_COMPLETIONS {
+        uuid ChallengeCompletionID PK
+        uuid ChallengeID FK
+        uuid TraineeID FK
+        timestamptz completedAt
+        timestamptz prizeDeliveredAt &quot;רשות&quot;
+    }</pre></div><div class="box"><h2>תרשים 07d: כסף, הדגמה</h2><p class="muted">בקשות תשלום וחשבוניות הדגמה. אין אף שדה של כרטיס אשראי.</p><pre class="mermaid">erDiagram
+    TRAINEES ||--o{ PAYMENT_REQUESTS : pays
+    COACHES ||--o{ PAYMENT_REQUESTS : issues
+    PAYMENT_REQUESTS ||--o| INVOICES : produces
+    PAYMENT_REQUESTS {
+        uuid PaymentRequestID PK
+        uuid TraineeID FK
+        uuid CoachID FK
+        text paymentType &quot;monthly, pack10&quot;
+        numeric amount
+        text status &quot;open, paid&quot;
+        timestamptz createdAt
+        timestamptz paidAt &quot;רשות&quot;
+    }
+    INVOICES {
+        uuid InvoiceID PK
+        uuid PaymentRequestID FK &quot;ייחודי&quot;
+        integer invoiceNumber UK
+        numeric amount
+        boolean isDemo &quot;תמיד אמת בגרסה הראשונה&quot;
+        timestamptz issuedAt
+    }</pre></div><div class="box"><h2>תרשים 07e: שיעורים והודעות</h2><p class="muted">שיעורים, הרשמות עם רשימת המתנה ונוכחות, בקשות ביטול חריגות, והודעות בתוך האפליקציה.</p><pre class="mermaid">erDiagram
+    COACHES ||--o{ CLASSES : publishes
+    CLASSES ||--o{ CLASS_REGISTRATIONS : fills
+    TRAINEES ||--o{ CLASS_REGISTRATIONS : books
+    CLASS_REGISTRATIONS ||--o{ LATE_CANCEL_REQUESTS : raises
+    TRAINEES ||--o{ NOTIFICATIONS : receives
+    CLASSES {
+        uuid ClassID PK
+        uuid CoachID FK
+        timestamptz startsAt
+        text place
+        integer capacity
+        text status &quot;active, cancelled&quot;
+        timestamptz createdAt
+    }
+    CLASS_REGISTRATIONS {
+        uuid ClassRegistrationID PK
+        uuid ClassID FK
+        uuid TraineeID FK &quot;ייחודי עם ClassID&quot;
+        text status &quot;registered, waitlist, offered, cancelled&quot;
+        integer waitlistPosition &quot;רשות&quot;
+        timestamptz offerExpiresAt &quot;רשות&quot;
+        boolean attended &quot;רשות, אחרי השיעור&quot;
+        timestamptz createdAt
+    }
+    LATE_CANCEL_REQUESTS {
+        uuid LateCancelRequestID PK
+        uuid ClassRegistrationID FK
+        text status &quot;pending, approved, rejected&quot;
+        timestamptz createdAt
+        timestamptz decidedAt &quot;רשות&quot;
+    }
+    NOTIFICATIONS {
+        uuid NotificationID PK
+        uuid TraineeID FK
+        text messageText
+        timestamptz createdAt
+        timestamptz readAt &quot;רשות&quot;
+    }</pre></div><div class="box"><h2>תרשים 07f: תפעול</h2><p class="muted">ארבע הטבלאות התפעוליות. הן משתנות בלי שום שינוי במסכים.</p><pre class="mermaid">erDiagram
+    COACHES ||--o{ SETTINGS : configures
+    AUDIT_ENTRIES {
+        uuid AuditEntryID PK
+        uuid requestID &quot;משותף לבקשה ולתשובה&quot;
+        text caller
+        text moduleName
+        text actionName
+        boolean isOk
+        text errorCode &quot;רשות&quot;
+        timestamptz createdAt
+    }
+    SETTINGS {
+        uuid SettingID PK
+        uuid CoachID FK
+        text settingKey &quot;ייחודי למאמן&quot;
+        text settingValue
+    }
+    ERROR_CODES {
+        uuid ErrorCodeID PK
+        text errorCode UK
+        text developerText
+        text humanText
+    }
+    REGISTRY_ENTRIES {
+        uuid RegistryEntryID PK
+        text caller
+        text moduleName
+        text actionName
+        text allowedRole &quot;coach, trainee, module&quot;
+        boolean isActive
+    }</pre></div>
+<h3>בדיקת הבהירות לפני הבנייה</h3>
+<table><tr><th>השאלה</th><th>התשובה</th></tr>
+<tr><td>מי יוצר, מעדכן וקורא כל ישות</td><td>בטבלה ב-doc-erd-conceptual</td></tr>
+<tr><td>מפתח ראשי ייחודי וזר בשם המקור</td><td>בכל 26 הטבלאות</td></tr>
+<tr><td>סוג וחובה לכל שדה</td><td>בכל שדה</td></tr>
+<tr><td>קרדינליות, ומה קורה במחיקה</td><td>בכל קשר. אין מחיקה פיזית, ולכן אין מחיקה מדורגת</td></tr>
+<tr><td>איפה יושבת כל רשימת ערכים</td><td>מצבים סגורים באילוץ; ערכים משתנים ב-SETTINGS</td></tr>
+<tr><td>מה מותר לכל תפקיד לראות ולשנות</td><td>לפי שורות ה-Registry במקרי השימוש, ויתורגם להרשאות לפי שורה (RLS) ברמה הפיזית</td></tr>
+</table>
+<h3>מה נשאר פתוח</h3>
+<ul><li>אין שאלות פתוחות שעוצרות את הבנייה. הערכים המספריים הפתוחים (למשל משך שמירת מקום) יושבים ב-SETTINGS ומתמלאים בהקמה.</li></ul>
+<script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({startOnLoad:true});</script>
+</body></html>
