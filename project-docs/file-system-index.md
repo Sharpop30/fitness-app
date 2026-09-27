@@ -88,6 +88,7 @@
 | story-30-class-registration.md | project-docs | 28.09.2026 |
 | usecase-01-training-programs.md | project-docs | 27.09.2026 |
 | gap-note-library.md | project-docs | 27.09.2026 |
+| session-state.md | project-docs | 28.09.2026 |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
 | usecase-02-payments-invoices.md | project-docs | 28.09.2026 |
 | diagram-uc02-payments-invoices.mmd | project-docs/mermaid | 28.09.2026 |
