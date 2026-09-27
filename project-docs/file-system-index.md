@@ -60,7 +60,7 @@
 
 | השם הקנוני | המיקום | תאריך הגרסה הפעילה |
 | :-- | :-- | :-- |
-| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.16) |
+| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.17) |
 | doc-stakeholder-map.docx | project-docs | 18.07.2026 |
 | doc-requirements-prioritization.docx | project-docs | 18.07.2026 |
 | story-all-requirements.docx | project-docs | 18.07.2026 |
@@ -84,7 +84,7 @@
 | story-12-results-entry.md | project-docs | 28.09.2026 |
 | story-19-unified-operations.md | project-docs | 28.09.2026 |
 | story-21-instant-feedback.md | project-docs | 27.09.2026 |
-| story-25-daily-trigger.md | project-docs | 27.09.2026 |
+| story-25-daily-trigger.md | project-docs | 28.09.2026 |
 | story-30-class-registration.md | project-docs | 27.09.2026 |
 | usecase-01-training-programs.md | project-docs | 27.09.2026 |
 | gap-note-library.md | project-docs | 27.09.2026 |
@@ -103,6 +103,8 @@
 | diagram-uc07-coins-rewards.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-08-weekly-challenge.md | project-docs | 28.09.2026 |
 | diagram-uc08-weekly-challenge.mmd | project-docs/mermaid | 28.09.2026 |
+| usecase-09-daily-trigger.md | project-docs | 28.09.2026 |
+| diagram-uc09-daily-trigger.mmd | project-docs/mermaid | 28.09.2026 |
 
 ## 6. כללי העבודה
 

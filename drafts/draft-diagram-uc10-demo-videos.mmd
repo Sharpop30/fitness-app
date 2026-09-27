@@ -1,0 +1,22 @@
+---
+title: מקרה שימוש 10 - סרטון הדגמה לתרגיל
+---
+flowchart TD
+    S1["1. המאמן בוחר הוספת סרטון"] --> S2["2. קישור: בדיקת תקינות"]
+    S1 --> S3["3. העלאה: סרטון עד דקה"]
+    S3 --> S4["4. העלאה לאחסון הקבצים"]
+    S2 --> S5["5. שמירת הסרטון לתרגיל"]
+    S4 --> S5
+    S5 --> S6["6. כפתור צפייה באימון"]
+    S6 --> S7["7. המתאמן צופה"]
+
+    class S1,S2,S3,S6,S7 code
+    class S4 iface
+    class S5 data
+
+classDef code fill:#E8F0FE,stroke:#1A73E8,color:#202124
+classDef auto fill:#E6F4EA,stroke:#188038,color:#202124
+classDef agent fill:#FEF7E0,stroke:#F29900,color:#202124
+classDef net fill:#FCE8E6,stroke:#D93025,color:#202124
+classDef iface fill:#F3E8FD,stroke:#8430CE,color:#202124
+classDef data fill:#E8EAED,stroke:#5F6368,color:#202124
