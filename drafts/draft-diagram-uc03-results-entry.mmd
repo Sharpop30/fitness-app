@@ -1,0 +1,22 @@
+---
+title: מקרה שימוש 3 - הזנת תוצאות אימון ותיקונן
+---
+flowchart TD
+    S1["1. המתאמן פותח אימון מהתוכנית"] --> S2["2. טעינת התוכנית והיעדים"]
+    S2 --> S3["3. מילוי מראש לפי היעד"]
+    S3 --> S4["4. שינוי רק מה שבוצע אחרת"]
+    S4 --> S5["5. שמירה ובדיקת תקינות"]
+    S5 --> S6["6. שמירת תוצאה לכל סט"]
+    S6 --> S7["7. בקשת משוב ומטבעות דרך ה-Orchestrator"]
+    S7 --> S8["8. המתאמן רואה משוב"]
+    S8 --> S9["9. המאמן רואה תוצאות וגרף"]
+
+    class S1,S3,S4,S5,S7,S8,S9 code
+    class S2,S6 data
+
+classDef code fill:#E8F0FE,stroke:#1A73E8,color:#202124
+classDef auto fill:#E6F4EA,stroke:#188038,color:#202124
+classDef agent fill:#FEF7E0,stroke:#F29900,color:#202124
+classDef net fill:#FCE8E6,stroke:#D93025,color:#202124
+classDef iface fill:#F3E8FD,stroke:#8430CE,color:#202124
+classDef data fill:#E8EAED,stroke:#5F6368,color:#202124
