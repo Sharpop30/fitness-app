@@ -1,9 +1,5 @@
-<!doctype html>
-<html lang="he" dir="rtl">
-<head>
+<title>אב טיפוס אפליקציית מאמן</title>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>אב טיפוס: אפליקציית מאמן כושר</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Heebo:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -19,8 +15,10 @@
     --page:#0b0d0b; --bg:#121512; --card:#1b1f1b; --ink:#eef0ea; --muted:#a3a89f; --muted2:#a3a89f; --muted3:#8b8f88;
     --line:#2c312c; --line-in:#2c312c; --tint:#1f3324; --tint2:#28432d; --tintInk:#d4f0a6; --warn:#3a2b1b;
     --chip:#262b26; --seg:#232823; --hero:#1f3527; --sel:#c3f03f; --selFg:#15260c; --accent:#7fd08f; --demo:#3a3410; --demoInk:#f3e39a;
+    color-scheme:dark;
   }
 }
+[data-theme="dark"]{color-scheme:dark}
 :root[data-theme="dark"]{
   --page:#0b0d0b; --bg:#121512; --card:#1b1f1b; --ink:#eef0ea; --muted:#a3a89f; --muted2:#a3a89f; --muted3:#8b8f88;
   --line:#2c312c; --line-in:#2c312c; --tint:#1f3324; --tint2:#28432d; --tintInk:#d4f0a6; --warn:#3a2b1b;
@@ -71,7 +69,7 @@ label{font-size:12px;color:var(--muted2);display:block;margin-bottom:4px}
 .check.on{background:var(--tint2);border-color:transparent}
 .question{margin-top:auto;border-top:1px dashed var(--line-in);padding-top:10px;font-size:12px;color:var(--muted2)}
 .assume{font-size:11px;color:var(--orange)}
-nav.tabs{position:sticky;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line)}
+nav.tabs{position:sticky;bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);display:flex;background:var(--card);border-top:1px solid var(--line)}
 nav.tabs button{flex:1;padding:10px 4px 14px;border:0;background:none;color:#8b8f88;font-family:inherit;font-size:12px;cursor:pointer}
 nav.tabs button.on{color:var(--accent);font-weight:500}
 .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--hero);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
@@ -86,10 +84,10 @@ svg text{fill:var(--muted2);font-size:10px;font-family:"Geist Mono",monospace}
 header.hd{position:relative}
 .theme{position:absolute;top:10px;left:16px;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--ink);font-family:inherit}
 </style>
-</head>
-<body>
+<div dir="rtl" lang="he">
 <div class="app" id="app"></div>
 <div class="toast" id="toast"></div>
+</div>
 <script>
 /* ============================================================
    אב טיפוס, גרסה 1. נתונים סינתטיים בלבד (חוק 2, tofrot-projekt).
@@ -614,6 +612,13 @@ screens.classesTrainee=()=>{const me=S.me;const up=classes.filter(c=>c.date>=TOD
   <div class="muted small">אפשר לבטל עד ${ref.cancelHours} שעות לפני השיעור. אחרי זה אפשר לשלוח למאמן בקשה חריגה.</div>
   ${Q('האם ההרשמה והביטול פשוטים וברורים?')}`,{backBtn:false})};
 
+screens.lateCancel=({id})=>{const c=classes.find(x=>x.id===id);return shell('ביטול מאוחר',`${fmt(c.date)} · ${c.time}`,`
+  <div class="warnbox">אפשר לבטל עד ${ref.cancelHours} שעות לפני השיעור, ולכן ההרשמה נשארת בינתיים.</div>
+  <div>אפשר לשלוח למאמן בקשה חריגה. אם הוא יאשר, ההרשמה תבוטל ותקבל הודעה.</div>
+  <button class="btn" data-a="sendLate" data-p="${id}">שליחת בקשה חריגה למאמן</button>
+  <button class="btn sec" data-a="back">חזרה בלי לבקש</button>
+  ${Q('האם ברור למה הביטול נחסם ומה אפשר לעשות?')}`)};
+
 /* ----- אני: התקדמות, מטבעות, תשלומים, אתגר ----- */
 screens.me=()=>shell(tname(S.me),'אני',`
   <div class="list">
@@ -629,7 +634,7 @@ screens.coins=()=>{const me=S.me;const bal=balance(me);const lbl={workout:'אי�
   <div class="hero"><div class="sub">היתרה שלך</div><div class="big">${bal}</div></div>
   <h2>תגמולים</h2>
   <div class="list">${rewards.map(r=>`<div class="item" style="cursor:default"><div><div>${r.name}</div><div class="muted small mono">${r.price} מטבעות</div></div>
-    ${bal>=r.price?`<button class="btn small" data-a="redeem" data-p="${r.id}">מימוש</button>`:`<span class="muted small">חסרים ${r.price-bal}</span>`}</div>`).join('')}</div>
+    ${S.params.confirmRedeem===r.id?`<div class="row"><button class="btn small" data-a="redeem" data-p="${r.id}">אישור (יישארו ${bal-r.price})</button><button class="btn sec small" data-a="cancelRedeem">ביטול</button></div>`:bal>=r.price?`<button class="btn small" data-a="redeem" data-p="${r.id}">מימוש</button>`:`<span class="muted small">חסרים ${r.price-bal}</span>`}</div>`).join('')}</div>
   <h2>היסטוריה</h2>
   <div class="list">${coinLedger.filter(c=>c.tid===me).slice().reverse().map(c=>`<div class="row between small"><span>${lbl[c.type]||c.type} · ${fmt(c.date)}</span><span class="mono">${c.amt>0?'+':''}${c.amt}</span></div>`).join('')}</div>
   ${Q('האם המטבעות והתגמולים ירגשו אותך להמשיך?')}`)};
@@ -712,12 +717,15 @@ const actions={
   register:(p)=>{const c=classes.find(x=>x.id===p),me=S.me;if(c.reg.includes(me)||c.wait.includes(me))return toast('אתה כבר רשום לשיעור הזה');
     if(c.reg.length<c.cap){c.reg.push(me);toast('נרשמת לשיעור')}else{c.wait.push(me);toast(`השיעור מלא. נכנסת לרשימת ההמתנה, מקום ${c.wait.length}`)}render()},
   cancelReg:(p)=>{const c=classes.find(x=>x.id===p),me=S.me;const hrs=(new Date(c.date.toDateString()+' '+c.time)-new Date(TODAY.toDateString()+' 12:00'))/36e5;
-    if(hrs<ref.cancelHours){if(confirm(`אפשר לבטל עד ${ref.cancelHours} שעות לפני השיעור. לשלוח למאמן בקשה חריגה?`)){lateRequests.push({id:'l'+uid(),tid:me,cid:p,status:'ממתינה'});toast('הבקשה נשלחה למאמן')}return}
+    if(hrs<ref.cancelHours){go('lateCancel',{id:p});return}
     c.reg=c.reg.filter(t=>t!==me);offerNext(c);render();toast('ההרשמה בוטלה')},
+  sendLate:(p)=>{if(!lateRequests.some(r=>r.tid===S.me&&r.cid===p&&r.status==='ממתינה'))lateRequests.push({id:'l'+uid(),tid:S.me,cid:p,status:'ממתינה'});back();toast('הבקשה נשלחה למאמן')},
+  cancelRedeem:()=>{S.params.confirmRedeem=null;render()},
   offerYes:(p)=>{const c=classes.find(x=>x.id===p);c.wait=c.wait.filter(t=>t!==S.me);c.reg.push(S.me);c.offer=null;render();toast('נרשמת לשיעור')},
   offerNo:(p)=>{const c=classes.find(x=>x.id===p);c.wait=c.wait.filter(t=>t!==S.me);c.offer=null;offerNext(c);render();toast('המקום הוצע לבא בתור')},
   redeem:(p)=>{const r=rewards.find(x=>x.id===p),me=S.me;if(balance(me)<r.price)return toast(`אין מספיק מטבעות. חסרים לך עוד ${r.price-balance(me)}`);
-    if(!confirm(`לממש "${r.name}" ב-${r.price} מטבעות? יישארו לך ${balance(me)-r.price}`))return;
+    if(S.params.confirmRedeem!==p){S.params.confirmRedeem=p;render();return}
+    S.params.confirmRedeem=null;
     coinLedger.push({tid:me,type:'redeem',amt:-r.price,date:TODAY,ref:'rd-'+uid()});redemptions.push({id:'rd'+uid(),tid:me,reward:p,status:'ממתין לאספקה',date:TODAY});render();toast('מימשת! המאמן יספק את התגמול')},
 };
 function offerNext(c){ if(c.wait.length&&c.reg.length<c.cap){c.offer={tid:c.wait[0],until:ref.spotOfferHours};(inbox[c.wait[0]]=inbox[c.wait[0]]||[]).unshift({text:`התפנה מקום בשיעור ב-${fmt(c.date)}`,date:TODAY})} }
@@ -728,5 +736,3 @@ app.addEventListener('input',e=>{const i=e.target;if(i.dataset.set){const [ii,si
 function render(){const c=cur();app.innerHTML=(screens[c.screen]||screens.welcome)(c.params||{})}
 render();
 </script>
-</body>
-</html>
