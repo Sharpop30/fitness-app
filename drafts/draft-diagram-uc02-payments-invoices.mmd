@@ -1,0 +1,24 @@
+---
+title: מקרה שימוש 2 - בקשת תשלום, תשלום לדוגמה וחשבונית אוטומטית
+---
+flowchart TD
+    S1["1. המאמן בוחר מתאמן וסוג תשלום"] --> S2["2. בדיקה שהמתאמן שייך למאמן"]
+    S2 --> S3["3. שמירת בקשת תשלום פתוחה"]
+    S3 --> S4["4. המתאמן רואה את הבקשה"]
+    S4 --> S5["5. תשלום לדוגמה, בלי כרטיס"]
+    S5 --> S6["6. שער הסליקה מאשר - מימוש מדומה"]
+    S6 --> S7["7. הבקשה מסומנת כשולמה"]
+    S7 --> S8["8. יצירת חשבונית הדגמה"]
+    S8 --> S9["9. שמירת החשבונית"]
+    S9 --> S10["10. החשבונית אצל המאמן והמתאמן"]
+
+    class S1,S2,S4,S5,S8,S10 code
+    class S3,S7,S9 data
+    class S6 iface
+
+classDef code fill:#E8F0FE,stroke:#1A73E8,color:#202124
+classDef auto fill:#E6F4EA,stroke:#188038,color:#202124
+classDef agent fill:#FEF7E0,stroke:#F29900,color:#202124
+classDef net fill:#FCE8E6,stroke:#D93025,color:#202124
+classDef iface fill:#F3E8FD,stroke:#8430CE,color:#202124
+classDef data fill:#E8EAED,stroke:#5F6368,color:#202124

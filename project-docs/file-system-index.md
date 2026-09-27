@@ -86,6 +86,9 @@
 | story-21-instant-feedback.md | project-docs | 27.09.2026 |
 | story-25-daily-trigger.md | project-docs | 27.09.2026 |
 | story-30-class-registration.md | project-docs | 27.09.2026 |
+| usecase-01-training-programs.md | project-docs | 27.09.2026 |
+| gap-note-library.md | project-docs | 27.09.2026 |
+| diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
 
 ## 6. כללי העבודה
 
