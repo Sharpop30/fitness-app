@@ -7,19 +7,18 @@ const root = join(__dirname, "..");
 const screenFiles = readdirSync(join(root, "screens")).filter((f) => /^S\d\d.*\.tsx$/.test(f) && !f.includes(".test."));
 const read = (f: string) => readFileSync(join(root, "screens", f), "utf8");
 
-// The screen-actions table of doc-module-map section 4 (version 2), parsed from the approved document itself.
+// The screen-actions table of doc-module-map section 4 (version 3), parsed from the approved document itself.
 const map = readFileSync(join(root, "..", "..", "project-docs", "doc-module-map.md"), "utf8");
 const table = map.slice(map.indexOf("### טבלת פעולות המסכים"), map.indexOf("### קודי השגיאה"));
 const allowed: Record<string, Set<string>> = {};
 for (const line of table.split("\n")) {
   const m = line.match(/^\| (S\d\d) \| (.+) \|$/);
   if (!m || m[2].startsWith("(")) continue;
+  m[2] = m[2].replace(/^שירות הזהות; /, "").replace(/, פעם אחת.*$/, "");
   let mod = "";
   allowed[m[1]] = new Set(m[2].split(/[;,]\s*/).map((p) => { p = p.trim(); if (p.includes(".")) { const [a, b] = p.split("."); mod = a; return `${a}.${b}`; } return `${mod}.${p}`; }));
 }
 
-// Actions a screen needs but the map does not list yet: reported as stage 2 gaps, for map version 3.
-const PENDING_MAP_V3 = new Set(["S07:exercises.list_exercises", "S08:trainees.list_trainees"]);
 
 const usedBy = (f: string) =>
   [...read(f).matchAll(/(?:call|useCall)\(\s*"(S\d\d)",\s*"(\w+)",\s*"(\w+)"/g)].map((m) => ({ caller: m[1], action: `${m[2]}.${m[3]}` }));
@@ -32,7 +31,7 @@ test.each(screenFiles)("%s declares itself as the caller and uses only its own a
   const id = f.slice(0, 3);
   for (const u of usedBy(f)) {
     expect(u.caller).toBe(id);
-    if (!PENDING_MAP_V3.has(`${id}:${u.action}`)) expect([...(allowed[id] ?? [])]).toContain(u.action);
+    expect([...(allowed[id] ?? [])]).toContain(u.action);
   }
 });
 

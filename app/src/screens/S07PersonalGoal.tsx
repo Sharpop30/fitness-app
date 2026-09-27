@@ -1,5 +1,4 @@
 // S07 personal goal (UC7 step 1, story 6): the coach sets a weight goal in one exercise.
-// Gap for map v3: the exercise picker needs exercises.list_exercises, which is not in S07's action row.
 import { useState } from "react";
 import { call } from "../api/client";
 import { useCall } from "../api/useCall";

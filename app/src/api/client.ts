@@ -31,6 +31,12 @@ export type Adapter = (envelope: Envelope, session: Session) => Promise<Reply>;
 
 let adapter: Adapter = demoAdapter;
 let session: Session | null = null;
+// The human text of every error code (ERROR_CODES), loaded once by S23 after sign-in (module map v3).
+let errorTexts: Record<string, string> = {};
+
+export function setErrorTexts(texts: Record<string, string>) {
+  errorTexts = texts;
+}
 
 export function setSession(s: Session | null) {
   session = s;
@@ -44,5 +50,6 @@ export function call<T = any>(caller: string, module: string, action: string, pa
   if (!session && !(module === "trainees" && action === "accept_invite")) {
     return Promise.resolve({ ok: false, data: null, error: { code: "NOT_ALLOWED", message: "אין לך גישה לזה" } });
   }
-  return adapter({ caller, module, action, payload, lang: "he" }, session ?? { role: "trainee", traineeID: null });
+  return adapter({ caller, module, action, payload, lang: "he" }, session ?? { role: "trainee", traineeID: null }).then((r) =>
+    r.error && !r.error.message ? { ...r, error: { ...r.error, message: errorTexts[r.error.code] ?? "משהו השתבש. נסה שוב" } } : r);
 }

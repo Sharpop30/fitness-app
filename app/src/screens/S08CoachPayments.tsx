@@ -1,5 +1,4 @@
 // S08 payments and invoices, coach (UC2, story 2). Demo only: no card data anywhere.
-// Gap for map v3: the trainee picker needs trainees.list_trainees, which is not in S08's action row.
 import { useState } from "react";
 import { call } from "../api/client";
 import { useCall } from "../api/useCall";

@@ -378,6 +378,7 @@ const actions: Record<string, H> = {
   },
   // ---- M14 settings ----
   "settings.get_settings": () => ok({ ...D.settings }),
+  "settings.get_error_texts": () => ok({ ...D.errorTexts }),
   "settings.update_settings": (p) => { Object.assign(D.settings, p.values as Record<string, string>); return ok(null); },
 };
 
