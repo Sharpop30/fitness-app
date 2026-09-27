@@ -71,3 +71,19 @@ export const call = async (token, caller, module, action, payload = {}) => {
   });
   return res.json();
 };
+
+// A second coach, outside the demo data, for the "not your trainee" cases (UC1 alternative d).
+export async function strangerCoachToken() {
+  const password = `local-only-${randomBytes(12).toString("hex")}`;
+  const email = "stranger.coach@fitness-app.test";
+  await ensureUser(email, password);
+  const id = psql(`select id from auth.users where email = '${email}'`);
+  psql(`insert into coaches ("authUserID","fullName","email") values ('${id}','מאמן זר (test)','${email}') on conflict ("authUserID") do nothing`);
+  return signIn(email, password);
+}
+
+// The two audit rows of the latest request for this caller and action: [request, reply].
+export const lastAudit = (caller, action) =>
+  psql(`select "isOk" || ':' || coalesce("errorCode",'-') from audit_entries
+        where "requestID" = (select "requestID" from audit_entries where caller='${caller}' and "actionName"='${action}' order by "createdAt" desc limit 1)
+        order by "createdAt"`).split("\n");
