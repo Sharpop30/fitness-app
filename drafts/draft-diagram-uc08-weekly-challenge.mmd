@@ -1,0 +1,22 @@
+---
+title: מקרה שימוש 8 - אתגר שבועי והשלמה אוטומטית
+---
+flowchart TD
+    S1["1. המאמן יוצר אתגר ופרס"] --> S2["2. בדיקה שאין אתגר השבוע"]
+    S2 --> S3["3. שמירת האתגר לשבוע"]
+    S3 --> S4["4. כל המתאמנים רואים את האתגר"]
+    S4 --> S5["5. אירוע: אימון נשמר"]
+    S5 --> S6["6. חישוב ההתקדמות מול היעד"]
+    S6 --> S7["7. סימון השלמה, פעם אחת"]
+    S7 --> S8["8. זיכוי מטבעות"]
+    S8 --> S9["9. המאמן רואה מי השלים"]
+
+    class S1,S2,S4,S5,S6,S8,S9 code
+    class S3,S7 data
+
+classDef code fill:#E8F0FE,stroke:#1A73E8,color:#202124
+classDef auto fill:#E6F4EA,stroke:#188038,color:#202124
+classDef agent fill:#FEF7E0,stroke:#F29900,color:#202124
+classDef net fill:#FCE8E6,stroke:#D93025,color:#202124
+classDef iface fill:#F3E8FD,stroke:#8430CE,color:#202124
+classDef data fill:#E8EAED,stroke:#5F6368,color:#202124

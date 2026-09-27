@@ -79,7 +79,7 @@
 | story-02-payments-invoices.md | project-docs | 27.09.2026 |
 | story-04-progress-tracking.md | project-docs | 28.09.2026 |
 | story-05-weekly-challenge.md | project-docs | 27.09.2026 |
-| story-06-coins-rewards.md | project-docs | 27.09.2026 |
+| story-06-coins-rewards.md | project-docs | 28.09.2026 |
 | story-10-demo-videos.md | project-docs | 27.09.2026 |
 | story-12-results-entry.md | project-docs | 28.09.2026 |
 | story-19-unified-operations.md | project-docs | 28.09.2026 |
@@ -99,6 +99,8 @@
 | diagram-uc05-progress-tracking.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-06-instant-feedback.md | project-docs | 28.09.2026 |
 | diagram-uc06-instant-feedback.mmd | project-docs/mermaid | 28.09.2026 |
+| usecase-07-coins-rewards.md | project-docs | 28.09.2026 |
+| diagram-uc07-coins-rewards.mmd | project-docs/mermaid | 28.09.2026 |
 
 ## 6. כללי העבודה
 
