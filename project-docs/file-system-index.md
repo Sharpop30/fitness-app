@@ -68,6 +68,7 @@
 | doc-ideas.docx | project-docs | 18.07.2026 |
 | doc-adoption-mapping-fitness-app.md | project-docs | 27.09.2026 |
 | file-system-index.md | project-docs | 27.09.2026 |
+| doc-work-plan-fitness-app.md | project-docs | 27.09.2026 |
 
 ## 6. כללי העבודה
 
