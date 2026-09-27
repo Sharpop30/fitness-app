@@ -82,7 +82,7 @@
 | story-06-coins-rewards.md | project-docs | 27.09.2026 |
 | story-10-demo-videos.md | project-docs | 27.09.2026 |
 | story-12-results-entry.md | project-docs | 28.09.2026 |
-| story-19-unified-operations.md | project-docs | 27.09.2026 |
+| story-19-unified-operations.md | project-docs | 28.09.2026 |
 | story-21-instant-feedback.md | project-docs | 27.09.2026 |
 | story-25-daily-trigger.md | project-docs | 27.09.2026 |
 | story-30-class-registration.md | project-docs | 27.09.2026 |
@@ -93,6 +93,8 @@
 | diagram-uc02-payments-invoices.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-03-results-entry.md | project-docs | 28.09.2026 |
 | diagram-uc03-results-entry.mmd | project-docs/mermaid | 28.09.2026 |
+| usecase-04-unified-operations.md | project-docs | 28.09.2026 |
+| diagram-uc04-unified-operations.mmd | project-docs/mermaid | 28.09.2026 |
 
 ## 6. כללי העבודה
 

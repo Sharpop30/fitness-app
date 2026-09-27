@@ -1,0 +1,19 @@
+---
+title: מקרה שימוש 5 - גרף התקדמות ושיא אישי
+---
+flowchart TD
+    S1["1. פתיחת הגרף - מאמן או מתאמן"] --> S2["2. בחירת תרגיל"]
+    S2 --> S3["3. טעינת התוצאות לאורך זמן"]
+    S3 --> S4["4. המשקל הגבוה בכל אימון"]
+    S4 --> S5["5. חישוב השיא האישי"]
+    S5 --> S6["6. הצגת הגרף עם סימון השיא"]
+
+    class S1,S2,S4,S5,S6 code
+    class S3 data
+
+classDef code fill:#E8F0FE,stroke:#1A73E8,color:#202124
+classDef auto fill:#E6F4EA,stroke:#188038,color:#202124
+classDef agent fill:#FEF7E0,stroke:#F29900,color:#202124
+classDef net fill:#FCE8E6,stroke:#D93025,color:#202124
+classDef iface fill:#F3E8FD,stroke:#8430CE,color:#202124
+classDef data fill:#E8EAED,stroke:#5F6368,color:#202124
