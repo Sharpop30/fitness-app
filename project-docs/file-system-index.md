@@ -60,7 +60,7 @@
 
 | השם הקנוני | המיקום | תאריך הגרסה הפעילה |
 | :-- | :-- | :-- |
-| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.15) |
+| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.16) |
 | doc-stakeholder-map.docx | project-docs | 18.07.2026 |
 | doc-requirements-prioritization.docx | project-docs | 18.07.2026 |
 | story-all-requirements.docx | project-docs | 18.07.2026 |
@@ -77,7 +77,7 @@
 | doc-mlp-scope.md | project-docs | 27.09.2026 |
 | story-01-training-programs.md | project-docs | 27.09.2026 |
 | story-02-payments-invoices.md | project-docs | 27.09.2026 |
-| story-04-progress-tracking.md | project-docs | 27.09.2026 |
+| story-04-progress-tracking.md | project-docs | 28.09.2026 |
 | story-05-weekly-challenge.md | project-docs | 27.09.2026 |
 | story-06-coins-rewards.md | project-docs | 27.09.2026 |
 | story-10-demo-videos.md | project-docs | 27.09.2026 |
@@ -95,6 +95,8 @@
 | diagram-uc03-results-entry.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-04-unified-operations.md | project-docs | 28.09.2026 |
 | diagram-uc04-unified-operations.mmd | project-docs/mermaid | 28.09.2026 |
+| usecase-05-progress-tracking.md | project-docs | 28.09.2026 |
+| diagram-uc05-progress-tracking.mmd | project-docs/mermaid | 28.09.2026 |
 
 ## 6. כללי העבודה
 

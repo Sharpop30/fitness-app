@@ -1,0 +1,22 @@
+---
+title: מקרה שימוש 6 - משוב מיידי והערת מאמן
+---
+flowchart TD
+    S1["1. בקשת משוב לאימון שנשמר"] --> S2["2. ספירת סטים שהושלמו"]
+    S2 --> S3["3. בדיקת שיא אישי"]
+    S3 --> S4["4. צירוף המטבעות"]
+    S4 --> S5["5. נוסח מטבלת הייחוס"]
+    S5 --> S6["6. מסך המשוב למתאמן"]
+    S6 --> S7["7. המאמן מוסיף הערה אישית"]
+    S7 --> S8["8. שמירת ההערה"]
+    S8 --> S9["9. המתאמן רואה את ההערה"]
+
+    class S1,S2,S3,S4,S6,S7,S9 code
+    class S5,S8 data
+
+classDef code fill:#E8F0FE,stroke:#1A73E8,color:#202124
+classDef auto fill:#E6F4EA,stroke:#188038,color:#202124
+classDef agent fill:#FEF7E0,stroke:#F29900,color:#202124
+classDef net fill:#FCE8E6,stroke:#D93025,color:#202124
+classDef iface fill:#F3E8FD,stroke:#8430CE,color:#202124
+classDef data fill:#E8EAED,stroke:#5F6368,color:#202124
