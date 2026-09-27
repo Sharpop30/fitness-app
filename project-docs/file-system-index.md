@@ -60,7 +60,7 @@
 
 | השם הקנוני | המיקום | תאריך הגרסה הפעילה |
 | :-- | :-- | :-- |
-| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.2) |
+| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.3) |
 | doc-stakeholder-map.docx | project-docs | 18.07.2026 |
 | doc-requirements-prioritization.docx | project-docs | 18.07.2026 |
 | story-all-requirements.docx | project-docs | 18.07.2026 |
@@ -74,6 +74,7 @@
 | diagram-01-current-process.mmd | project-docs/mermaid | 27.09.2026 |
 | diagram-02-desired-process.mmd | project-docs/mermaid | 27.09.2026 |
 | doc-okr-kpi.md | project-docs | 27.09.2026 |
+| doc-mlp-scope.md | project-docs | 27.09.2026 |
 
 ## 6. כללי העבודה
 
