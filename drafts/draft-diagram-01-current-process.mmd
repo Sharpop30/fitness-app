@@ -1,0 +1,39 @@
+---
+title: תרשים 1 - התהליך הקיים היום
+---
+flowchart TD
+    S([המאמן מתחיל לעבוד עם מתאמן]) --> A1
+
+    subgraph Coach[המאמן]
+        A1[בונה תוכנית אימון בעבודה ידנית]
+        A2[גובה תשלום ומפיק חשבונית ידנית]
+        A4[מחפש את נתוני ההתקדמות בכמה מקומות]
+    end
+
+    subgraph Trainee[המתאמן]
+        B1[מתאמן לפי התוכנית]
+        B2{מדווח ידנית על האימון?}
+    end
+
+    subgraph Tools[אפליקציות נפרדות - אילו: טרם נקבע]
+        T1[(נתונים מפוזרים: תוכניות, תשלומים, תוצאות)]
+    end
+
+    A1 --> B1
+    A1 --> A2
+    A2 --> T1
+    B1 --> B2
+    B2 -->|כן| T1
+    B2 -->|לא, עומס דיווח| X([המתאמן נושר])
+    T1 --> A4
+    A4 --> E([המאמן בלי תמונה אחת של המתאמן])
+
+    class A1,A2,A4,B1,B2 person
+    class T1 data
+    class S,E,X system
+
+classDef person fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+classDef agent fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
+classDef system fill:#F5F5F5,stroke:#424242,stroke-width:2px
+classDef data fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+classDef external fill:#FFF3E0,stroke:#E65100,stroke-width:2px

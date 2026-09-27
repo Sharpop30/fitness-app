@@ -1,0 +1,43 @@
+---
+title: תרשים 2 - התהליך הרצוי עם האפליקציה
+---
+flowchart TD
+    S([המאמן מתחיל לעבוד עם מתאמן]) --> A1
+
+    subgraph Coach[המאמן]
+        A1[בונה תוכנית אימון ומחליף תרגיל במהירות]
+        A5[רואה את ההתקדמות של כל מתאמן במסך אחד]
+    end
+
+    subgraph Trainee[המתאמן]
+        B1[רואה את התוכנית ומתאמן]
+        B2[מזין תוצאות אימון]
+        B3[מקבל משוב, מטבעות ואתגר שבועי]
+    end
+
+    subgraph App[האפליקציה]
+        P1[סליקה מדומה וחשבונית אוטומטית]
+        D1[(כל הנתונים במקום אחד)]
+    end
+
+    A1 --> D1
+    A1 --> P1
+    P1 --> D1
+    D1 --> B1
+    B1 --> B2
+    B2 --> D1
+    B2 --> B3
+    B3 -->|טריגר יומי לחזרה| B1
+    D1 --> A5
+    A5 --> E([המאמן מתאים את התוכנית, והמתאמן ממשיך])
+
+    class A1,A5,B1,B2,B3 person
+    class P1 system
+    class D1 data
+    class S,E system
+
+classDef person fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+classDef agent fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
+classDef system fill:#F5F5F5,stroke:#424242,stroke-width:2px
+classDef data fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+classDef external fill:#FFF3E0,stroke:#E65100,stroke-width:2px

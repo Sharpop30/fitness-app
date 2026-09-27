@@ -69,6 +69,7 @@
 | doc-adoption-mapping-fitness-app.md | project-docs | 27.09.2026 |
 | file-system-index.md | project-docs | 27.09.2026 |
 | doc-work-plan-fitness-app.md | project-docs | 27.09.2026 |
+| doc-project-definition.md | project-docs | 27.09.2026 |
 
 ## 6. כללי העבודה
 
