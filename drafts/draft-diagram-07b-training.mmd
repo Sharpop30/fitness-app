@@ -1,0 +1,70 @@
+---
+title: תרשים 07b - ERD לוגי, אימון
+---
+erDiagram
+    COACHES ||--o{ EXERCISES : adds
+    TRAINEES ||--o{ PROGRAMS : follows
+    PROGRAMS ||--|{ WORKOUTS : contains
+    WORKOUTS ||--|{ WORKOUT_ITEMS : lists
+    EXERCISES ||--o{ WORKOUT_ITEMS : fills
+    TRAINEES ||--o{ WORKOUT_LOGS : performs
+    WORKOUTS ||--o{ WORKOUT_LOGS : records
+    WORKOUT_LOGS ||--|{ SET_RESULTS : holds
+    EXERCISES ||--o{ SET_RESULTS : measures
+    WORKOUT_LOGS ||--o{ COACH_NOTES : receives
+    EXERCISES {
+        uuid ExerciseID PK
+        uuid CoachID FK "רשות, ריק ברשימה המוכנה"
+        text exerciseName
+        boolean isBodyweight
+        text videoType "רשות: youtube, upload"
+        text videoUrl "רשות"
+        boolean isActive
+    }
+    PROGRAMS {
+        uuid ProgramID PK
+        uuid TraineeID FK
+        text programName
+        boolean isActive "אחת פעילה למתאמן"
+        timestamptz createdAt
+        timestamptz deactivatedAt "רשות"
+    }
+    WORKOUTS {
+        uuid WorkoutID PK
+        uuid ProgramID FK
+        text workoutName
+        integer sortOrder
+    }
+    WORKOUT_ITEMS {
+        uuid WorkoutItemID PK
+        uuid WorkoutID FK
+        uuid ExerciseID FK
+        integer sortOrder "המקום נשמר בהחלפה"
+        integer targetSets
+        integer targetReps
+        numeric targetWeight "0 במשקל גוף"
+    }
+    WORKOUT_LOGS {
+        uuid WorkoutLogID PK
+        uuid TraineeID FK
+        uuid WorkoutID FK
+        timestamptz performedAt
+    }
+    SET_RESULTS {
+        uuid SetResultID PK
+        uuid WorkoutLogID FK
+        uuid ExerciseID FK
+        integer setNumber
+        integer reps
+        numeric weight
+        boolean isDone
+        boolean isCorrected
+        timestamptz correctedAt "רשות"
+    }
+    COACH_NOTES {
+        uuid CoachNoteID PK
+        uuid WorkoutLogID FK
+        uuid CoachID FK
+        text noteText
+        timestamptz createdAt
+    }

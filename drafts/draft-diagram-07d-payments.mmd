@@ -1,0 +1,25 @@
+---
+title: תרשים 07d - ERD לוגי, כסף, הדגמה
+---
+erDiagram
+    TRAINEES ||--o{ PAYMENT_REQUESTS : pays
+    COACHES ||--o{ PAYMENT_REQUESTS : issues
+    PAYMENT_REQUESTS ||--o| INVOICES : produces
+    PAYMENT_REQUESTS {
+        uuid PaymentRequestID PK
+        uuid TraineeID FK
+        uuid CoachID FK
+        text paymentType "monthly, pack10"
+        numeric amount
+        text status "open, paid"
+        timestamptz createdAt
+        timestamptz paidAt "רשות"
+    }
+    INVOICES {
+        uuid InvoiceID PK
+        uuid PaymentRequestID FK "ייחודי"
+        integer invoiceNumber UK
+        numeric amount
+        boolean isDemo "תמיד אמת בגרסה הראשונה"
+        timestamptz issuedAt
+    }

@@ -89,6 +89,8 @@
 | usecase-01-training-programs.md | project-docs | 27.09.2026 |
 | gap-note-library.md | project-docs | 27.09.2026 |
 | session-state.md | project-docs | 28.09.2026 |
+| doc-erd-conceptual.html | project-docs | 28.09.2026 |
+| diagram-07-erd-conceptual.mmd | project-docs/mermaid | 28.09.2026 |
 | prototype-fitness-app.html | project-docs | 28.09.2026 (גרסה 1). פורסם: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
 | usecase-02-payments-invoices.md | project-docs | 28.09.2026 |

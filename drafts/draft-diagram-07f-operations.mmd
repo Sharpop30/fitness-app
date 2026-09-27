@@ -1,0 +1,35 @@
+---
+title: תרשים 07f - ERD לוגי, תפעול
+---
+erDiagram
+    COACHES ||--o{ SETTINGS : configures
+    AUDIT_ENTRIES {
+        uuid AuditEntryID PK
+        uuid requestID "משותף לבקשה ולתשובה"
+        text caller
+        text moduleName
+        text actionName
+        boolean isOk
+        text errorCode "רשות"
+        timestamptz createdAt
+    }
+    SETTINGS {
+        uuid SettingID PK
+        uuid CoachID FK
+        text settingKey "ייחודי למאמן"
+        text settingValue
+    }
+    ERROR_CODES {
+        uuid ErrorCodeID PK
+        text errorCode UK
+        text developerText
+        text humanText
+    }
+    REGISTRY_ENTRIES {
+        uuid RegistryEntryID PK
+        text caller
+        text moduleName
+        text actionName
+        text allowedRole "coach, trainee, module"
+        boolean isActive
+    }

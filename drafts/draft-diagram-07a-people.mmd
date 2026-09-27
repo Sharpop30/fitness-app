@@ -1,0 +1,35 @@
+---
+title: תרשים 07a - ERD לוגי, אנשים וגישה
+---
+erDiagram
+    COACHES ||--o{ TRAINEES : coaches
+    COACHES ||--o{ INVITES : sends
+    TRAINEES |o--o| INVITES : accepts
+    COACHES {
+        uuid CoachID PK
+        uuid authUserID UK "שירות הזהות"
+        text fullName
+        text email
+        boolean isActive
+        timestamptz createdAt
+    }
+    TRAINEES {
+        uuid TraineeID PK
+        uuid CoachID FK
+        uuid authUserID UK "שירות הזהות"
+        text fullName
+        text email
+        boolean isActive
+        timestamptz joinedAt
+    }
+    INVITES {
+        uuid InviteID PK
+        uuid CoachID FK
+        uuid TraineeID FK "רשות, עד ההצטרפות"
+        text inviteeName
+        text inviteeEmail "רשות"
+        text token UK
+        text status "open, accepted, expired"
+        timestamptz expiresAt
+        timestamptz createdAt
+    }

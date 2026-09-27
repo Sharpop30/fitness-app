@@ -1,0 +1,42 @@
+---
+title: תרשים 07e - ERD לוגי, שיעורים והודעות
+---
+erDiagram
+    COACHES ||--o{ CLASSES : publishes
+    CLASSES ||--o{ CLASS_REGISTRATIONS : fills
+    TRAINEES ||--o{ CLASS_REGISTRATIONS : books
+    CLASS_REGISTRATIONS ||--o{ LATE_CANCEL_REQUESTS : raises
+    TRAINEES ||--o{ NOTIFICATIONS : receives
+    CLASSES {
+        uuid ClassID PK
+        uuid CoachID FK
+        timestamptz startsAt
+        text place
+        integer capacity
+        text status "active, cancelled"
+        timestamptz createdAt
+    }
+    CLASS_REGISTRATIONS {
+        uuid ClassRegistrationID PK
+        uuid ClassID FK
+        uuid TraineeID FK "ייחודי עם ClassID"
+        text status "registered, waitlist, offered, cancelled"
+        integer waitlistPosition "רשות"
+        timestamptz offerExpiresAt "רשות"
+        boolean attended "רשות, אחרי השיעור"
+        timestamptz createdAt
+    }
+    LATE_CANCEL_REQUESTS {
+        uuid LateCancelRequestID PK
+        uuid ClassRegistrationID FK
+        text status "pending, approved, rejected"
+        timestamptz createdAt
+        timestamptz decidedAt "רשות"
+    }
+    NOTIFICATIONS {
+        uuid NotificationID PK
+        uuid TraineeID FK
+        text messageText
+        timestamptz createdAt
+        timestamptz readAt "רשות"
+    }

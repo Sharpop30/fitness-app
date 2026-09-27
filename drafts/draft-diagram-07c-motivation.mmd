@@ -1,0 +1,62 @@
+---
+title: תרשים 07c - ERD לוגי, מוטיבציה
+---
+erDiagram
+    TRAINEES ||--o{ PERSONAL_GOALS : pursues
+    EXERCISES ||--o{ PERSONAL_GOALS : targets
+    TRAINEES ||--o{ COIN_TRANSACTIONS : earns
+    COACHES ||--o{ REWARDS : offers
+    REWARDS ||--o{ REDEMPTIONS : fulfills
+    TRAINEES ||--o{ REDEMPTIONS : requests
+    COIN_TRANSACTIONS ||--o| REDEMPTIONS : pays_for
+    COACHES ||--o{ CHALLENGES : creates
+    CHALLENGES ||--o{ CHALLENGE_COMPLETIONS : records
+    TRAINEES ||--o{ CHALLENGE_COMPLETIONS : achieves
+    PERSONAL_GOALS {
+        uuid PersonalGoalID PK
+        uuid TraineeID FK
+        uuid ExerciseID FK
+        numeric targetWeight
+        text status "active, achieved"
+        timestamptz achievedAt "רשות"
+    }
+    COIN_TRANSACTIONS {
+        uuid CoinTransactionID PK
+        uuid TraineeID FK
+        text eventType "workout, goal, challenge, attendance, redeem"
+        text eventRef "ייחודי עם eventType"
+        integer amount "שלילי במימוש"
+        timestamptz createdAt
+    }
+    REWARDS {
+        uuid RewardID PK
+        uuid CoachID FK
+        text rewardName
+        integer priceCoins
+        boolean isActive
+    }
+    REDEMPTIONS {
+        uuid RedemptionID PK
+        uuid TraineeID FK
+        uuid RewardID FK
+        uuid CoinTransactionID FK
+        text status "pending, delivered"
+        timestamptz deliveredAt "רשות"
+    }
+    CHALLENGES {
+        uuid ChallengeID PK
+        uuid CoachID FK
+        text challengeName
+        text challengeType "count, exercise"
+        numeric targetValue
+        uuid ExerciseID FK "רשות, רק ביעד בתרגיל"
+        text extraPrize "רשות"
+        date weekStart "יום ראשון, ייחודי למאמן"
+    }
+    CHALLENGE_COMPLETIONS {
+        uuid ChallengeCompletionID PK
+        uuid ChallengeID FK
+        uuid TraineeID FK
+        timestamptz completedAt
+        timestamptz prizeDeliveredAt "רשות"
+    }
