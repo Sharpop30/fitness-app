@@ -60,7 +60,7 @@
 
 | השם הקנוני | המיקום | תאריך הגרסה הפעילה |
 | :-- | :-- | :-- |
-| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.17) |
+| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.18) |
 | doc-stakeholder-map.docx | project-docs | 18.07.2026 |
 | doc-requirements-prioritization.docx | project-docs | 18.07.2026 |
 | story-all-requirements.docx | project-docs | 18.07.2026 |
@@ -85,7 +85,7 @@
 | story-19-unified-operations.md | project-docs | 28.09.2026 |
 | story-21-instant-feedback.md | project-docs | 27.09.2026 |
 | story-25-daily-trigger.md | project-docs | 28.09.2026 |
-| story-30-class-registration.md | project-docs | 27.09.2026 |
+| story-30-class-registration.md | project-docs | 28.09.2026 |
 | usecase-01-training-programs.md | project-docs | 27.09.2026 |
 | gap-note-library.md | project-docs | 27.09.2026 |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
@@ -107,6 +107,8 @@
 | diagram-uc09-daily-trigger.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-10-demo-videos.md | project-docs | 28.09.2026 |
 | diagram-uc10-demo-videos.mmd | project-docs/mermaid | 28.09.2026 |
+| usecase-11-class-registration.md | project-docs | 28.09.2026 |
+| diagram-uc11-class-registration.mmd | project-docs/mermaid | 28.09.2026 |
 
 ## 6. כללי העבודה
 
