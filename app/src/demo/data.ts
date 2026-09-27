@@ -81,7 +81,7 @@ export interface WorkoutLog { WorkoutLogID: string; TraineeID: string; WorkoutID
 
 export const logs: WorkoutLog[] = [];
 (function seed() {
-  const base: Record<string, number> = { e1: 50, e2: 32, e6: 40, e3: 28 };
+  const base: Record<string, number> = { "d0000000-0000-4000-8000-000000002001": 50, "d0000000-0000-4000-8000-000000002002": 32, "d0000000-0000-4000-8000-000000002006": 40, "d0000000-0000-4000-8000-000000002003": 28 };
   const p = programs[1];
   for (let i = 8; i >= 1; i--) {
     const w = p.workouts[i % 2 ? 0 : 1];

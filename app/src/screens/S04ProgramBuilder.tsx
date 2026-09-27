@@ -83,6 +83,7 @@ export default function S04ProgramBuilder({ traineeID }: { traineeID: string }) 
   const save = async () => {
     const r = await call("S04", "programs", "save_program", { traineeID, workouts });
     if (!r.ok) return nav.toast(r.error!.message);
+    prog.reload(); // new workouts and exercises get their saved IDs, so a second save does not add them again
     nav.toast("התוכנית נשמרה, והמתאמן כבר רואה אותה");
   };
   const addItem = (w: number) => {
