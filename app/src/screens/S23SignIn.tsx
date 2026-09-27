@@ -15,7 +15,7 @@ export default function S23SignIn() {
     <Screen eyebrow="כניסה" title="כניסה לאפליקציה" noBack>
       <Hero><div className="sub">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו</div><div className="big" style={{ marginTop: 6 }}>תוכניות, תשלומים ומעקב במקום אחד</div></Hero>
       <Button onClick={() => enter("coach")}>כניסה כמאמן (דוגמה)</Button>
-      <Button secondary onClick={() => enter("trainee", "t1")}>כניסה כמתאמן (דוגמה)</Button>
+      <Button secondary onClick={() => enter("trainee", "d0000000-0000-4000-8000-000000001001")}>כניסה כמתאמן (דוגמה)</Button>
       <Button secondary onClick={() => nav.go("S22")}>פתיחת הזמנה כמתאמן חדש</Button>
       <div className="muted small">בגרסת הפיתוח הכניסה היא בחירת תפקיד לדוגמה. הכניסה האמיתית, במייל וסיסמה, תתחבר בשלב הממשקים.</div>
     </Screen>

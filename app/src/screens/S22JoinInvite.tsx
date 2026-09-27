@@ -9,7 +9,7 @@ export default function S22JoinInvite() {
   const [name, setName] = useState("רון (דוגמה)");
   const [email, setEmail] = useState("ron@example.com");
   const join = async (expired = false) => {
-    const r = await call("S22", "trainees", "accept_invite", { traineeID: "t4", expired });
+    const r = await call("S22", "trainees", "accept_invite", { traineeID: "d0000000-0000-4000-8000-000000001004", expired });
     if (!r.ok) return nav.toast(r.error!.message);
     nav.signIn("trainee", r.data.TraineeID);
     nav.toast("הצטרפת! המאמן יבנה לך תוכנית");

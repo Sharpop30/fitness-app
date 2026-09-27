@@ -10,7 +10,7 @@ export default function S08CoachPayments({ traineeID, request, invoice }: { trai
   const pays = useCall("S08", "payments", "list_payments", traineeID ? { traineeID } : {});
   const invs = useCall("S08", "invoices", "list_invoices", traineeID ? { traineeID } : {});
   const people = useCall("S08", "trainees", "list_trainees");
-  const [who, setWho] = useState(traineeID ?? "t1");
+  const [who, setWho] = useState(traineeID ?? "d0000000-0000-4000-8000-000000001001");
   const [type, setType] = useState("monthly");
 
   if (invoice) return <Screen eyebrow="הדגמה, אינה חשבונית מס" title={`חשבונית ${invoice.invoiceNumber}`}><InvoiceCard inv={invoice} /></Screen>;
