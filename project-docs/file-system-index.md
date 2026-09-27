@@ -60,7 +60,7 @@
 
 | השם הקנוני | המיקום | תאריך הגרסה הפעילה |
 | :-- | :-- | :-- |
-| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.4) |
+| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.5) |
 | doc-stakeholder-map.docx | project-docs | 18.07.2026 |
 | doc-requirements-prioritization.docx | project-docs | 18.07.2026 |
 | story-all-requirements.docx | project-docs | 18.07.2026 |
