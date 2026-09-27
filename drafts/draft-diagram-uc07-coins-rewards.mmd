@@ -1,0 +1,22 @@
+---
+title: מקרה שימוש 7 - צבירת מטבעות, יעד אישי ומימוש תגמול
+---
+flowchart TD
+    S1["1. המאמן מגדיר יעד אישי"] --> S2["2. המאמן מגדיר קטלוג תגמולים"]
+    S2 --> S3["3. אירוע מזכה מגיע"]
+    S3 --> S4["4. בדיקה שלא זוכה כבר"]
+    S4 --> S5["5. רישום זיכוי לפי טבלת הייחוס"]
+    S5 --> S6["6. המתאמן רואה יתרה והיסטוריה"]
+    S6 --> S7["7. המתאמן מממש תגמול"]
+    S7 --> S8["8. בדיקת יתרה ורישום חיוב"]
+    S8 --> S9["9. המאמן מספק ומסמן סופק"]
+
+    class S1,S2,S3,S4,S6,S7,S9 code
+    class S5,S8 data
+
+classDef code fill:#E8F0FE,stroke:#1A73E8,color:#202124
+classDef auto fill:#E6F4EA,stroke:#188038,color:#202124
+classDef agent fill:#FEF7E0,stroke:#F29900,color:#202124
+classDef net fill:#FCE8E6,stroke:#D93025,color:#202124
+classDef iface fill:#F3E8FD,stroke:#8430CE,color:#202124
+classDef data fill:#E8EAED,stroke:#5F6368,color:#202124

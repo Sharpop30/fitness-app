@@ -97,6 +97,8 @@
 | diagram-uc04-unified-operations.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-05-progress-tracking.md | project-docs | 28.09.2026 |
 | diagram-uc05-progress-tracking.mmd | project-docs/mermaid | 28.09.2026 |
+| usecase-06-instant-feedback.md | project-docs | 28.09.2026 |
+| diagram-uc06-instant-feedback.mmd | project-docs/mermaid | 28.09.2026 |
 
 ## 6. כללי העבודה
 
