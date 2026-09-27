@@ -60,7 +60,7 @@
 
 | השם הקנוני | המיקום | תאריך הגרסה הפעילה |
 | :-- | :-- | :-- |
-| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.12) |
+| prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.13) |
 | doc-stakeholder-map.docx | project-docs | 18.07.2026 |
 | doc-requirements-prioritization.docx | project-docs | 18.07.2026 |
 | story-all-requirements.docx | project-docs | 18.07.2026 |
@@ -78,6 +78,7 @@
 | story-01-training-programs.md | project-docs | 27.09.2026 |
 | story-02-payments-invoices.md | project-docs | 27.09.2026 |
 | story-04-progress-tracking.md | project-docs | 27.09.2026 |
+| story-05-weekly-challenge.md | project-docs | 27.09.2026 |
 | story-06-coins-rewards.md | project-docs | 27.09.2026 |
 | story-12-results-entry.md | project-docs | 27.09.2026 |
 | story-19-unified-operations.md | project-docs | 27.09.2026 |
