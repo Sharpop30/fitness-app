@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: מאושר, 28.09.2026, גרסה 3. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 28.09.2026, גרסה 2. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -10,7 +10,7 @@
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
 | המקורות | PRD גרסה 1.19; doc-mlp-scope; 11 סיפורי משתמש ו-11 מקרי שימוש (usecase-01 עד 11); doc-erd-conceptual ו-doc-erd-logical; prototype-fitness-app גרסה 1 |
-| גרסה ותאריך | 3, 28.09.2026 |
+| גרסה ותאריך | 2, 28.09.2026 |
 
 ## 2. הליבה
 
@@ -81,8 +81,6 @@
 
 מודול העיצוב **D01**: אסימוני העיצוב של FORM ורכיבי הבסיס. כל המסכים משתמשים בו. כל מסך הוא מודול, ופונה ל-Endpoint היחיד בלבד:
 
-"עוד" אצל המאמן ו"אני" אצל המתאמן הם תפריטי ניווט בתוך מעטפת האפליקציה, בלי פעולות משלהם, ואינם מסכים נוספים.
-
 | מאמן | מתאמן | משותף |
 | :-- | :-- | :-- |
 | S01 בית מאמן · S02 מתאמנים והזמנה · S03 כרטיס מתאמן · S04 בניית תוכנית והחלפה · S05 תרגילים וסרטונים · S06 תוצאות והערות · S07 יעד אישי · S08 תשלומים וחשבוניות · S09 אתגר · S10 תגמולים · S11 שיעורים ונוכחות · S12 הגדרות | S13 בית מתאמן · S14 אימון והזנה · S15 משוב · S16 האימונים שלי ותיקון · S17 שיעורים · S18 מטבעות · S19 תשלומים · S20 אתגר | S21 גרף התקדמות · S22 הצטרפות בהזמנה · S23 כניסה |
@@ -110,7 +108,7 @@
 | classes | publish_class, cancel_class, list_upcoming_classes, register, cancel_registration, list_registrations, mark_attendance, respond_to_spot_offer, request_late_cancel, decide_late_cancel | UC11 | לפי מקרה שימוש 11 |
 | notifications | notify_in_app, list_notifications, mark_read | UC6, UC9, UC11 | notify: classes, feedback בלבד |
 | home | get_coach_home, get_trainee_home | UC4, UC9 | מאמן; מתאמן |
-| settings | get_settings, update_settings, get_error_texts | כל מקרה שימוש עם טבלת ייחוס; get_error_texts: כלל החוזה 8 | מאמן; get_settings: גם המודולים; get_error_texts: מאמן ומתאמן, מ-S23 |
+| settings | get_settings, update_settings | כל מקרה שימוש עם טבלת ייחוס | מאמן; get: גם המודולים |
 
 **רשימת המותר (Registry)** היא טבלה: שורה לכל צירוף של פונה, מודול ופעולה מהטבלה שלמעלה. בקשה בלי שורה נדחית ונרשמת. הקובץ המלא נוצר בשלב 1 מהטבלה הזו.
 
@@ -124,8 +122,8 @@
 | S04 | programs.get_active_program, save_program, swap_exercise, start_new_program; exercises.list_exercises |
 | S05 | exercises.list_exercises, create_exercise, attach_video, get_exercise |
 | S06 | results.list_results; feedback.add_coach_note, get_workout_notes |
-| S07 | coins.set_personal_goal; exercises.list_exercises |
-| S08 | payments.create_payment_request, list_payments; invoices.list_invoices; trainees.list_trainees |
+| S07 | coins.set_personal_goal |
+| S08 | payments.create_payment_request, list_payments; invoices.list_invoices |
 | S09 | challenges.create_challenge, get_current_challenge, list_completions, mark_prize_delivered |
 | S10 | coins.manage_rewards, mark_reward_delivered |
 | S11 | classes.publish_class, cancel_class, list_upcoming_classes, list_registrations, mark_attendance, decide_late_cancel |
@@ -140,41 +138,7 @@
 | S20 | challenges.get_current_challenge |
 | S21 | progress.get_progress_chart |
 | S22 | trainees.accept_invite |
-| S23 | שירות הזהות; settings.get_error_texts, פעם אחת אחרי הכניסה, והלקוח שומר את ההסברים |
-
-### מבנה התשובה של כל פעולה
-
-השדה data בתשובה, לפי מה שהמסכים צריכים. השדות נקראים כמו ב-ERD. פעולת כתיבה שאין לה מה להחזיר מחזירה null.
-
-| הפעולה | data |
-| :-- | :-- |
-| trainees.list_trainees | רשימה: TraineeID, fullName, isActive, joined, hasProgram |
-| trainees.invite_trainee | link, קישור ההזמנה לשיתוף |
-| trainees.accept_invite | TraineeID |
-| trainees.get_trainee_card | trainee, coins, streak, openPayments, workouts, payments, goal (עם exerciseName) |
-| exercises.list_exercises, get_exercise, create_exercise, attach_video | תרגיל או רשימה: ExerciseID, exerciseName, isBodyweight, videoType, videoUrl |
-| programs.get_active_program | התוכנית, ובה workouts ובכל אחד items עם exerciseName ו-hasVideo; ו-inactive, רשימת התוכניות הלא פעילות |
-| results.list_results | רשימת אימונים שבוצעו: WorkoutLogID, workoutName, performedAt, sets (עם isCorrected) |
-| results.log_workout | WorkoutLogID, ו-feedback: done, total, records, coins, goal, challenge, text |
-| progress.get_progress_chart | exercises, selected, isBodyweight, points (date, value) |
-| feedback.get_workout_notes | רשימה: WorkoutLogID, noteText |
-| coins.get_balance | balance, history, rewards (הקטלוג הפעיל) |
-| coins.manage_rewards | rewards, redemptions (עם fullName ו-rewardName). op בקלט: list או add |
-| coins.redeem_reward | balance |
-| challenges.get_current_challenge | האתגר, end, coins, ולמתאמן progress (value, target, exempt) |
-| challenges.list_completions | רשימה: TraineeID, fullName, completedAt, prizeDeliveredAt |
-| payments.list_payments | רשימה: PaymentRequestID, fullName, paymentType, amount, status, createdAt, invoiceNumber |
-| payments.pay_demo | invoiceNumber |
-| invoices.list_invoices | רשימה: invoiceNumber, fullName, paymentType, amount, issuedAt, isDemo |
-| classes.list_upcoming_classes | classes (עם registered, waitlist, myStatus, myWaitPosition), cancelHours, ולמאמן lateRequests |
-| classes.list_registrations | שיעור אחד באותו מבנה |
-| classes.register | status, position |
-| classes.mark_attendance | awarded, מספר המתאמנים שקיבלו מטבעות |
-| notifications.list_notifications | רשימת הודעות שלא נקראו: NotificationID, messageText, createdAt |
-| home.get_coach_home | activeTrainees, openPayments, classesToday, lateRequests, rewardsToDeliver, challenge |
-| home.get_trainee_home | reminder, streak, streakGapDays, coins, nextWorkout, nextClass, challenge, offers |
-| settings.get_settings | כל ערכי SETTINGS של המאמן, מפתח וערך |
-| settings.get_error_texts | לכל קוד שגיאה, ההסבר לבני אדם |
+| S23 | (שירות הזהות בלבד) |
 
 ### קודי השגיאה, רשימה סגורה (28 קודים)
 
@@ -269,4 +233,3 @@
 | :-- | :-- | :-- | :-- |
 | 1 | 28.09.2026 | המפה המקורית. הכרעות: GitHub Pages; חשבון Supabase קיים של הצוות | הצוות |
 | 2 | 28.09.2026 | מפערי דוח שלב 1: נוסף קוד השגיאה UNEXPECTED_ERROR, ונוספה הפעולה invite_channel.send_invite. מה לא השתנה: הליבה, המודולים, שאר הפעולות והקודים, וסדר הבנייה | הצוות |
-| 3 | 28.09.2026 | מפערי דוח שלב 2: exercises.list_exercises לשורת S07; trainees.list_trainees לשורת S08; פעולה חדשה settings.get_error_texts מ-S23; תפריטי "עוד" ו"אני" כחלק ממעטפת הניווט; ומבנה התשובה של כל פעולה. מה לא השתנה: הליבה, מבנה המעטפה, המודולים והקודים | הצוות |
