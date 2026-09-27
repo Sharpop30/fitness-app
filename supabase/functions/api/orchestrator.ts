@@ -3,7 +3,7 @@
 import { audit } from "./audit.ts";
 import { type Envelope, fail, type Reply } from "./errors.ts";
 import { isAllowed, isKnownCaller, isModuleCaller } from "./registry.ts";
-import type { Actor, Repository } from "./repository.ts";
+import { type Actor, type Repository, StorageUnavailable } from "./repository.ts";
 
 export interface ModuleContext {
   actor: Actor;
@@ -59,10 +59,9 @@ export async function handle(
         call: (inner) => handle({ ...inner, caller: modules[moduleName].id }, actor, repo, modules, requestID),
       };
       return await handler(ctx, envelope.payload ?? {});
-    } catch {
+    } catch (e) {
       // A failing module returns an envelope; it never throws past the Orchestrator.
-      // Every unexpected failure maps to STORAGE_UNAVAILABLE until the map defines a general code (stage 1 gap 1).
-      return fail("STORAGE_UNAVAILABLE");
+      return fail(e instanceof StorageUnavailable ? "STORAGE_UNAVAILABLE" : "UNEXPECTED_ERROR");
     }
   }
 }

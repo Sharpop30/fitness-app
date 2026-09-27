@@ -3,7 +3,7 @@
 import { audit } from "./audit.ts";
 import { type Envelope, fail, type Reply } from "./errors.ts";
 import { handle, type Modules } from "./orchestrator.ts";
-import { createRepository } from "./repository.ts";
+import { createRepository, StorageUnavailable } from "./repository.ts";
 import { settings } from "./modules/settings.ts";
 
 const modules: Modules = { settings };
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
       return reply(fail("NOT_ALLOWED"));
     }
     return reply(await handle(envelope, actor, repo, modules));
-  } catch {
-    return reply(fail("STORAGE_UNAVAILABLE"));
+  } catch (e) {
+    return reply(fail(e instanceof StorageUnavailable ? "STORAGE_UNAVAILABLE" : "UNEXPECTED_ERROR"));
   }
 });

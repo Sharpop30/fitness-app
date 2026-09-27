@@ -1,7 +1,7 @@
-// C05 Error Codes. The closed list from doc-module-map section 4.
+// C05 Error Codes. The closed list from doc-module-map section 4 (version 2: 28 codes).
 // The human text lives in the error_codes table (read at runtime), never here.
 export const ERROR_CODES = [
-  "CALLER_MISSING", "CALLER_INVALID", "ACTION_NOT_ALLOWED", "AUDIT_FAILED",
+  "CALLER_MISSING", "CALLER_INVALID", "ACTION_NOT_ALLOWED", "AUDIT_FAILED", "UNEXPECTED_ERROR",
   "NOT_ALLOWED", "STORAGE_UNAVAILABLE", "VALUE_NOT_SET",
   "PROGRAM_INVALID", "NO_ACTIVE_PROGRAM", "RESULT_INVALID", "NOTE_INVALID",
   "INVITE_INVALID", "INVITE_EXPIRED", "INVITE_DELIVERY_FAILED",
