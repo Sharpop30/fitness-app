@@ -1,0 +1,22 @@
+---
+title: מקרה שימוש 4 - הזמנת מתאמן וניהול מאוחד
+---
+flowchart TD
+    S1["1. המאמן יוצר הזמנה"] --> S2["2. שמירת ההזמנה עם תוקף"]
+    S2 --> S3["3. שליחה בערוץ ההזמנה"]
+    S3 --> S4["4. המתאמן נרשם בשירות הזהות"]
+    S4 --> S5["5. חיבור המתאמן למאמן"]
+    S5 --> S6["6. המתאמן ברשימה של המאמן"]
+    S6 --> S7["7. כרטיס מתאמן: תוכנית, תוצאות, תשלומים"]
+    S7 --> S8["8. מסך הבית של המאמן"]
+
+    class S1,S6,S7,S8 code
+    class S2,S5 data
+    class S3,S4 iface
+
+classDef code fill:#E8F0FE,stroke:#1A73E8,color:#202124
+classDef auto fill:#E6F4EA,stroke:#188038,color:#202124
+classDef agent fill:#FEF7E0,stroke:#F29900,color:#202124
+classDef net fill:#FCE8E6,stroke:#D93025,color:#202124
+classDef iface fill:#F3E8FD,stroke:#8430CE,color:#202124
+classDef data fill:#E8EAED,stroke:#5F6368,color:#202124
