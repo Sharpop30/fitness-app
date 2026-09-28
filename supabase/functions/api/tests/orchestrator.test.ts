@@ -4,7 +4,7 @@ import { assertEquals } from "jsr:@std/assert@1";
 import { handle, type Modules } from "../orchestrator.ts";
 import { fail, ok } from "../errors.ts";
 import { type Actor, type AuditRecord, type Repository, StorageUnavailable } from "../repository.ts";
-import { stage4bNotUsed } from "./fake-repo.ts";
+import { stage4bNotUsed, stage4cNotUsed } from "./fake-repo.ts";
 
 const coach: Actor = { role: "coach", coachID: "coach-1", traineeID: null };
 
@@ -16,6 +16,7 @@ const trainingNotUsed = {
   listTraineesForCoach: notUsed, createInvite: notUsed, createExercise: notUsed, getExerciseInReach: notUsed, attachVideo: notUsed,
   logWorkout: notUsed, getWorkoutLog: notUsed, correctResults: notUsed, listResults: notUsed,
   ...stage4bNotUsed,
+  ...stage4cNotUsed,
 };
 
 function fakeRepo(opts: { rows?: string[]; auditFails?: boolean } = {}) {

@@ -1,7 +1,8 @@
 // M06 feedback: the instant feedback after a workout, and the coach's personal notes.
 // Requirement 21 (story-21, usecase-06). Business Logic rule 5; CLAUDE.md rule 8.
 // Acceptance (UC6 section 13): saving a workout shows feedback at once; a record is highlighted; a coach's note is seen
-// by the trainee. The texts are the coach's, from SETTINGS, and never written in code.
+// by the trainee. The feedback texts are the coach's, from SETTINGS, and never written in code. A new note also reaches
+// the trainee's home as a message (usecase-09 v3 step 2), in the prototype's wording (stage 4c plan, decision 9).
 import { type ErrorCode, fail, ok } from "../errors.ts";
 import type { ModuleContext, ModuleDef } from "../orchestrator.ts";
 
@@ -68,6 +69,8 @@ export const feedback: ModuleDef = {
       if (text.length > maxLength) return fail("NOTE_INVALID");
 
       await ctx.repo.addCoachNote(id, ctx.actor.coachID, text);
+      // A message that fails is left in the Audit, and the note stays saved (stage 4c plan, decision 8).
+      await ctx.call({ module: "notifications", action: "notify_in_app", payload: { traineeID: log.TraineeID, messageText: "המאמן הוסיף הערה לאימון שלך" } });
       return ok(null);
     },
 

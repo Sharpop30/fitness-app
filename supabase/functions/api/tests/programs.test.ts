@@ -6,7 +6,7 @@ import { fail } from "../errors.ts";
 import { programs } from "../modules/programs.ts";
 import { exercises } from "../modules/exercises.ts";
 import { type Actor, type Exercise, type Program, type Repository, StorageUnavailable, type WorkoutDraft } from "../repository.ts";
-import { stage4bNotUsed } from "./fake-repo.ts";
+import { stage4bNotUsed, stage4cNotUsed } from "./fake-repo.ts";
 
 const U = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const COACH = U(1), OTHER_COACH = U(2), TRAINEE = U(11), OTHER_TRAINEE = U(12), STRANGER = U(13);
@@ -65,6 +65,7 @@ function world(opts: { storageDown?: boolean } = {}) {
     listTraineesForCoach: notUsed, createInvite: notUsed, createExercise: notUsed, getExerciseInReach: notUsed, attachVideo: notUsed,
     logWorkout: notUsed, getWorkoutLog: notUsed, correctResults: notUsed, listResults: notUsed,
     ...stage4bNotUsed,
+    ...stage4cNotUsed,
   };
   return { repo, rows, results };
 }

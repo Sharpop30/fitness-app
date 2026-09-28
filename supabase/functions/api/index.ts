@@ -5,17 +5,21 @@ import { type Envelope, fail, type Reply } from "./errors.ts";
 import { handle, type Modules } from "./orchestrator.ts";
 import { createRepository, StorageUnavailable } from "./repository.ts";
 import { challenges } from "./modules/challenges.ts";
+import { classes } from "./modules/classes.ts";
 import { coins } from "./modules/coins.ts";
 import { exercises } from "./modules/exercises.ts";
 import { feedback } from "./modules/feedback.ts";
 import { home } from "./modules/home.ts";
+import { notifications } from "./modules/notifications.ts";
 import { programs } from "./modules/programs.ts";
 import { progress } from "./modules/progress.ts";
 import { results } from "./modules/results.ts";
 import { settings } from "./modules/settings.ts";
 import { trainees } from "./modules/trainees.ts";
 
-const modules: Modules = { challenges, coins, exercises, feedback, home, programs, progress, results, settings, trainees };
+const modules: Modules = {
+  challenges, classes, coins, exercises, feedback, home, notifications, programs, progress, results, settings, trainees,
+};
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
