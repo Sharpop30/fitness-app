@@ -12,6 +12,8 @@ const notUsed = () => Promise.reject(new Error("not used in orchestrator tests")
 const trainingNotUsed = {
   isActiveTraineeOfCoach: notUsed, listExercisesForCoach: notUsed, getActiveProgram: notUsed, listInactivePrograms: notUsed,
   saveProgram: notUsed, swapExercise: notUsed, startNewProgram: notUsed,
+  listTraineesForCoach: notUsed, createInvite: notUsed, createExercise: notUsed, getExerciseInReach: notUsed, attachVideo: notUsed,
+  logWorkout: notUsed, getWorkoutLog: notUsed, correctResults: notUsed, listResults: notUsed,
 };
 
 function fakeRepo(opts: { rows?: string[]; auditFails?: boolean } = {}) {

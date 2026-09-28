@@ -13,6 +13,8 @@ const SQUAT = U(21), BENCH = U(22), LUNGE = U(23), FOREIGN = U(24);
 const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
 const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: TRAINEE };
 
+const notUsed = () => Promise.reject(new Error("not used in programs tests"));
+
 interface Row { ProgramID: string; TraineeID: string; programName: string; isActive: boolean; createdAt: string; workouts: WorkoutDraft[] }
 
 function world(opts: { storageDown?: boolean } = {}) {
@@ -58,6 +60,9 @@ function world(opts: { storageDown?: boolean } = {}) {
       rows.push({ ProgramID: id, TraineeID: t, programName, isActive: true, createdAt: "2026-09-28", workouts: [{ WorkoutID: U(seq++), workoutName, items: [] }] });
       return id;
     },
+    // Stage 4a operations, not reached by the programs tests.
+    listTraineesForCoach: notUsed, createInvite: notUsed, createExercise: notUsed, getExerciseInReach: notUsed, attachVideo: notUsed,
+    logWorkout: notUsed, getWorkoutLog: notUsed, correctResults: notUsed, listResults: notUsed,
   };
   return { repo, rows, results };
 }
