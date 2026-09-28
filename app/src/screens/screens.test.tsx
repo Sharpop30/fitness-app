@@ -1,7 +1,7 @@
 // Every screen opens on demo data and shows its title (stage 2 plan, task 8). Synthetic data only.
 // And, with LIVE_DB=1 against the LOCAL stack, the screens on the Endpoint show what the database holds
-// (stage 4a plan, task 8; stage 3 report, the content-check debt).
-import { render, screen, cleanup } from "@testing-library/react";
+// (stage 4a plan, task 8; stage 4b plan, task 12; stage 3 report, the content-check debt).
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { setSession } from "../api/client";
 import { accessToken } from "../identity/auth";
 import { SCREENS } from "../App";
@@ -36,34 +36,131 @@ test.each(CASES)("%s opens and shows its title", async (id, role, params, title)
   expect(screen.getByText(/נתוני דוגמה/)).toBeTruthy();
 });
 
-// ---- Content against the database: S02 and S05 on the local Endpoint (run with LIVE_DB=1, local stack up) ----
-describe.skipIf(!process.env.LIVE_DB)("live on the local stack: S02 and S05 show the database", () => {
+// ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
+// Stage 4a: S02 and S05. Stage 4b: S04 (the stage 3 debt), and every screen that moved in stage 4b (plan, task 12).
+describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on the Endpoint show the database", () => {
   // The shared helper (tests/system/demo-users.mjs) runs in its own Node process: it reads the local stack's status
-  // and signs the demo coach in with a one-run password. Only the local Endpoint and that token come back.
+  // and signs the demo coach and Noa in with a one-run password. Only the local Endpoint and those tokens come back.
   let psql: (sql: string) => string;
+  let tokens: { coach: string; noa: string };
   const COACH = "d0000000-0000-4000-8000-000000000001";
+  const NOA = "d0000000-0000-4000-8000-000000001001";
 
   beforeAll(async () => {
     const { execFileSync, execSync } = await import("node:child_process");
     const helper = `${__dirname}/../../../tests/system/demo-users.mjs`;
     const script = `const m = await import(${JSON.stringify("file://" + encodeURI(helper))});
-      const t = await m.demoTokens(); console.log(JSON.stringify({ endpoint: m.ENDPOINT, token: t.coach }));`;
+      const t = await m.demoTokens(); console.log(JSON.stringify({ endpoint: m.ENDPOINT, coach: t.coach, noa: t.noa }));`;
     const out = execFileSync("node", ["--input-type=module", "-e", script], { encoding: "utf8" }).trim().split("\n").pop()!;
-    const { endpoint, token } = JSON.parse(out);
+    const { endpoint, coach, noa } = JSON.parse(out);
+    tokens = { coach, noa };
     const db = execSync("docker ps --format '{{.Names}}' | grep supabase_db_fitness-app", { encoding: "utf8" }).trim();
     psql = (sql) => execSync(`docker exec -i ${db} psql -U postgres -tA`, { input: sql, encoding: "utf8" }).trim();
-    vi.mocked(accessToken).mockReturnValue(token);
     vi.stubEnv("VITE_API_URL", endpoint);
-    setSession({ role: "coach", traineeID: null });
   }, 60000);
   afterAll(() => { vi.mocked(accessToken).mockReturnValue(null); vi.unstubAllEnvs(); });
 
   const rows = (sql: string) => psql(sql).split("\n").filter(Boolean).map((l) => l.split("|"));
-  const open = (id: string, params: Record<string, unknown> = {}) => {
+  const signedIn = (role: "coach" | "trainee") => {
+    vi.mocked(accessToken).mockReturnValue(role === "coach" ? tokens.coach : tokens.noa);
+    setSession({ role, traineeID: role === "trainee" ? NOA : null });
+  };
+  const open = (id: string, params: Record<string, unknown> = {}, role: "coach" | "trainee" = "coach") => {
+    signedIn(role);
     const S = SCREENS[id];
-    render(<NavContext.Provider value={nav("coach")}><S {...params} /></NavContext.Provider>);
+    render(<NavContext.Provider value={nav(role)}><S {...params} /></NavContext.Provider>);
   };
   const lineOf = async (name: string) => (await screen.findAllByText(name, {}, { timeout: 8000 }))[0].parentElement!.textContent;
+  const shows = async (text: string | RegExp) => expect((await screen.findAllByText(text, {}, { timeout: 8000 })).length).toBeGreaterThan(0);
+  const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // This week's Sunday in Israel (UC8; stage 4b plan, decision 8).
+  const SUNDAY = `(now() at time zone 'Asia/Jerusalem')::date - extract(dow from (now() at time zone 'Asia/Jerusalem')::date)::int`;
+
+  test("S04: Noa's active program, with every workout and every exercise in it", async () => {
+    open("S04", { traineeID: NOA });
+    for (const [workout] of rows(`select w."workoutName" from workouts w join programs p using ("ProgramID") where p."TraineeID"='${NOA}' and p."isActive"`)) {
+      await shows(workout);
+    }
+    for (const [exercise] of rows(`select distinct e."exerciseName" from workout_items i join workouts w using ("WorkoutID") join programs p using ("ProgramID")
+                                   join exercises e using ("ExerciseID") where p."TraineeID"='${NOA}' and p."isActive"`)) {
+      await shows(exercise);
+    }
+  }, 30000);
+
+  test("S06: every workout Noa did, and every note the coach wrote on them", async () => {
+    open("S06", { traineeID: NOA });
+    for (const [workout] of rows(`select distinct w."workoutName" from workout_logs l join workouts w using ("WorkoutID") where l."TraineeID"='${NOA}'`)) {
+      await shows(new RegExp(escape(workout)));
+    }
+    for (const [note] of rows(`select n."noteText" from coach_notes n join workout_logs l using ("WorkoutLogID") where l."TraineeID"='${NOA}'`)) {
+      await shows(new RegExp(escape(note)));
+    }
+  }, 30000);
+
+  test("S07: with no goal given, the exercise starts at the first one in the list, not a fixed demo ID", async () => {
+    open("S07", { traineeID: NOA });
+    const [[first]] = rows(`select "ExerciseID" from exercises where "isActive" and not "isBodyweight" and ("CoachID" is null or "CoachID"='${COACH}')
+                            order by "exerciseName" limit 1`);
+    await waitFor(() => expect((document.getElementById("goalExercise") as HTMLSelectElement).value).toBe(first), { timeout: 8000 });
+  }, 30000);
+
+  test("S09: this week's challenge and who completed it; a new exercise challenge lists the exercises", async () => {
+    open("S09");
+    const current = rows(`select "challengeName", "ChallengeID" from challenges where "CoachID"='${COACH}' and "weekStart" = ${SUNDAY}`);
+    if (current.length) {
+      await shows(current[0][0]);
+      for (const [name] of rows(`select t."fullName" from challenge_completions c join trainees t using ("TraineeID") where c."ChallengeID"='${current[0][1]}'`)) {
+        await shows(name);
+      }
+    } else await shows("אין אתגר השבוע");
+    cleanup();
+    open("S09", { create: true });
+    fireEvent.click(await screen.findByText("יעד בתרגיל"));
+    const names = rows(`select "exerciseName" from exercises where "isActive" and ("CoachID" is null or "CoachID"='${COACH}')`).map(([n]) => n);
+    const select = () => document.getElementById("challengeExercise") as HTMLSelectElement;
+    await waitFor(() => expect([...select().options].map((o) => o.text).sort()).toEqual(names.sort()), { timeout: 8000 });
+  }, 30000);
+
+  test("S10: the coach's reward catalog, and the redemptions with the trainee's name", async () => {
+    open("S10");
+    for (const [name] of rows(`select "rewardName" from rewards where "CoachID"='${COACH}' and "isActive"`)) await shows(name);
+    for (const [name] of rows(`select t."fullName" from redemptions r join trainees t using ("TraineeID") where t."CoachID"='${COACH}'`)) await shows(name);
+  }, 30000);
+
+  test("S21: the coach sees Noa's chart with every exercise she has results in", async () => {
+    open("S21", { traineeID: NOA });
+    for (const [name] of rows(`select distinct e."exerciseName" from set_results s join workout_logs l using ("WorkoutLogID") join exercises e using ("ExerciseID")
+                               where l."TraineeID"='${NOA}'`)) await shows(name);
+  }, 30000);
+
+  test("S14 (as Noa): the workouts of her active program", async () => {
+    open("S14", {}, "trainee");
+    for (const [workout] of rows(`select w."workoutName" from workouts w join programs p using ("ProgramID") where p."TraineeID"='${NOA}' and p."isActive"`)) {
+      await shows(workout);
+    }
+  }, 30000);
+
+  test("S16 (as Noa): her workouts, and the coach's notes on them", async () => {
+    open("S16", {}, "trainee");
+    for (const [workout] of rows(`select distinct w."workoutName" from workout_logs l join workouts w using ("WorkoutID") where l."TraineeID"='${NOA}'`)) {
+      await shows(new RegExp(escape(workout)));
+    }
+    for (const [note] of rows(`select n."noteText" from coach_notes n join workout_logs l using ("WorkoutLogID") where l."TraineeID"='${NOA}'`)) {
+      await shows(new RegExp(escape(note)));
+    }
+  }, 30000);
+
+  test("S18 (as Noa): the balance is the sum of her ledger, with the coach's rewards", async () => {
+    open("S18", {}, "trainee");
+    await shows(psql(`select coalesce(sum(amount),0) from coin_transactions where "TraineeID"='${NOA}'`));
+    for (const [name] of rows(`select "rewardName" from rewards where "CoachID"='${COACH}' and "isActive"`)) await shows(name);
+  }, 30000);
+
+  test("S20 (as Noa): this week's challenge of her coach, or none", async () => {
+    open("S20", {}, "trainee");
+    const current = rows(`select "challengeName" from challenges where "CoachID"='${COACH}' and "weekStart" = ${SUNDAY}`);
+    await shows(current.length ? current[0][0] : "אין אתגר השבוע");
+  }, 30000);
 
   test("S02: every trainee with the right program label, and every open invite tagged as invited", async () => {
     open("S02");

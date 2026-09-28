@@ -6,32 +6,49 @@ import { Button, Empty, Field, Hero, Item, Screen, Segmented, fmtDate } from "..
 import { useNav } from "../nav";
 
 export default function S09CoachChallenge({ create }: { create?: boolean }) {
+  if (create) return <NewChallenge />;
+  return <CurrentChallenge />;
+}
+
+function NewChallenge() {
   const nav = useNav();
-  const ch = useCall("S09", "challenges", "get_current_challenge");
-  const done = useCall("S09", "challenges", "list_completions");
+  // The exercise of an "exercise" challenge is picked from the list (module map v5; stage 4b plan, decision 12).
+  const exs = useCall("S09", "exercises", "list_exercises");
   const [name, setName] = useState("חמישה אימונים השבוע");
   const [type, setType] = useState<"count" | "exercise">("count");
   const [target, setTarget] = useState("5");
   const [prize, setPrize] = useState("");
+  const [picked, setExerciseID] = useState("");
+  const exerciseID = picked || exs.data?.[0]?.ExerciseID || "";
 
-  if (create) {
-    const publish = async () => {
-      const r = await call("S09", "challenges", "create_challenge", { challengeName: name, challengeType: type, targetValue: Number(target), extraPrize: prize, exerciseID: type === "exercise" ? "d0000000-0000-4000-8000-000000002001" : null });
-      if (!r.ok) return nav.toast(r.error!.message);
-      nav.back(); nav.toast("האתגר פורסם");
-    };
-    return (
-      <Screen eyebrow="אתגר אחד בשבוע" title="אתגר חדש">
-        <Field label="שם"><input id="challengeName" value={name} onChange={(e) => setName(e.target.value)} /></Field>
-        <Segmented value={type} options={[["count", "מספר אימונים"], ["exercise", "יעד בתרגיל"]]} onChange={setType} />
-        <Field label="ערך היעד"><input id="challengeTarget" type="number" value={target} onChange={(e) => setTarget(e.target.value)} /></Field>
-        <Field label="פרס נוסף (לא חובה)"><input id="challengePrize" value={prize} onChange={(e) => setPrize(e.target.value)} placeholder="לדוגמה: חולצה" /></Field>
-        <div className="muted small">כל המתאמנים משתתפים. באתגר על תרגיל, מי שהתרגיל אינו בתוכנית שלו פטור. השבוע מתחיל ביום ראשון.</div>
-        <Button onClick={publish}>פרסום האתגר</Button>
-      </Screen>
-    );
-  }
+  const publish = async () => {
+    const r = await call("S09", "challenges", "create_challenge", { challengeName: name, challengeType: type, targetValue: Number(target), extraPrize: prize, exerciseID: type === "exercise" ? exerciseID : null });
+    if (!r.ok) return nav.toast(r.error!.message);
+    nav.back(); nav.toast("האתגר פורסם");
+  };
+  return (
+    <Screen eyebrow="אתגר אחד בשבוע" title="אתגר חדש">
+      <Field label="שם"><input id="challengeName" value={name} onChange={(e) => setName(e.target.value)} /></Field>
+      <Segmented value={type} options={[["count", "מספר אימונים"], ["exercise", "יעד בתרגיל"]]} onChange={setType} />
+      {type === "exercise" && (
+        <Field label="תרגיל">
+          <select id="challengeExercise" value={exerciseID} onChange={(e) => setExerciseID(e.target.value)}>
+            {exs.data?.map((e: any) => <option key={e.ExerciseID} value={e.ExerciseID}>{e.exerciseName}</option>)}
+          </select>
+        </Field>
+      )}
+      <Field label="ערך היעד"><input id="challengeTarget" type="number" value={target} onChange={(e) => setTarget(e.target.value)} /></Field>
+      <Field label="פרס נוסף (לא חובה)"><input id="challengePrize" value={prize} onChange={(e) => setPrize(e.target.value)} placeholder="לדוגמה: חולצה" /></Field>
+      <div className="muted small">כל המתאמנים משתתפים. באתגר על תרגיל, מי שהתרגיל אינו בתוכנית שלו פטור. השבוע מתחיל ביום ראשון.</div>
+      <Button onClick={publish}>פרסום האתגר</Button>
+    </Screen>
+  );
+}
 
+function CurrentChallenge() {
+  const nav = useNav();
+  const ch = useCall("S09", "challenges", "get_current_challenge");
+  const done = useCall("S09", "challenges", "list_completions");
   const c = ch.data;
   const deliver = async (traineeID: string) => {
     await call("S09", "challenges", "mark_prize_delivered", { traineeID });
