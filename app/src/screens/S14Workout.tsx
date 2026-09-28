@@ -11,7 +11,6 @@ type SetT = { ExerciseID: string; setNumber: number; reps: number; weight: numbe
 export default function S14Workout({ workoutID, videoOf }: { workoutID?: string; videoOf?: string }) {
   const nav = useNav();
   const prog = useCall("S14", "programs", "get_active_program");
-  const video = useCall("S14", "exercises", "get_exercise", { exerciseID: videoOf ?? "" });
   const [sets, setSets] = useState<SetT[] | null>(null);
   const w = prog.data?.workouts.find((x: any) => x.WorkoutID === workoutID);
 
@@ -20,10 +19,7 @@ export default function S14Workout({ workoutID, videoOf }: { workoutID?: string;
       ({ ExerciseID: it.ExerciseID, setNumber: i + 1, reps: it.targetReps, weight: it.targetWeight, isDone: true, isCorrected: false }))));
   }, [workoutID, prog.data]);
 
-  if (videoOf) {
-    const e = video.data;
-    return <Screen eyebrow="סרטון הדגמה" title={e?.exerciseName ?? ""}>{e && <div className="video">▶︎ {e.videoType === "youtube" ? "סרטון הדגמה מיוטיוב (קישור לדוגמה)" : "סרטון שהמאמן העלה (דוגמה)"}</div>}</Screen>;
-  }
+  if (videoOf) return <DemoVideo exerciseID={videoOf} />;
 
   if (!workoutID) {
     return (
@@ -68,4 +64,10 @@ export default function S14Workout({ workoutID, videoOf }: { workoutID?: string;
       <Button onClick={save}>שמירת האימון</Button>
     </Screen>
   );
+}
+
+// The demo video of one exercise. The exercise is asked for only when there is one to show (stage 4b plan, decision 12).
+function DemoVideo({ exerciseID }: { exerciseID: string }) {
+  const { data: e } = useCall("S14", "exercises", "get_exercise", { exerciseID });
+  return <Screen eyebrow="סרטון הדגמה" title={e?.exerciseName ?? ""}>{e && <div className="video">▶︎ {e.videoType === "youtube" ? "סרטון הדגמה מיוטיוב (קישור לדוגמה)" : "סרטון שהמאמן העלה (דוגמה)"}</div>}</Screen>;
 }

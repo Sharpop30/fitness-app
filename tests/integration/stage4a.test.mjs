@@ -97,13 +97,13 @@ test("S14: log_workout saves atomically and leaves M04 rows toward programs, fee
   assert.equal(r.ok, true);
   assert.deepEqual([r.data.feedback.done, r.data.feedback.total], [sets.length, sets.length]);
   assert.equal(psql(`select count(*) from set_results where "WorkoutLogID"='${r.data.WorkoutLogID}'`), String(sets.length));
-  assert.deepEqual(trail("S14", "log_workout"), [
+  // The rows of results itself; since stage 4b, feedback, coins and challenges answer, and ask further modules in turn.
+  assert.deepEqual(trail("S14", "log_workout").filter((row) => /^(S14|M04)>/.test(row)), [
     "S14>results.log_workout:true:-",
     "M04>programs.get_active_program:true:-", "M04>programs.get_active_program:true:-",
-    // Not built until stage 4b: the save stands (stage 4a plan, decision 6).
-    "M04>feedback.build_feedback:true:-", "M04>feedback.build_feedback:false:ACTION_NOT_ALLOWED",
-    "M04>coins.award:true:-", "M04>coins.award:false:ACTION_NOT_ALLOWED",
-    "M04>challenges.check_progress:true:-", "M04>challenges.check_progress:false:ACTION_NOT_ALLOWED",
+    "M04>feedback.build_feedback:true:-", "M04>feedback.build_feedback:true:-",
+    "M04>coins.award:true:-", "M04>coins.award:true:-",
+    "M04>challenges.check_progress:true:-", "M04>challenges.check_progress:true:-",
     "S14>results.log_workout:true:-",
   ]);
 

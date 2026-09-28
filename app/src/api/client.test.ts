@@ -1,5 +1,6 @@
-// Routing by caller (stage 3 plan, task 9; stage 4a plan, task 8; CLAUDE.md section 9, test 2): S02, S04 and S05 go to
-// the one Endpoint once signed in with the identity service; every other screen stays on the demo adapter.
+// Routing by caller (stage 3 plan, task 9; stage 4a plan, task 8; stage 4b plan, task 12; CLAUDE.md section 9, test 2):
+// the screens in LIVE_SCREENS go to the one Endpoint once signed in with the identity service; every other screen stays
+// on the demo adapter.
 // Synthetic values, no network.
 import { accessToken } from "../identity/auth";
 import { call, LIVE_SCREENS, setAdapter, setErrorTexts, setSession, type Envelope } from "./client";
@@ -22,8 +23,23 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-test("stage 4a puts exactly S02, S04 and S05 on the Endpoint", () => {
-  expect([...LIVE_SCREENS].sort()).toEqual(["S02", "S04", "S05"]);
+test("stage 4b puts exactly the screens whose actions are all built on the Endpoint", () => {
+  expect([...LIVE_SCREENS].sort()).toEqual(["S02", "S04", "S05", "S06", "S07", "S09", "S10", "S14", "S15", "S16", "S18", "S20", "S21"]);
+});
+
+test("stage 4b: the coach's and the trainee's screens, signed in, go to the Endpoint and declare themselves", async () => {
+  const asked: [string, string, string][] = [
+    ["S06", "feedback", "add_coach_note"], ["S07", "coins", "set_personal_goal"], ["S09", "challenges", "create_challenge"],
+    ["S10", "coins", "manage_rewards"], ["S21", "progress", "get_progress_chart"],
+  ];
+  setSession({ role: "trainee", traineeID: null });
+  asked.push(["S14", "results", "log_workout"], ["S16", "results", "correct_result"], ["S18", "coins", "redeem_reward"], ["S20", "challenges", "get_current_challenge"]);
+  for (const [caller, module, action] of asked) {
+    const r = await call(caller, module, action);
+    expect(r.data.from).toBe("endpoint");
+    expect(r.data.envelope).toEqual({ caller, module, action, payload: {}, lang: "he" });
+  }
+  expect(demoSeen).toEqual([]);
 });
 
 test("S02 and S05, signed in, go to the Endpoint and declare themselves as the caller", async () => {
@@ -45,7 +61,7 @@ test("S04, signed in, goes to the Endpoint with the full envelope and the identi
 });
 
 test("every other screen stays on the demo adapter", async () => {
-  for (const caller of ["S01", "S03", "S06", "S14", "S16", "S22", "S23"]) {
+  for (const caller of ["S01", "S03", "S08", "S11", "S12", "S13", "S17", "S19", "S22", "S23"]) {
     expect((await call(caller, "programs", "get_active_program")).data.from).toBe("demo");
   }
   expect(fetchMock).not.toHaveBeenCalled();

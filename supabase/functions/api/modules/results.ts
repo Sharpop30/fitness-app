@@ -83,7 +83,7 @@ export const results: ModuleDef = {
           coins: typeof awarded.coins === "number" ? awarded.coins : 0,
           goal: awarded.goal === true,
           challenge: checked.challenge === true,
-          text: typeof built.text === "string" ? built.text : null,
+          text: typeof built.text === "string" ? built.text : "", // empty when feedback failed (module map v4)
         },
       });
     },
