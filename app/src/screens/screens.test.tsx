@@ -81,8 +81,10 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     for (const [workout] of rows(`select w."workoutName" from workouts w join programs p using ("ProgramID") where p."TraineeID"='${NOA}' and p."isActive"`)) {
       await shows(workout);
     }
+    // Active exercises only: S04 names an item from the active list, so an exercise set inactive shows with no name
+    // (stage 4b report, a gap next to stage 4a gap 11). Only tests make an exercise inactive today.
     for (const [exercise] of rows(`select distinct e."exerciseName" from workout_items i join workouts w using ("WorkoutID") join programs p using ("ProgramID")
-                                   join exercises e using ("ExerciseID") where p."TraineeID"='${NOA}' and p."isActive"`)) {
+                                   join exercises e using ("ExerciseID") where p."TraineeID"='${NOA}' and p."isActive" and e."isActive"`)) {
       await shows(exercise);
     }
   }, 30000);
