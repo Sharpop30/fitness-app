@@ -9,22 +9,8 @@ export default function S06WorkoutsAndNotes({ traineeID, noteFor }: { traineeID:
   const nav = useNav();
   const logs = useCall("S06", "results", "list_results", { traineeID });
   const notes = useCall("S06", "feedback", "get_workout_notes", { traineeID });
-  const [text, setText] = useState("");
 
-  if (noteFor) {
-    const save = async () => {
-      const r = await call("S06", "feedback", "add_coach_note", { workoutLogID: noteFor, noteText: text });
-      if (!r.ok) return nav.toast(r.error!.message);
-      nav.back(); nav.toast("ההערה נשמרה, והמתאמן יראה אותה");
-    };
-    return (
-      <Screen eyebrow="הערה אישית" title="הערה לאימון">
-        <textarea id="noteText" rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder="לדוגמה: שיא יפה בסקוואט, בשבוע הבא ננסה 67.5" />
-        <div className="muted small">עד 280 תווים.</div>
-        <Button onClick={save}>שמירה</Button>
-      </Screen>
-    );
-  }
+  if (noteFor) return <NoteForm workoutLogID={noteFor} />;
 
   const noteOf = (id: string) => notes.data?.find((n: any) => n.WorkoutLogID === id)?.noteText;
   return (
@@ -42,6 +28,25 @@ export default function S06WorkoutsAndNotes({ traineeID, noteFor }: { traineeID:
           </div>
         );
       })}
+    </Screen>
+  );
+}
+
+// The note form. The longest note is read from SETTINGS, asked only here (module map v8; stage 4b report, gap 2).
+function NoteForm({ workoutLogID }: { workoutLogID: string }) {
+  const nav = useNav();
+  const limit = useCall("S06", "settings", "get_settings", { key: "noteMaxLength" });
+  const [text, setText] = useState("");
+  const save = async () => {
+    const r = await call("S06", "feedback", "add_coach_note", { workoutLogID, noteText: text });
+    if (!r.ok) return nav.toast(r.error!.message);
+    nav.back(); nav.toast("ההערה נשמרה, והמתאמן יראה אותה");
+  };
+  return (
+    <Screen eyebrow="הערה אישית" title="הערה לאימון">
+      <textarea id="noteText" rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder="לדוגמה: שיא יפה בסקוואט, בשבוע הבא ננסה 67.5" />
+      {limit.data?.noteMaxLength && <div className="muted small">עד {limit.data.noteMaxLength} תווים.</div>}
+      <Button onClick={save}>שמירה</Button>
     </Screen>
   );
 }

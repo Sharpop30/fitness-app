@@ -60,7 +60,7 @@ test("S11 asks list_registrations only when it opens one class", async () => {
 
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
 // Stage 4a: S02 and S05. Stage 4b: S04 (the stage 3 debt), and every screen that moved in stage 4b (plan, task 12).
-// Stage 4c: S11, S13 and S17.
+// Stage 4c: S11, S13 and S17. Stage 4d: S01, S03, S08, S12 and S19, and the note limit on S06.
 describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on the Endpoint show the database", () => {
   // The shared helper (tests/system/demo-users.mjs) runs in its own Node process: it reads the local stack's status
   // and signs the demo coach and Noa in with a one-run password. Only the local Endpoint and those tokens come back.
@@ -252,5 +252,73 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
                        where r."TraineeID"='${NOA}' and r."status"='registered' and k."status"='active' and k."startsAt" > now()
                        order by k."startsAt" limit 1`);
     await shows(next.length ? new RegExp(escape(next[0][0])) : "לא נרשמת לשיעור");
+  }, 30000);
+
+  // ---- Stage 4d: S01, S03, S08, S12 and S19, and S06's note limit (stage 4d plan, task 11) ----
+  const setting = (key: string) => psql(`select "settingValue" from settings where "CoachID"='${COACH}' and "settingKey"='${key}'`);
+  const PAY: Record<string, string> = { monthly: "מנוי חודשי", pack10: "חבילת 10 אימונים (כרטיסייה)" };
+
+  test("S01: active trainees, open payments and today's date, from the database", async () => {
+    open("S01");
+    const active = psql(`select count(*) from trainees where "CoachID"='${COACH}' and "isActive"`);
+    const openPays = psql(`select count(*) from payment_requests where "CoachID"='${COACH}' and "status"='open'`);
+    await shows(new Date().toLocaleDateString("he-IL", { day: "numeric", month: "numeric" }));
+    expect(await lineOf("מתאמנים פעילים")).toContain(active);
+    expect(await lineOf("תשלומים פתוחים")).toContain(openPays);
+  }, 30000);
+
+  test("S03: Noa's card, with her coins, open payments, program and goal from the database", async () => {
+    open("S03", { traineeID: NOA });
+    expect(await screen.findByRole("heading", { level: 1, name: psql(`select "fullName" from trainees where "TraineeID"='${NOA}'`) }, { timeout: 8000 })).toBeTruthy();
+    expect(await lineOf("מטבעות")).toContain(psql(`select coalesce(sum("amount"),0) from coin_transactions where "TraineeID"='${NOA}'`));
+    expect(await lineOf("תשלום פתוח")).toContain(psql(`select count(*) from payment_requests where "TraineeID"='${NOA}' and "status"='open'`));
+    const workouts = psql(`select count(*) from workouts w join programs p using ("ProgramID") where p."TraineeID"='${NOA}' and p."isActive"`);
+    await shows(`${workouts} אימונים`);
+    const [goal] = rows(`select e."exerciseName", g."targetWeight" from personal_goals g join exercises e using ("ExerciseID")
+                         where g."TraineeID"='${NOA}' and g."status"='active'`);
+    await shows(goal ? `${goal[0]} ${Number(goal[1])} ק"ג` : "אין יעד פעיל");
+  }, 30000);
+
+  test("S08: every request of the coach, with the trainee, type and amount, and the invoice of each paid one", async () => {
+    open("S08");
+    const list = rows(`select t."fullName", p."paymentType", p."amount", p."status", coalesce(i."invoiceNumber"::text, '') from payment_requests p
+                       join trainees t using ("TraineeID") left join invoices i using ("PaymentRequestID") where p."CoachID"='${COACH}'`);
+    expect(list.length).toBeGreaterThan(0);
+    for (const [name, type, amount, , number] of list) {
+      await shows(`${name} · ${PAY[type]}`);
+      await shows(new RegExp(`^₪${Number(amount)} · `));
+      if (number) await shows(`חשבונית ${number}`);
+    }
+    const open_ = list.filter(([, , , status]) => status === "open").length;
+    expect((await screen.findAllByText("פתוחה", {}, { timeout: 8000 })).length).toBe(open_);
+  }, 30000);
+
+  test("S08: a new request picks a trainee who joined, with no fixed demo ID", async () => {
+    open("S08", { request: true });
+    const joined = rows(`select "TraineeID" from trainees where "CoachID"='${COACH}' and "isActive"`).map(([id]) => id);
+    await waitFor(() => expect(joined).toContain((document.getElementById("payTrainee") as HTMLSelectElement).value), { timeout: 8000 });
+  }, 30000);
+
+  test("S12: every value on the screen is the coach's value in SETTINGS", async () => {
+    open("S12");
+    await waitFor(() => expect((document.getElementById("setting-priceMonthly") as HTMLInputElement).value).not.toBe(""), { timeout: 8000 });
+    for (const key of ["coinsWorkout", "coinsAttendance", "priceMonthly", "pricePack10", "cancelHours", "spotOfferHours", "feedbackFull"]) {
+      expect((document.getElementById(`setting-${key}`) as HTMLInputElement).value).toBe(setting(key));
+    }
+  }, 30000);
+
+  test("S19 (as Noa): her own requests, open ones to pay and paid ones with their invoice", async () => {
+    open("S19", {}, "trainee");
+    const list = rows(`select p."status", coalesce(i."invoiceNumber"::text, '') from payment_requests p left join invoices i using ("PaymentRequestID")
+                       where p."TraineeID"='${NOA}'`);
+    for (const [, number] of list.filter(([st]) => st === "paid")) await shows(`חשבונית ${number}`);
+    const open_ = list.filter(([st]) => st === "open").length;
+    if (open_) expect((await screen.findAllByText("תשלום לדוגמה", {}, { timeout: 8000 })).length).toBe(open_);
+    expect(screen.queryByText(/מספר כרטיס|CVV/i)).toBeNull();
+  }, 30000);
+
+  test("S06: the note form shows the longest note from SETTINGS (stage 4b report, gap 2)", async () => {
+    open("S06", { traineeID: NOA, noteFor: "d0000000-0000-4000-8000-000000006001" });
+    await shows(`עד ${setting("noteMaxLength")} תווים.`);
   }, 30000);
 });

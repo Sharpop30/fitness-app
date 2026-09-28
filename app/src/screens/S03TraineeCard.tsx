@@ -7,7 +7,8 @@ export default function S03TraineeCard({ traineeID }: { traineeID: string }) {
   const nav = useNav();
   const { data } = useCall("S03", "trainees", "get_trainee_card", { traineeID });
   if (!data) return <Screen eyebrow="כרטיס מתאמן" title="">{null}</Screen>;
-  const g = data.goal && data.goal.status === "active" ? `${data.goal.exerciseName} ${data.goal.targetWeight} ק"ג` : "אין יעד פעיל";
+  // The card carries the active goal only, or none (module map v8; stage 4d plan, decision 9).
+  const g = data.goal ? `${data.goal.exerciseName} ${data.goal.targetWeight} ק"ג` : "אין יעד פעיל";
   return (
     <Screen eyebrow="כרטיס מתאמן" title={data.trainee.fullName}>
       <div className="grid3">
