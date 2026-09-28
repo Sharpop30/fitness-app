@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: טיוטה לאישור הצוות, 28.09.2026, גרסה 8. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 28.09.2026, גרסה 7. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -10,7 +10,7 @@
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
 | המקורות | PRD גרסה 1.19; doc-mlp-scope; 11 סיפורי משתמש ו-11 מקרי שימוש (usecase-01 עד 11); doc-erd-conceptual ו-doc-erd-logical; prototype-fitness-app גרסה 1 |
-| גרסה ותאריך | 8, 28.09.2026 |
+| גרסה ותאריך | 7, 28.09.2026 |
 
 ## 2. הליבה
 
@@ -122,12 +122,6 @@
 
 **החוזים שנוספו בגרסה 7** (תוכנית שלב 4ג, הכרעות 2 עד 4): הקלט והתשובה של notifications.notify_in_app; הטווח של classes.list_upcoming_classes למאמן ולמתאמן; מה המתאמן רואה על נרשמים אחרים; ומבנה lateRequests. אין שורות Registry חדשות: כל השורות של 4ג קיימות מ-0002.
 
-**החוזים שנוספו בגרסה 8** (תוכנית שלב 4ד, הכרעות 2 עד 6), ושורה אחת: S06 מול settings.get_settings, כדי שהמסך יציג את אורך ההערה המרבי (noteMaxLength) מ-SETTINGS ולא מספר קבוע (דוח 4ב, פער 2). נכנסת ל-Registry בשלב 4ד, יחד עם שלוש שורות M01 מגרסה 4 שנותרו (programs.get_active_program, coins.get_balance, payments.list_payments).
-
-**התשלום לדוגמה, בלי מצב ביניים** (UC2 סעיף 7; תוכנית 4ד, הכרעה 3): payments.pay_demo פונה ל-payment_gateway.charge, ואז ל-invoices.create_invoice, ורק אז מסמן את הבקשה "שולמה", בתנאי שהיא עדיין פתוחה. create_invoice אידמפוטנטי לפי הבקשה, ולכן לבקשה ששולמה יש תמיד חשבונית, וניסיון חוזר אחרי כשל אינו יוצר חשבונית שנייה. שתי בקשות תשלום במקביל: אחת מצליחה, והשנייה מקבלת PAYMENT_ALREADY_PAID. כשל בשער, או שער שעוד לא נבנה, מחזיר PAYMENT_GATEWAY_UNAVAILABLE, והבקשה נשארת פתוחה בלי חשבונית.
-
-**קריאה לאורך הקשר בין בקשה לחשבונית** (תוכנית 4ד, הכרעה 2): payments.list_payments מחזיר את מספר החשבונית של כל בקשה, ו-invoices.list_invoices את שם המתאמן ואת סוג התשלום של הבקשה. שני אלה נקראים ב-Repository לאורך הקשר שב-ERD (INVOICES.PaymentRequestID), לקריאה בלבד. הכתיבה ל-PAYMENT_REQUESTS נעשית רק ב-payments, ול-INVOICES רק ב-invoices.
-
 **כשל אחרי שמירת אימון** (UC3 סעיף 7; דוח שלב 4א, פער 2): אין תור בגרסה הראשונה. התוצאות נשארות שמורות, והשדות של הפנייה שנכשלה חוזרים ריקים. coins.award אידמפוטנטי לפי eventRef, ולכן חישוב חוזר אפשרי בגרסה הבאה.
 
 ### טבלת פעולות המסכים
@@ -139,7 +133,7 @@
 | S03 | trainees.get_trainee_card |
 | S04 | programs.get_active_program, save_program, swap_exercise, start_new_program; exercises.list_exercises |
 | S05 | exercises.list_exercises, create_exercise, attach_video, get_exercise |
-| S06 | results.list_results; feedback.add_coach_note, get_workout_notes; settings.get_settings (noteMaxLength) |
+| S06 | results.list_results; feedback.add_coach_note, get_workout_notes |
 | S07 | coins.set_personal_goal; exercises.list_exercises |
 | S08 | payments.create_payment_request, list_payments; invoices.list_invoices; trainees.list_trainees |
 | S09 | challenges.create_challenge, get_current_challenge, list_completions, mark_prize_delivered; exercises.list_exercises |
@@ -167,7 +161,7 @@
 | trainees.list_trainees | רשימה: TraineeID או InviteID, fullName, isActive, joined, hasProgram. מתאמן שהצטרף מזוהה ב-TraineeID. הזמנה פתוחה שתוקפה לא פג חוזרת עם InviteID, TraineeID ריק ו-joined=false, כי המתאמן נוצר רק בהצטרפות |
 | trainees.invite_trainee | link, קישור ההזמנה לשיתוף |
 | trainees.accept_invite | TraineeID |
-| trainees.get_trainee_card | trainee, coins, streak, openPayments, workouts, payments, goal (עם exerciseName). הקלט: traineeID. workouts הוא מספר האימונים בתוכנית הפעילה (0 כשאין); openPayments מספר הבקשות הפתוחות; payments מספר הבקשות; goal היעד הפעיל, או ריק. פנייה שנכשלה מחזירה את השדה שלה ריק |
+| trainees.get_trainee_card | trainee, coins, streak, openPayments, workouts, payments, goal (עם exerciseName) |
 | exercises.list_exercises, get_exercise, create_exercise, attach_video | תרגיל או רשימה: ExerciseID, exerciseName, isBodyweight, videoType, videoUrl |
 | programs.get_active_program | התוכנית, ובה workouts ובכל אחד items עם exerciseName ו-hasVideo; ו-inactive, רשימת התוכניות הלא פעילות |
 | results.list_results | רשימת אימונים שבוצעו: WorkoutLogID, workoutName, performedAt, sets (עם isCorrected) |
@@ -181,12 +175,9 @@
 | coins.redeem_reward | balance |
 | challenges.get_current_challenge | האתגר, end, coins, ולמתאמן progress (value, target, exempt) |
 | challenges.list_completions | רשימה: TraineeID, fullName, completedAt, prizeDeliveredAt |
-| payments.list_payments | רשימה: PaymentRequestID, fullName, paymentType, amount, status, createdAt, invoiceNumber, מהחדשה לישנה. למאמן, traineeID בקלט מסנן למתאמן אחד שלו; המתאמן מקבל רק את שלו |
-| payments.create_payment_request | null. הקלט: traineeID, paymentType (monthly או pack10). הסכום נקרא מ-SETTINGS (priceMonthly, pricePack10) ונשמר בבקשה. מחיר חסר או סוג לא מוכר מחזירים VALUE_NOT_SET |
-| payments.pay_demo | invoiceNumber. הקלט: paymentRequestID |
-| payment_gateway.charge | null. הקלט: paymentRequestID, amount. אין שדה כרטיס |
-| invoices.create_invoice | invoiceNumber. הקלט: paymentRequestID, amount. חשבונית אחת לכל בקשה, מסומנת הדגמה |
-| invoices.list_invoices | רשימה: invoiceNumber, fullName, paymentType, amount, issuedAt, isDemo, מהחדשה לישנה, באותו סינון כמו list_payments |
+| payments.list_payments | רשימה: PaymentRequestID, fullName, paymentType, amount, status, createdAt, invoiceNumber |
+| payments.pay_demo | invoiceNumber |
+| invoices.list_invoices | רשימה: invoiceNumber, fullName, paymentType, amount, issuedAt, isDemo |
 | classes.list_upcoming_classes | classes (עם registered, waitlist, myStatus, myWaitPosition), cancelHours, ולמאמן lateRequests (LateCancelRequestID, fullName, startsAt). הטווח: למאמן, שיעורים מתחילת היום לפני שלושה ימים, כדי לסמן נוכחות אחרי השיעור (UC11 צעד 9); למתאמן, שיעורים שעוד לא התחילו. למאמן, registered (TraineeID, fullName, attended) ו-waitlist (TraineeID, fullName); למתאמן, registered ו-waitlist כרשימות באותו אורך, בלי שמות ובלי מזהים, כך שנראה רק מספר המקומות התפוסים והממתינים, ו-myStatus ו-myWaitPosition שלו (כלל 5) |
 | classes.list_registrations | שיעור אחד באותו מבנה |
 | classes.register | status, position |
@@ -196,7 +187,6 @@
 | home.get_coach_home | activeTrainees, openPayments, classesToday, lateRequests, rewardsToDeliver, challenge |
 | home.get_trainee_home | reminder, streak, streakGapDays, coins, nextWorkout, nextClass, challenge, offers |
 | settings.get_settings | כל ערכי SETTINGS של המאמן, מפתח וערך |
-| settings.update_settings | null. הקלט: values, מפתח וערך. רק מפתחות שכבר קיימים למאמן, אחרת NOT_ALLOWED. ערך ריק, או מספר לא תקין במפתח מספרי, מחזיר VALUE_NOT_SET, ושום ערך אינו נשמר. המטבעות שלמים ולא שליליים; המחירים, חלונות הזמן, הרצף, אורך הסרטון, תוקף ההזמנה ואורך ההערה שלמים וחיוביים. מפתח שלא נשלח נשאר כמו שהוא |
 | settings.get_error_texts | לכל קוד שגיאה, ההסבר לבני אדם |
 
 ### הפניות מ-results.log_workout
@@ -241,10 +231,10 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | CHALLENGE_INVALID | יעד חסר או לא חיובי | חסר יעד לאתגר |
 | CLASS_INVALID | פרטי שיעור חסרים | חסרים פרטים בשיעור |
 | ALREADY_REGISTERED | כבר רשום או ממתין | אתה כבר רשום לשיעור הזה |
-| CANCEL_TOO_LATE | בתוך חלון הביטול | עבר מועד הביטול. אפשר לבקש חריגה |
+| CANCEL_TOO_LATE | בתוך חלון הביטול | אפשר לבטל עד 24 שעות לפני. אפשר לבקש חריגה |
 | SPOT_OFFER_EXPIRED | זמן ההיענות להצעה עבר | המקום כבר הוצע לבא בתור |
 
-**קלט לא תקין בלי קוד ייעודי** (דוח שלב 4א, פער 7; תוכנית שלב 4ב, הכרעות 6 ו-7): הרשימה נשארת סגורה, והמסך מציג נוסח משלו. תרגיל בלי שם ויעד אישי חסר או לא חיובי מחזירים PROGRAM_INVALID. תגמול בלי שם או מחיר מחזיר VALUE_NOT_SET, כמו באב הטיפוס המאושר. פעולת שיעורים על שיעור שבוטל או שכבר התחיל, ו-notify_in_app עם קלט לא תקין, מחזירים NOT_ALLOWED (דוח 4ג, פער 5).
+**קלט לא תקין בלי קוד ייעודי** (דוח שלב 4א, פער 7; תוכנית שלב 4ב, הכרעות 6 ו-7): הרשימה נשארת סגורה, והמסך מציג נוסח משלו. תרגיל בלי שם ויעד אישי חסר או לא חיובי מחזירים PROGRAM_INVALID. תגמול בלי שם או מחיר מחזיר VALUE_NOT_SET, כמו באב הטיפוס המאושר.
 
 ההסברים לבני אדם נשמרים ב-ERROR_CODES, ולא בקוד. "אסור" (NOT_ALLOWED, ACTION_NOT_ALLOWED) ו"עדיין לא" (VALUE_NOT_SET) הם קודים נפרדים.
 
@@ -311,4 +301,3 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 5 | 28.09.2026 | מתוכנית שלב 4ב, הכרעות 3, 5, 6 ו-7: שלוש שורות Registry, M13 מול coins.manage_rewards ו-challenges.list_completions, ו-S09 מול exercises.list_exercises; פירוט המקורות של get_coach_home; מבנה הקלט והתשובה של progress.detect_personal_records והגדרת השיא; הקודים לקלט לא תקין בלי קוד ייעודי. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
 | 6 | 28.09.2026 | מפער שנמצא בשלב 4ב, משימה 3: שורת Registry אחת, M05 מול settings.get_settings, ל-streakGapDays של get_streak. מה לא השתנה: כל השאר | הצוות |
 | 7 | 28.09.2026 | מתוכנית שלב 4ג, הכרעות 2, 3 ו-4: החוזה של notifications.notify_in_app (traineeID, messageText; data null); הטווח של classes.list_upcoming_classes (למאמן משלושה ימים אחורה, למתאמן שיעורים שעוד לא התחילו); המתאמן מקבל את הנרשמים והממתינים בלי שמות ומזהים; ומבנה lateRequests. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, ה-Registry, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
-| 8 | 28.09.2026 | מתוכנית שלב 4ד, הכרעות 2 עד 6, ומדוח 4ג, פער 5: שורת Registry אחת, S06 מול settings.get_settings (noteMaxLength); הסדר ב-pay_demo בלי מצב ביניים; הקריאה לאורך הקשר בין בקשה לחשבונית; החוזים של create_payment_request, charge, create_invoice, update_settings ו-get_trainee_card, והסינון של list_payments ו-list_invoices; ההסבר לבני אדם של CANCEL_TOO_LATE בלי מספר קבוע; NOT_ALLOWED על שיעור שבוטל או התחיל ועל קלט לא תקין ב-notify_in_app. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
