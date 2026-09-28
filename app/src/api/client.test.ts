@@ -23,9 +23,22 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-test("stage 4c puts exactly the screens whose actions are all built on the Endpoint", () => {
+test("stage 4d puts exactly the screens whose actions are all built on the Endpoint", () => {
   expect([...LIVE_SCREENS].sort()).toEqual(
-    ["S02", "S04", "S05", "S06", "S07", "S09", "S10", "S11", "S13", "S14", "S15", "S16", "S17", "S18", "S20", "S21"]);
+    ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18",
+      "S19", "S20", "S21"]);
+});
+
+test("stage 4d: S01, S03, S08, S12 and S19, signed in, go to the Endpoint and declare themselves", async () => {
+  const coach = await Promise.all([
+    call("S01", "home", "get_coach_home"), call("S03", "trainees", "get_trainee_card", { traineeID: "x" }),
+    call("S08", "payments", "list_payments"), call("S12", "settings", "update_settings", { values: {} }),
+  ]);
+  setSession({ role: "trainee", traineeID: null });
+  const s19 = await call("S19", "payments", "pay_demo", { paymentRequestID: "x" });
+  expect([...coach, s19].map((r) => r.data.envelope.caller)).toEqual(["S01", "S03", "S08", "S12", "S19"]);
+  expect(s19.data.envelope).toEqual({ caller: "S19", module: "payments", action: "pay_demo", payload: { paymentRequestID: "x" }, lang: "he" });
+  expect(demoSeen).toEqual([]);
 });
 
 test("stage 4c: S11, S13 and S17, signed in, go to the Endpoint and declare themselves", async () => {
@@ -78,7 +91,7 @@ test("S04, signed in, goes to the Endpoint with the full envelope and the identi
 });
 
 test("every other screen stays on the demo adapter", async () => {
-  for (const caller of ["S01", "S03", "S08", "S12", "S19", "S22", "S23"]) {
+  for (const caller of ["S22", "S23"]) {
     expect((await call(caller, "programs", "get_active_program")).data.from).toBe("demo");
   }
   expect(fetchMock).not.toHaveBeenCalled();

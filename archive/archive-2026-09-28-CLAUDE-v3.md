@@ -1,6 +1,6 @@
 # CLAUDE.md: מסמך הבנייה של fitness-app
 
-**מעמד**: מאושר, גרסה 4, 28.09.2026. מסמך הבנייה לפי מתודולוגיית הכוכב (פריט 45), פרק ח, ומנגנון הבנייה (פריט 46). הוא מתרגם את מפת המודולים לקוד, ואינו מוסיף עליה. משתנה בידי הצוות בלבד, בגרסה חדשה. סוכן שמוצא בו טעות מדווח פער, ואינו עורך.
+**מעמד**: מאושר, גרסה 3, 28.09.2026. מסמך הבנייה לפי מתודולוגיית הכוכב (פריט 45), פרק ח, ומנגנון הבנייה (פריט 46). הוא מתרגם את מפת המודולים לקוד, ואינו מוסיף עליה. משתנה בידי הצוות בלבד, בגרסה חדשה. סוכן שמוצא בו טעות מדווח פער, ואינו עורך.
 
 ## 1. המקורות המחייבים
 
@@ -65,10 +65,10 @@
 | מהמפה | הקובץ |
 | :-- | :-- |
 | C01 Endpoint ו-Orchestrator | supabase/functions/api/index.ts, orchestrator.ts |
-| C02 Registry | supabase/functions/api/registry.ts; הנתונים ב-supabase/migrations/20260928000002_reference.sql, ותוספות גרסאות המפה ב-20260928000003, 20260928000004, 20260928000008 (גרסאות 4 עד 6) ו-20260928000011 (גרסאות 4 ו-8). תוספת Registry בשלב הבא נכנסת ל-migration חדשה משלה |
+| C02 Registry | supabase/functions/api/registry.ts; הנתונים ב-supabase/migrations/20260928000002_reference.sql, ותוספות גרסאות המפה ב-20260928000003, 20260928000004 ו-20260928000008 (גרסאות 4 עד 6). תוספת Registry בשלב הבא נכנסת ל-migration חדשה משלה |
 | C03 Audit | supabase/functions/api/audit.ts |
 | C04 Repository | supabase/functions/api/repository.ts |
-| C05 Error Codes | supabase/functions/api/errors.ts; הנתונים ב-20260928000002_reference.sql ו-20260928000003_module_map_v2.sql, והנוסח של CANCEL_TOO_LATE ב-20260928000011_module_map_v8.sql |
+| C05 Error Codes | supabase/functions/api/errors.ts; הנתונים ב-20260928000002_reference.sql ו-20260928000003_module_map_v2.sql |
 | M01 עד M14 | supabase/functions/api/modules/[שם המודול].ts, קובץ לכל מודול |
 | I02 Payment Gateway | supabase/functions/api/interfaces/payment_gateway.ts (מימוש מדומה) |
 | I03 Invite Channel | supabase/functions/api/interfaces/invite_channel.ts |
@@ -128,4 +128,3 @@
 | 1 | 28.09.2026 | המסמך המקורי | הצוות |
 | 2 | 28.09.2026 | מפערי דוח שלב 3 ושלב 1: סעיף 3, Deno ברשימת הכלים; סעיף 5, שמות ה-migrations כפי שהם במאגר; סעיף 7, שלושה מתאמנים והזמנה פתוחה, ופירוט התוכניות כפי שהוא באב הטיפוס. מה לא השתנה: המקורות, הערימה, חוקי הברזל, מיפוי המודולים, סדר הבנייה, מבחני הקבלה וגבולות הפעולה | הצוות |
 | 3 | 28.09.2026 | מפער 6 בדוח שלב 4ב: סעיף 5, שורת C02, קובץ ה-Registry 20260928000008 (מפה גרסאות 4 עד 6). מה לא השתנה: כל השאר | הצוות |
-| 4 | 28.09.2026 | מפער 1 בדוח שלב 4ד: סעיף 5, שורות C02 ו-C05, הקובץ 20260928000011 (שורות Registry ממפה גרסאות 4 ו-8, והנוסח של CANCEL_TOO_LATE). מה לא השתנה: כל השאר | הצוות |

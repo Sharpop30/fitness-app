@@ -1,8 +1,9 @@
 // System Test, usecase-04 steps 1-3 and 6 end to end (doc-module-map section 6; stage 4a plan, task 7): norm, edge,
 // failure, against the LOCAL stack. The coach invites on S02 and reads the list there. Joining (steps 4-5) is stage 5.
+// Stage 4d (plan, task 10) adds step 7: the trainee card on S03, on a fresh coach and trainee "(test)".
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { call, demoTokens, psql, strangerCoachToken } from "./demo-users.mjs";
+import { call, demoTokens, freshWorld, ID, paymentRequest, psql, strangerCoachToken, workoutDaysAgo } from "./demo-users.mjs";
 
 let t, stranger;
 before(async () => {
@@ -45,4 +46,34 @@ test("failure c: when the channel does not send, INVITE_DELIVERY_FAILED, and the
   assert.equal((await invite({ name, email: "dana@example.com", channel: "email" })).error.code, "INVITE_DELIVERY_FAILED");
   assert.equal(psql(`select status || ':' || "inviteeEmail" from invites where "inviteeName"='${name}'`), "open:dana@example.com");
   assert.equal((await listed(name)).joined, false);
+});
+
+// ---- step 7, the trainee card (stage 4d) ----
+test("norm step 7: the coach opens the trainee card and sees program, coins, streak, payments and goal from the database", async () => {
+  const w = await freshWorld(1);
+  const [a] = w.trainees;
+  workoutDaysAgo(a.traineeID, a.workoutID, 0, [[ID.squat, 5, 60]]);
+  psql(`insert into coin_transactions ("TraineeID","eventType","eventRef","amount") values ('${a.traineeID}','workout','card-test',10)`);
+  paymentRequest(w.coachID, a.traineeID, { paid: true, daysAgo: 5 });
+  paymentRequest(w.coachID, a.traineeID);
+  await call(w.coachToken, "S07", "coins", "set_personal_goal", { traineeID: a.traineeID, exerciseID: ID.squat, targetWeight: 80 });
+  const r = await call(w.coachToken, "S03", "trainees", "get_trainee_card", { traineeID: a.traineeID });
+  assert.equal(r.ok, true, JSON.stringify(r.error));
+  const d = r.data;
+  assert.equal(d.trainee.TraineeID, a.traineeID);
+  assert.deepEqual([d.coins, d.streak, d.openPayments, d.payments, d.workouts], [10, 1, 1, 2, 1]);
+  assert.deepEqual([d.goal.exerciseName, d.goal.targetWeight], ["סקוואט", 80]);
+});
+
+test("edge step 7: a trainee with no program and nothing else has an empty card, not a failure", async () => {
+  const w = await freshWorld(1);
+  const [a] = w.trainees;
+  psql(`update programs set "isActive"=false where "TraineeID"='${a.traineeID}'`);
+  const d = (await call(w.coachToken, "S03", "trainees", "get_trainee_card", { traineeID: a.traineeID })).data;
+  assert.deepEqual([d.coins, d.streak, d.openPayments, d.payments, d.workouts, d.goal], [0, 0, 0, 0, 0, null]);
+});
+
+test("failure step 7 and rule 5: another coach's trainee card is NOT_ALLOWED", async () => {
+  const r = await call(stranger, "S03", "trainees", "get_trainee_card", { traineeID: ID.noa });
+  assert.equal(r.error?.code, "NOT_ALLOWED");
 });

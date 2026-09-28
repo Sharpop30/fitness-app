@@ -93,18 +93,19 @@
 | diagram-07-erd-conceptual.mmd | project-docs/mermaid | 28.09.2026 |
 | doc-erd-logical.html | project-docs | 28.09.2026 |
 | diagram-07a עד 07f (ERD לוגי, שישה תחומים) | project-docs/mermaid | 28.09.2026 |
-| doc-module-map.md | project-docs | 28.09.2026 (גרסה 7) |
-| CLAUDE.md (מסמך הבנייה) | שורש המאגר | 28.09.2026 (גרסה 3) |
+| doc-module-map.md | project-docs | 28.09.2026 (גרסה 8) |
+| CLAUDE.md (מסמך הבנייה) | שורש המאגר | 28.09.2026 (גרסה 4) |
 | doc-stage-1-plan.md, findings-stage-1.md | project-docs | 28.09.2026. שלב 1 נסגר |
 | doc-stage-2-plan.md, findings-stage-2.md | project-docs | 28.09.2026. שלב 2 נסגר |
 | doc-stage-3-plan.md, findings-stage-3.md | project-docs | 28.09.2026. שלב 3 נסגר |
 | doc-stage-4a-plan.md, findings-stage-4a.md | project-docs | 28.09.2026. שלב 4א נסגר |
 | doc-stage-4b-plan.md, findings-stage-4b.md | project-docs | 28.09.2026. שלב 4ב נסגר |
 | doc-stage-4c-plan.md, findings-stage-4c.md | project-docs | 28.09.2026. שלב 4ג נסגר |
+| doc-stage-4d-plan.md, findings-stage-4d.md | project-docs | 28.09.2026. שלב 4ד נסגר |
 | diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 28.09.2026 |
 | prototype-fitness-app.html | project-docs | 28.09.2026 (גרסה 1). פורסם: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
-| usecase-02-payments-invoices.md | project-docs | 28.09.2026 |
+| usecase-02-payments-invoices.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc02-payments-invoices.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-03-results-entry.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc03-results-entry.mmd | project-docs/mermaid | 28.09.2026 |

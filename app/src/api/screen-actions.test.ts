@@ -14,7 +14,8 @@ const allowed: Record<string, Set<string>> = {};
 for (const line of table.split("\n")) {
   const m = line.match(/^\| (S\d\d) \| (.+) \|$/);
   if (!m || m[2].startsWith("(")) continue;
-  m[2] = m[2].replace(/^שירות הזהות; /, "").replace(/, פעם אחת.*$/, "");
+  // A note in parentheses after an action, like S06's "(noteMaxLength)" in map v8, is not an action.
+  m[2] = m[2].replace(/^שירות הזהות; /, "").replace(/, פעם אחת.*$/, "").replace(/\s*\([^)]*\)/g, "");
   let mod = "";
   allowed[m[1]] = new Set(m[2].split(/[;,]\s*/).map((p) => { p = p.trim(); if (p.includes(".")) { const [a, b] = p.split("."); mod = a; return `${a}.${b}`; } return `${mod}.${p}`; }));
 }

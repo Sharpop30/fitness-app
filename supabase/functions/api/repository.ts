@@ -222,6 +222,32 @@ export interface Notification {
   createdAt: string;
 }
 
+// A payment request (UC2 steps 3, 7). The invoice number is read along the ERD link to INVOICES, read only (map v8).
+export interface PaymentRequest {
+  PaymentRequestID: string;
+  TraineeID: string;
+  CoachID: string;
+  fullName: string;
+  paymentType: string;
+  amount: number;
+  status: "open" | "paid";
+  createdAt: string;
+  paidAt: string | null;
+  invoiceNumber: number | null;
+}
+
+// A demo invoice (UC2 steps 8-10). The trainee and the payment type are read along the same link, read only (map v8).
+export interface Invoice {
+  invoiceNumber: number;
+  PaymentRequestID: string;
+  TraineeID: string;
+  fullName: string;
+  paymentType: string;
+  amount: number;
+  issuedAt: string;
+  isDemo: boolean;
+}
+
 export interface Repository {
   findActorByAuthUser(authUserID: string): Promise<Actor | null>;
   isRegistered(caller: string, moduleName: string, actionName: string, role: string): Promise<boolean>;
@@ -285,6 +311,17 @@ export interface Repository {
   addNotification(traineeID: string, messageText: string): Promise<void>;
   listUnreadNotifications(traineeID: string): Promise<Notification[]>;
   markNotificationRead(notificationID: string, traineeID: string): Promise<boolean>;
+  // Payments (UC2), private to M09. A null traineeID lists all the coach's trainees; newest first.
+  createPaymentRequest(coachID: string, traineeID: string, paymentType: string, amount: number): Promise<string>;
+  getPaymentRequest(paymentRequestID: string): Promise<PaymentRequest | null>;
+  listPaymentRequests(coachID: string, traineeID: string | null): Promise<PaymentRequest[]>;
+  // Open to paid only: false when the request was already paid (UC2 b, and two payments at once).
+  markPaymentPaid(paymentRequestID: string): Promise<boolean>;
+  // Invoices (UC2 steps 8-10), private to M10. One per request: a second call returns the same number (map v8).
+  createInvoice(paymentRequestID: string, amount: number): Promise<number>;
+  listInvoices(coachID: string, traineeID: string | null): Promise<Invoice[]>;
+  // Settings (M14): the given keys in one statement, all or nothing.
+  updateCoachSettings(coachID: string, values: Record<string, string>): Promise<void>;
 }
 
 export class StorageUnavailable extends Error {}
@@ -638,7 +675,78 @@ export function createRepository(): Repository {
         .eq("NotificationID", notificationID).is("readAt", null));
       return true;
     },
+
+    async createPaymentRequest(coachID, traineeID, paymentType, amount) {
+      const row = must(await db.from("payment_requests").insert({ CoachID: coachID, TraineeID: traineeID, paymentType, amount })
+        .select('"PaymentRequestID"').single()) as { PaymentRequestID: string };
+      return row.PaymentRequestID;
+    },
+
+    async getPaymentRequest(paymentRequestID) {
+      const row = must(await db.from("payment_requests").select(PAYMENT_FIELDS).eq("PaymentRequestID", paymentRequestID).maybeSingle()) as PaymentRow | null;
+      return row && toPayment(row);
+    },
+
+    async listPaymentRequests(coachID, traineeID) {
+      let q = db.from("payment_requests").select(PAYMENT_FIELDS).eq("CoachID", coachID);
+      if (traineeID) q = q.eq("TraineeID", traineeID);
+      return (must(await q.order("createdAt", { ascending: false })) as unknown as PaymentRow[]).map(toPayment);
+    },
+
+    async markPaymentPaid(paymentRequestID) {
+      const rows = must(await db.from("payment_requests").update({ status: "paid", paidAt: new Date().toISOString() })
+        .eq("PaymentRequestID", paymentRequestID).eq("status", "open").select('"PaymentRequestID"')) as unknown[];
+      return rows.length > 0;
+    },
+
+    async createInvoice(paymentRequestID, amount) {
+      const res = await db.from("invoices").insert({ PaymentRequestID: paymentRequestID, amount, isDemo: true }).select('"invoiceNumber"').single();
+      if (inserted(res)) return (res.data as { invoiceNumber: number }).invoiceNumber;
+      // The request already has its invoice: the same number again, never a second invoice.
+      const row = must(await db.from("invoices").select('"invoiceNumber"').eq("PaymentRequestID", paymentRequestID).single()) as { invoiceNumber: number };
+      return row.invoiceNumber;
+    },
+
+    async listInvoices(coachID, traineeID) {
+      let q = db.from("invoices").select(INVOICE_FIELDS).eq("payment_requests.CoachID", coachID);
+      if (traineeID) q = q.eq("payment_requests.TraineeID", traineeID);
+      return (must(await q.order("issuedAt", { ascending: false })) as unknown as InvoiceRow[]).map(toInvoice);
+    },
+
+    async updateCoachSettings(coachID, values) {
+      const rows = Object.entries(values).map(([settingKey, settingValue]) => ({ CoachID: coachID, settingKey, settingValue }));
+      if (rows.length) must(await db.from("settings").upsert(rows, { onConflict: "CoachID,settingKey" }));
+    },
   };
+}
+
+const PAYMENT_FIELDS = '"PaymentRequestID","TraineeID","CoachID","paymentType","amount","status","createdAt","paidAt",' +
+  'trainees("fullName"),invoices("invoiceNumber")';
+
+type PaymentRow = Omit<PaymentRequest, "fullName" | "invoiceNumber"> & {
+  trainees: { fullName: string };
+  invoices: { invoiceNumber: number } | { invoiceNumber: number }[] | null;
+};
+
+function toPayment({ trainees, invoices, ...p }: PaymentRow): PaymentRequest {
+  const inv = Array.isArray(invoices) ? invoices[0] : invoices;
+  return { ...p, amount: Number(p.amount), fullName: trainees.fullName, invoiceNumber: inv?.invoiceNumber ?? null };
+}
+
+const INVOICE_FIELDS = '"invoiceNumber","PaymentRequestID","amount","issuedAt","isDemo",' +
+  'payment_requests!inner("TraineeID","CoachID","paymentType",trainees("fullName"))';
+
+interface InvoiceRow {
+  invoiceNumber: number;
+  PaymentRequestID: string;
+  amount: number;
+  issuedAt: string;
+  isDemo: boolean;
+  payment_requests: { TraineeID: string; CoachID: string; paymentType: string; trainees: { fullName: string } };
+}
+
+function toInvoice({ payment_requests: r, ...i }: InvoiceRow): Invoice {
+  return { ...i, amount: Number(i.amount), TraineeID: r.TraineeID, paymentType: r.paymentType, fullName: r.trainees.fullName };
 }
 
 const CLASS_FIELDS = '"ClassID","CoachID","startsAt","place","capacity","status",' +

@@ -13,8 +13,11 @@ import { accessToken, signOutIdentity } from "../identity/auth";
 // later stages, so they stay on the demo adapter rather than show half the truth.
 // Stage 4c: S11, S13 and S17, with classes and notifications built (stage 4c plan). S13 and S17 are the trainee's, and
 // work in the browser with a trainee sign-in in stage 5 (decision 1). S01 waits for payments, in 4d.
+// Stage 4d: S01, S03, S08, S12 and S19, with payments, invoices, settings and the trainee card built (stage 4d plan).
+// S19 is the trainee's, and works in the browser with a trainee sign-in in stage 5. S22 and S23 are stage 5.
 export const LIVE_SCREENS = new Set([
-  "S02", "S04", "S05", "S06", "S07", "S09", "S10", "S11", "S13", "S14", "S15", "S16", "S17", "S18", "S20", "S21",
+  "S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18",
+  "S19", "S20", "S21",
 ]);
 
 export interface Envelope {

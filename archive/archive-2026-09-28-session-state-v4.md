@@ -3,7 +3,7 @@
 | שדה | ערך |
 | :-- | :-- |
 | תאריך | 28.09.2026 |
-| הצ'ט | Claude Code, צ'ט שלב 4ד |
+| הצ'ט | Claude Code, צ'ט שלב 4ג |
 
 ## מה נסגר
 
@@ -28,22 +28,20 @@
 
 14. **שלב 4ג, classes ו-notifications: נסגר.** M11 (פרסום, הרשמה, רשימת המתנה, הצעת מקום שפוקעת בפעולה הבאה, ביטול עד cancelHours ובקשה חריגה, ביטול שיעור, נוכחות עם מטבעות) ו-M12 (הודעות בתוך האפליקציה). הערת מאמן מגיעה כהודעה (פער 4 מ-4ב). LIVE_SCREENS: 16 מסכים, ובהם S11, S13 ו-S17. בענן: migration 0010 (פונקציות הרשמה אטומיות, סגורות לדפדפן) והפונקציה api. בדיקות על מסד נקי: Unit 153, Integration 37, System 75, Vitest 96. מפת המודולים גרסה 7; usecase-11 גרסה 2 ו-usecase-06 גרסה 3. הדוח: findings-stage-4c.md.
 
-15. **שלב 4ד, payments, invoices ו-settings: נסגר. שלב 4 הושלם.** M09 (בקשת תשלום במחיר מ-SETTINGS, רשימה, תשלום הדגמה: חיוב, חשבונית, ואז "שולמה"), M10 (חשבונית אחת לכל בקשה), M14 update_settings (מפתחות קיימים, הכול או כלום), ו-M01 get_trainee_card. LIVE_SCREENS: 21 מסכים; רק S22 ו-S23 על ההדגמה. בית המאמן בלי שורות סירוב. בענן: migration 0011 (שלוש שורות M01, S06 מול get_settings, נוסח CANCEL_TOO_LATE) והפונקציה api. בדיקות על מסד נקי: Unit 177, Integration 44, System 89, Vitest 104. מפת המודולים גרסה 8; CLAUDE.md גרסה 4; usecase-02 גרסה 2. התשלום המוצלח מקצה לקצה ממתין לשער I02 בשלב 5. הדוח: findings-stage-4d.md.
-
 ## מה ממתין
 
 | השלב | מה |
 | :-- | :-- |
-| 5 | הממשקים: Identity (כניסת מתאמן ב-S23, הצטרפות ב-S22, חידוש האסימון), Invite Channel, File Storage, ו-Payment Gateway המדומה, עם מבחן System לתשלום המוצלח ו-pay_demo עם שורות M10 ב-Integration (דוח 4ד, פער 3). להציע בתוכנית: videoMaxSeconds, noteMaxLength ו-reminderText ב-S12 (דוח 4ד, פער 4, להכרעת הצוות) |
-| 6 עד 7 | לפי CLAUDE.md סעיף 6 |
-| חובות פתוחים | פער 1 מ-4ב (שם תרגיל לא פעיל ב-S04) עם פער 11 מ-4א; פערים 12 ו-13 מ-4א (S05, S02); מבחני uc01 על מסד משומש; אימות פער 14 מ-4א בשלב 7 (נראה שוב בענן ב-4ג); מחיקת שורת הבדיקה ב-stage3-acceptance (דוח 4ד, פער 8) |
+| 4ד | payments, invoices, settings; get_trainee_card וחמש שורות ה-Registry שלו לפונה M01; S01, S03, S08, S12 ו-S19. דוח 4ב, פער 2 (הנוסח "עד 280 תווים" ב-S06), יחד עם דוח 4ג, פער 4 (הנוסח "24 שעות" ב-CANCEL_TOO_LATE). בית המאמן עדיין פונה ל-payments ומשאיר שורות ACTION_NOT_ALLOWED עד 4ד |
+| 5 עד 7 | לפי CLAUDE.md סעיף 6. בשלב 5 גם כניסת מתאמן ב-S23 וחידוש האסימון |
+| חובות פתוחים | פער 1 מ-4ב (שם תרגיל לא פעיל ב-S04) עם פער 11 מ-4א; פערים 12 ו-13 מ-4א (S05, S02); מבחני uc01 על מסד משומש; אימות פער 14 מ-4א בשלב 7 (נראה שוב בענן ב-4ג); דוח 4ג, פער 5 (משפט על NOT_ALLOWED בגרסת המפה הבאה) |
 | להכרעת הצוות | כפולי Drive: presentations/presentation-community 2 במאגר, output/presentation-community 2 מחוץ למאגר, ותיקיית הספרייה "course-library 3" (CLAUDE.md סעיף 10 קורא לה course-library) |
 
 ## כלים במחשב
 
 ~/bin: gh, supabase, deno, node, npm, npx. Docker Desktop נדרש פתוח לבדיקות מקומיות.
 
-**הרצה מקומית**: .claude/launch.json בשורש הפרויקט (מחוץ ל-Git): fitness-app (פורט 5174, מול המסד המקומי, app/.env.local) ו-fitness-app-cloud (פורט 5175, מול הענן, app/.env.cloud.local). שני קובצי הערכים אינם במאגר. הבדיקות המקומיות: `supabase db reset --local`, `supabase functions serve`, ואז `node --test --test-concurrency=1 tests/integration/*.test.mjs tests/system/*.test.mjs`; הן יוצרות את משתמשי ההדגמה המקומיים בעצמן (tests/system/demo-users.mjs). בדיקות התוכן של המסכים מול המסד: `LIVE_DB=1 npx vitest run` בתיקייה app. מבחני uc01 משלב 3 דורשים מסד נקי. מבחני 4ב עד 4ד יוצרים לעצמם מאמן ומתאמנים חדשים "(test)", אימונים בתאריכים יחסיים ושיעורים בשעות יחסיות (freshWorld, workoutDaysAgo, classInHours ו-paymentRequest ב-demo-users.mjs), ולכן אינם תלויים ביום ההרצה. שאילתת קריאה בענן: `supabase db query --linked`.
+**הרצה מקומית**: .claude/launch.json בשורש הפרויקט (מחוץ ל-Git): fitness-app (פורט 5174, מול המסד המקומי, app/.env.local) ו-fitness-app-cloud (פורט 5175, מול הענן, app/.env.cloud.local). שני קובצי הערכים אינם במאגר. הבדיקות המקומיות: `supabase db reset --local`, `supabase functions serve`, ואז `node --test --test-concurrency=1 tests/integration/*.test.mjs tests/system/*.test.mjs`; הן יוצרות את משתמשי ההדגמה המקומיים בעצמן (tests/system/demo-users.mjs). בדיקות התוכן של המסכים מול המסד: `LIVE_DB=1 npx vitest run` בתיקייה app. מבחני uc01 משלב 3 דורשים מסד נקי. מבחני 4ב ו-4ג יוצרים לעצמם מאמן ומתאמנים חדשים "(test)", אימונים בתאריכים יחסיים ושיעורים בשעות יחסיות (freshWorld, workoutDaysAgo, classInHours ב-demo-users.mjs), ולכן אינם תלויים ביום ההרצה. שאילתת קריאה בענן: `supabase db query --linked`.
 
 **ההצגה**: הסקירה https://claude.ai/artifact/1SurjPwYwJHiCm5yGGK5Rf וההדגמה https://claude.ai/artifact/SAimtvMbbnEynAMCPzU6UA. ההדגמה נבנית מהקוד (`vite build` עם ערכי VITE_ ריקים, והקוד מוטמע בעמוד אחד), על נתוני דוגמה ובלי כתובת שרת. הבנייה האחרונה ב-presentations/fitness-app-demo.html, מחוץ למאגר.
 
@@ -51,4 +49,4 @@
 
 ## הנחיית המשך
 
-פתח שיחה חדשה ב-Claude Code במחשב הצוות, קרא את CLAUDE.md גרסה 4, את file-system-index, את הקובץ הזה, את findings-stage-4d.md ואת doc-module-map.md גרסה 8, והתחל בתוכנית שלב 5 (הממשקים) לפי פרומפט 2 במנגנון הבנייה. לפני התוכנית: `git pull` של main, `git status` לבדיקת כפולים מסנכרון Drive, ו-Docker Desktop פתוח.
+פתח שיחה חדשה ב-Claude Code במחשב הצוות, קרא את CLAUDE.md גרסה 3, את file-system-index, את הקובץ הזה, את findings-stage-4c.md ואת doc-module-map.md גרסה 7, והתחל בתוכנית שלב 4ד לפי פרומפט 2 במנגנון הבנייה. לפני התוכנית: `git pull` של main, `git status` לבדיקת כפולים מסנכרון Drive, ו-Docker Desktop פתוח.

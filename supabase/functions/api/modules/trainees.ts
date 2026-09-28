@@ -1,11 +1,13 @@
 // M01 trainees: inviting a trainee and the coach's trainee list.
 // Requirement 19, unified operations (story-19, usecase-04 steps 1-3, 6; alternatives b, c, e).
-// Stage 4a builds list_trainees and invite_trainee; accept_invite and get_trainee_card come later (stage 4a plan, decisions 3, 6).
+// Stage 4a builds list_trainees and invite_trainee; stage 4d builds get_trainee_card (UC4 step 7). accept_invite comes
+// with the identity service, in stage 5 (stage 4a plan, decisions 3, 6).
 // Acceptance (UC4 section 13): an invite appears in the list as "invited"; a bad contact detail creates nothing;
-// a channel that fails leaves the invite open.
-import { type ErrorCode, fail, ok } from "../errors.ts";
+// a channel that fails leaves the invite open; the trainee card shows program, coins, streak and payments in one screen.
+import { type ErrorCode, fail, ok, type Reply } from "../errors.ts";
 import type { ModuleContext, ModuleDef } from "../orchestrator.ts";
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -17,6 +19,9 @@ async function inviteValidDays(ctx: ModuleContext): Promise<number | ErrorCode> 
   const days = Number((r.data as Record<string, string>).inviteValidDays);
   return Number.isInteger(days) && days > 0 ? days : "VALUE_NOT_SET";
 }
+
+// One item of the card: the data of a reply that worked, or null for one that failed (as home, UC9 c).
+const dataOf = <T>(r: Reply): T | null => (r.ok ? (r.data as T) : null);
 
 function newToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
@@ -58,6 +63,40 @@ export const trainees: ModuleDef = {
         if (!sent.ok) return fail("INVITE_DELIVERY_FAILED");
       }
       return ok({ link });
+    },
+
+    // UC4 step 7, made of existing actions through the Orchestrator (module map v8, its contract).
+    async get_trainee_card(ctx, payload) {
+      const traineeID = payload.traineeID;
+      if (ctx.actor.role !== "coach" || typeof traineeID !== "string" || !UUID.test(traineeID)) return fail("NOT_ALLOWED");
+      if (!(await ctx.repo.isActiveTraineeOfCoach(traineeID, ctx.actor.coachID))) return fail("NOT_ALLOWED"); // rule 5
+      const trainee = (await ctx.repo.listTraineesForCoach(ctx.actor.coachID)).find((t) => t.TraineeID === traineeID);
+      if (!trainee) return fail("NOT_ALLOWED");
+
+      const ask = (module: string, action: string) => ctx.call({ module, action, payload: { traineeID } });
+      const [program, balance, payments, streak] = await Promise.all([
+        ask("programs", "get_active_program"),
+        ask("coins", "get_balance"),
+        ask("payments", "list_payments"),
+        ask("progress", "get_streak"),
+      ]);
+
+      // No active program is a trainee without one, not a failure of the card (stage 4d plan, execution decision 4).
+      const workouts = program.ok
+        ? (program.data as { workouts: unknown[] }).workouts.length
+        : program.error?.code === "NO_ACTIVE_PROGRAM" ? 0 : null;
+      const coins = dataOf<{ balance: number; goal: unknown }>(balance);
+      const list = dataOf<{ status: string }[]>(payments);
+
+      return ok({
+        trainee: { TraineeID: trainee.TraineeID, fullName: trainee.fullName, isActive: trainee.isActive },
+        coins: coins?.balance ?? null,
+        streak: dataOf<{ streak: number }>(streak)?.streak ?? null,
+        openPayments: list ? list.filter((p) => p.status === "open").length : null,
+        workouts,
+        payments: list ? list.length : null,
+        goal: coins?.goal ?? null,
+      });
     },
   },
 };

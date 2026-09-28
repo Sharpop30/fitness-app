@@ -142,3 +142,13 @@ export function classInHours(coachID, hours, capacity = 8, regs = []) {
 // The status of a trainee in a class, straight from the database.
 export const regStatus = (classID, traineeID) =>
   psql(`select "status" from class_registrations where "ClassID"='${classID}' and "TraineeID"='${traineeID}'`);
+
+// Stage 4d plan, decision 10: a request "(test)" of a fresh coach's trainee, straight into the database, LOCAL only.
+// paid: true adds its demo invoice, as a paid request always has one (module map v8). Returns the PaymentRequestID.
+export function paymentRequest(coachID, traineeID, { paymentType = "monthly", amount = 350, paid = false, daysAgo = 0 } = {}) {
+  const id = psql(`insert into payment_requests ("TraineeID","CoachID","paymentType","amount","status","createdAt","paidAt")
+                   values ('${traineeID}','${coachID}','${paymentType}',${amount},'${paid ? "paid" : "open"}',
+                           now() - interval '${daysAgo} days', ${paid ? `now() - interval '${daysAgo} days'` : "null"}) returning "PaymentRequestID"`).split("\n")[0];
+  if (paid) psql(`insert into invoices ("PaymentRequestID","amount","isDemo","issuedAt") values ('${id}',${amount},true, now() - interval '${daysAgo} days')`);
+  return id;
+}
