@@ -2,7 +2,8 @@
 // And, with LIVE_DB=1 against the LOCAL stack, the screens on the Endpoint show what the database holds
 // (stage 4a plan, task 8; stage 4b plan, task 12; stage 3 report, the content-check debt).
 import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
-import { setSession } from "../api/client";
+import { setAdapter, setSession, type Envelope } from "../api/client";
+import { demoAdapter } from "../demo/adapter";
 import { accessToken } from "../identity/auth";
 import { SCREENS } from "../App";
 import { NavContext, type Nav } from "../nav";
@@ -34,6 +35,27 @@ test.each(CASES)("%s opens and shows its title", async (id, role, params, title)
   render(<NavContext.Provider value={nav(role)}><S {...params} /></NavContext.Provider>);
   expect(await screen.findByRole("heading", { level: 1, name: title })).toBeTruthy();
   expect(screen.getByText(/נתוני דוגמה/)).toBeTruthy();
+});
+
+// Stage 4c report, gap 1: the class list and the publish form ask for no single class; one class only with its ID.
+test("S11 asks list_registrations only when it opens one class", async () => {
+  const asked: Envelope[] = [];
+  setAdapter((e, sess) => { asked.push(e); return demoAdapter(e, sess); });
+  setSession({ role: "coach", traineeID: null });
+  const S = SCREENS.S11;
+  try {
+    for (const params of [{}, { publish: true }]) {
+      render(<NavContext.Provider value={nav("coach")}><S {...params} /></NavContext.Provider>);
+      await screen.findByRole("heading", { level: 1 });
+      cleanup();
+    }
+    expect(asked.filter((e) => e.action === "list_registrations")).toEqual([]);
+    render(<NavContext.Provider value={nav("coach")}><S classID="d0000000-0000-4000-8000-00000000a001" /></NavContext.Provider>);
+    await screen.findByRole("heading", { level: 1, name: "פארק הירקון" });
+    expect(asked.filter((e) => e.action === "list_registrations").map((e) => e.payload)).toEqual([{ classID: "d0000000-0000-4000-8000-00000000a001" }]);
+  } finally {
+    setAdapter(demoAdapter);
+  }
 });
 
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
