@@ -82,6 +82,47 @@ export async function strangerCoachToken() {
   return signIn(email, password);
 }
 
+// Stage 4b plan, decision 9: a fresh coach with fresh trainees, all marked "(test)", LOCAL only, so the tests of streaks,
+// weeks and challenges depend neither on the demo data nor on the day they run. Each has the demo coach's SETTINGS and an
+// active program of one workout: squat 3x5 at 60, and pushups 2x10 (bodyweight). Call demoTokens() first.
+export async function freshWorld(traineeCount = 1) {
+  const run = randomBytes(4).toString("hex");
+  const password = `local-only-${randomBytes(12).toString("hex")}`;
+  const person = async (email) => { await ensureUser(email, password); return psql(`select id from auth.users where email = '${email}'`); };
+
+  const coachEmail = `coach.${run}@fitness-app.test`;
+  const coachAuth = await person(coachEmail);
+  const coachID = psql(`insert into coaches ("authUserID","fullName","email") values ('${coachAuth}','מאמן ${run} (test)','${coachEmail}')
+                        returning "CoachID"`).split("\n")[0];
+  psql(`insert into settings ("CoachID","settingKey","settingValue")
+        select '${coachID}', "settingKey", "settingValue" from settings where "CoachID" = '${ID.coach}'`);
+
+  const trainees = [];
+  for (let i = 1; i <= traineeCount; i++) {
+    const email = `trainee${i}.${run}@fitness-app.test`;
+    const auth = await person(email);
+    const traineeID = psql(`insert into trainees ("CoachID","authUserID","fullName","email") values ('${coachID}','${auth}','מתאמן ${i} ${run} (test)','${email}')
+                            returning "TraineeID"`).split("\n")[0];
+    const programID = psql(`insert into programs ("TraineeID","programName") values ('${traineeID}','תוכנית (test)') returning "ProgramID"`).split("\n")[0];
+    const workoutID = psql(`insert into workouts ("ProgramID","workoutName","sortOrder") values ('${programID}','אימון (test)',0) returning "WorkoutID"`).split("\n")[0];
+    psql(`insert into workout_items ("WorkoutID","ExerciseID","sortOrder","targetSets","targetReps","targetWeight") values
+          ('${workoutID}','${ID.squat}',0,3,5,60), ('${workoutID}','${ID.pushup}',1,2,10,0)`);
+    trainees.push({ traineeID, programID, workoutID, email, token: await signIn(email, password) });
+  }
+  return { coachID, coachToken: await signIn(coachEmail, password), trainees };
+}
+
+// A workout saved n days before today, at noon in Israel (stage 4b plan, decision 8), straight into the database, so a
+// test can build a history across days. sets: [[exerciseID, reps, weight, isDone?], ...]. Returns the WorkoutLogID.
+export function workoutDaysAgo(traineeID, workoutID, n, sets) {
+  const at = `(((now() at time zone 'Asia/Jerusalem')::date - ${n}) + time '12:00') at time zone 'Asia/Jerusalem'`;
+  const logID = psql(`insert into workout_logs ("TraineeID","WorkoutID","performedAt") values ('${traineeID}','${workoutID}',${at})
+                      returning "WorkoutLogID"`).split("\n")[0];
+  const rows = sets.map(([ex, reps, weight, isDone = true], i) => `('${logID}','${ex}',${i + 1},${reps},${weight},${isDone})`).join(",");
+  psql(`insert into set_results ("WorkoutLogID","ExerciseID","setNumber","reps","weight","isDone") values ${rows}`);
+  return logID;
+}
+
 // The two audit rows of the latest request for this caller and action: [request, reply].
 export const lastAudit = (caller, action) =>
   psql(`select "isOk" || ':' || coalesce("errorCode",'-') from audit_entries
