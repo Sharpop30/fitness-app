@@ -120,11 +120,11 @@ Deno.test("UC3 step 7: feedback, coins and challenges are asked through the Orch
 });
 
 Deno.test("decision 6 / UC3 section 7: when feedback, coins and challenges fail, the save stands and their fields are empty", async () => {
-  const w = world(); // none of the three is built in stage 4a
+  const w = world(); // none of the three is in this test's modules
   const r = await logWorkout(w, asPlanned());
   assertEquals(r.ok, true);
   assertEquals(w.logs.length, 1);
-  assertEquals(feedbackOf(r), { done: 3, total: 3, records: [], coins: 0, goal: false, challenge: false, text: null });
+  assertEquals(feedbackOf(r), { done: 3, total: 3, records: [], coins: 0, goal: false, challenge: false, text: "" });
 });
 
 Deno.test("UC3 step 7: what feedback, coins and challenges answer reaches the trainee; one failing does not hide the others", async () => {
