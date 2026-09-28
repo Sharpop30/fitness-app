@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: מאושר, 28.09.2026, גרסה 7. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 28.09.2026, גרסה 6. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -10,7 +10,7 @@
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
 | המקורות | PRD גרסה 1.19; doc-mlp-scope; 11 סיפורי משתמש ו-11 מקרי שימוש (usecase-01 עד 11); doc-erd-conceptual ו-doc-erd-logical; prototype-fitness-app גרסה 1 |
-| גרסה ותאריך | 7, 28.09.2026 |
+| גרסה ותאריך | 6, 28.09.2026 |
 
 ## 2. הליבה
 
@@ -120,8 +120,6 @@
 
 **שורה שנוספה בגרסה 6** (שלב 4ב, משימה 3), נכנסת ל-Registry בשלב 4ב: M05 מול settings.get_settings, כי get_streak קורא את streakGapDays מ-SETTINGS (UC9 צעד 4, כלל 8).
 
-**החוזים שנוספו בגרסה 7** (תוכנית שלב 4ג, הכרעות 2 עד 4): הקלט והתשובה של notifications.notify_in_app; הטווח של classes.list_upcoming_classes למאמן ולמתאמן; מה המתאמן רואה על נרשמים אחרים; ומבנה lateRequests. אין שורות Registry חדשות: כל השורות של 4ג קיימות מ-0002.
-
 **כשל אחרי שמירת אימון** (UC3 סעיף 7; דוח שלב 4א, פער 2): אין תור בגרסה הראשונה. התוצאות נשארות שמורות, והשדות של הפנייה שנכשלה חוזרים ריקים. coins.award אידמפוטנטי לפי eventRef, ולכן חישוב חוזר אפשרי בגרסה הבאה.
 
 ### טבלת פעולות המסכים
@@ -178,11 +176,10 @@
 | payments.list_payments | רשימה: PaymentRequestID, fullName, paymentType, amount, status, createdAt, invoiceNumber |
 | payments.pay_demo | invoiceNumber |
 | invoices.list_invoices | רשימה: invoiceNumber, fullName, paymentType, amount, issuedAt, isDemo |
-| classes.list_upcoming_classes | classes (עם registered, waitlist, myStatus, myWaitPosition), cancelHours, ולמאמן lateRequests (LateCancelRequestID, fullName, startsAt). הטווח: למאמן, שיעורים מתחילת היום לפני שלושה ימים, כדי לסמן נוכחות אחרי השיעור (UC11 צעד 9); למתאמן, שיעורים שעוד לא התחילו. למאמן, registered (TraineeID, fullName, attended) ו-waitlist (TraineeID, fullName); למתאמן, registered ו-waitlist כרשימות באותו אורך, בלי שמות ובלי מזהים, כך שנראה רק מספר המקומות התפוסים והממתינים, ו-myStatus ו-myWaitPosition שלו (כלל 5) |
+| classes.list_upcoming_classes | classes (עם registered, waitlist, myStatus, myWaitPosition), cancelHours, ולמאמן lateRequests |
 | classes.list_registrations | שיעור אחד באותו מבנה |
 | classes.register | status, position |
 | classes.mark_attendance | awarded, מספר המתאמנים שקיבלו מטבעות |
-| notifications.notify_in_app | null. הקלט: traineeID, messageText. המודול הפונה (classes או feedback) כותב את הנוסח, ו-notifications בודק שהמתאמן שייך למאמן של הבקשה |
 | notifications.list_notifications | רשימת הודעות שלא נקראו: NotificationID, messageText, createdAt |
 | home.get_coach_home | activeTrainees, openPayments, classesToday, lateRequests, rewardsToDeliver, challenge |
 | home.get_trainee_home | reminder, streak, streakGapDays, coins, nextWorkout, nextClass, challenge, offers |
@@ -300,4 +297,3 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 4 | 28.09.2026 | מפערי דוח שלב 4א: M01 קורא מהליבה גם "תוכנית" (פער 9); progress מחשב את הרצף בפעולה חדשה get_streak, ו-get_trainee_card מרכיב את הכרטיס מ-programs, coins, payments ו-progress, עם חמש שורות Registry לפונה מודול (פער 1); coins.get_balance מחזיר גם goal; מבנה התשובה של list_trainees עם InviteID (פער 3); החוזה בין results לבין feedback, coins ו-challenges (פער 10); בלי תור לחישוב חוזר בגרסה הראשונה (פער 2). מה לא השתנה: הליבה, מבנה המעטפה, המודולים, קודי השגיאה וסדר הבנייה | הצוות |
 | 5 | 28.09.2026 | מתוכנית שלב 4ב, הכרעות 3, 5, 6 ו-7: שלוש שורות Registry, M13 מול coins.manage_rewards ו-challenges.list_completions, ו-S09 מול exercises.list_exercises; פירוט המקורות של get_coach_home; מבנה הקלט והתשובה של progress.detect_personal_records והגדרת השיא; הקודים לקלט לא תקין בלי קוד ייעודי. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
 | 6 | 28.09.2026 | מפער שנמצא בשלב 4ב, משימה 3: שורת Registry אחת, M05 מול settings.get_settings, ל-streakGapDays של get_streak. מה לא השתנה: כל השאר | הצוות |
-| 7 | 28.09.2026 | מתוכנית שלב 4ג, הכרעות 2, 3 ו-4: החוזה של notifications.notify_in_app (traineeID, messageText; data null); הטווח של classes.list_upcoming_classes (למאמן משלושה ימים אחורה, למתאמן שיעורים שעוד לא התחילו); המתאמן מקבל את הנרשמים והממתינים בלי שמות ומזהים; ומבנה lateRequests. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, ה-Registry, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |

@@ -2,7 +2,7 @@
 // Requirements 19 (story-19, usecase-04 step 6) and 25 (story-25, usecase-09). No data of its own, and no table.
 // Acceptance (UC9 section 13): the trainee sees the next workout, the next class, the challenge progress and the
 // streak. UC9 c and section 7: an item that fails is left out, and the rest of the screen still comes.
-// Until classes (4c) and payments (4d) are built, their items come back empty (stage 4b plan, task 7).
+// Until payments (4d) is built, its item comes back empty (stage 4b plan, task 7). Classes are built in 4c.
 import { fail, ok, type Reply } from "../errors.ts";
 import type { ModuleContext, ModuleDef } from "../orchestrator.ts";
 
@@ -12,7 +12,7 @@ const dayKey = (at: string | number) => ISRAEL_DAY.format(new Date(at));
 // One item: the data of a reply that worked, or null for one that failed (UC9 c).
 const dataOf = <T>(r: Reply): T | null => (r.ok ? (r.data as T) : null);
 
-type ClassRow = { ClassID: string; startsAt: string; place: string; myStatus?: string };
+type ClassRow = { ClassID: string; startsAt: string; place: string; status: string; myStatus?: string };
 type Classes = { classes: ClassRow[]; lateRequests?: unknown[] };
 
 export const home: ModuleDef = {
@@ -46,7 +46,9 @@ export const home: ModuleDef = {
       const next = workouts.length ? workouts[(last + 1) % workouts.length] : null;
 
       const mine = dataOf<Classes>(classes)?.classes ?? [];
-      const registered = mine.filter((k) => k.myStatus === "registered").sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0];
+      // The nearest class the trainee is registered to that has not started (stage 4c plan, execution decision 7).
+      const now = Date.now();
+      const registered = mine.filter((k) => k.myStatus === "registered" && k.status === "active" && Date.parse(k.startsAt) > now).sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0];
       const hours = Number(dataOf<Record<string, string>>(offerHours)?.spotOfferHours);
 
       const c = dataOf<{ challengeName: string; progress: { value: number; target: number; exempt: boolean } | null } | null>(challenge);
@@ -90,7 +92,7 @@ export const home: ModuleDef = {
       return ok({
         activeTrainees: list ? list.filter((t) => t.joined && t.isActive).length : null,
         openPayments: open ? open.filter((p) => p.status === "open").length : null,
-        classesToday: k ? k.classes.filter((x) => dayKey(x.startsAt) === today).length : null,
+        classesToday: k ? k.classes.filter((x) => x.status === "active" && dayKey(x.startsAt) === today).length : null,
         lateRequests: k?.lateRequests ? k.lateRequests.length : null,
         rewardsToDeliver: redemptions ? redemptions.filter((r) => r.status === "pending").length : null,
         challenge: c && { challengeName: c.challengeName, completions: done ? done.length : null },

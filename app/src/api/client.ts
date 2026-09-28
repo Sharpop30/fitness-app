@@ -3,6 +3,7 @@
 // Screens in LIVE_SCREENS go to the one Endpoint once the person signed in with the identity service; every other
 // screen stays on the demo adapter until its stage. Adding a screen is a line here, and the screen does not change.
 import { demoAdapter } from "../demo/adapter";
+import { TODAY } from "../demo/data";
 import { accessToken, signOutIdentity } from "../identity/auth";
 
 // Stage 3: the first slice, S04 against programs (doc-module-map section 7).
@@ -10,8 +11,10 @@ import { accessToken, signOutIdentity } from "../identity/auth";
 // Stage 4b: every screen whose actions are now all built (stage 4b plan, decision 2). The trainee's screens go live once
 // a trainee signs in with the identity service, in stage 5 (decision 1). S01, S03, S13 and the rest wait for actions of
 // later stages, so they stay on the demo adapter rather than show half the truth.
+// Stage 4c: S11, S13 and S17, with classes and notifications built (stage 4c plan). S13 and S17 are the trainee's, and
+// work in the browser with a trainee sign-in in stage 5 (decision 1). S01 waits for payments, in 4d.
 export const LIVE_SCREENS = new Set([
-  "S02", "S04", "S05", "S06", "S07", "S09", "S10", "S14", "S15", "S16", "S18", "S20", "S21",
+  "S02", "S04", "S05", "S06", "S07", "S09", "S10", "S11", "S13", "S14", "S15", "S16", "S17", "S18", "S20", "S21",
 ]);
 
 export interface Envelope {
@@ -73,6 +76,9 @@ export const endpointAdapter: Adapter = async (envelope) => {
 };
 
 const isLive = (caller: string) => LIVE_SCREENS.has(caller) && !!import.meta.env.VITE_API_URL && accessToken() !== null;
+
+// "Now" for a screen: the real clock on the Endpoint, and the demo's own day on demo data (stage 4c plan, decision 10).
+export const now = (caller: string): Date => (isLive(caller) ? new Date() : new Date(TODAY));
 
 export function call<T = any>(caller: string, module: string, action: string, payload: Record<string, unknown> = {}): Promise<Reply<T>> {
   if (!session && !(module === "trainees" && action === "accept_invite")) {

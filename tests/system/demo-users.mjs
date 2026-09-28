@@ -128,3 +128,17 @@ export const lastAudit = (caller, action) =>
   psql(`select "isOk" || ':' || coalesce("errorCode",'-') from audit_entries
         where "requestID" = (select "requestID" from audit_entries where caller='${caller}' and "actionName"='${action}' order by "createdAt" desc limit 1)
         order by "createdAt"`).split("\n");
+
+// Stage 4c plan, decision 11: a class "(test)" of a coach, starting the given hours from now (negative: already started),
+// straight into the database, LOCAL only. regs: [[traineeID, status], ...] in waitlist order. Returns the ClassID.
+export function classInHours(coachID, hours, capacity = 8, regs = []) {
+  const classID = psql(`insert into classes ("CoachID","startsAt","place","capacity")
+                        values ('${coachID}', now() + interval '${hours} hours', 'סטודיו (test)', ${capacity}) returning "ClassID"`).split("\n")[0];
+  regs.forEach(([traineeID, status], i) => psql(`insert into class_registrations ("ClassID","TraineeID","status","waitlistPosition","offerExpiresAt")
+    values ('${classID}','${traineeID}','${status}',${status === "waitlist" ? i + 1 : "null"},${status === "offered" ? "now() + interval '2 hours'" : "null"})`));
+  return classID;
+}
+
+// The status of a trainee in a class, straight from the database.
+export const regStatus = (classID, traineeID) =>
+  psql(`select "status" from class_registrations where "ClassID"='${classID}' and "TraineeID"='${traineeID}'`);

@@ -43,7 +43,7 @@ Deno.test("UC9 section 13: the trainee's home has the reminder, streak, coins, n
   assertEquals(r, ok({
     reminder: "יום טוב (test)", streak: 3, streakGapDays: 3, coins: 75,
     nextWorkout: { WorkoutID: B, workoutName: "אימון B" }, // the last workout done was A
-    nextClass: null, // classes arrives in stage 4c
+    nextClass: null, // no classes module in this test
     challenge: { challengeName: "שלושה אימונים (test)", value: 2, target: 3, exempt: false },
     offers: [],
   }));
@@ -96,15 +96,25 @@ Deno.test("UC9 d, decision 10: a reminder text missing from SETTINGS is left emp
   assertEquals(d.reminder, "");
 });
 
-Deno.test("stage 4c shape: a registered class is the next class, and an offered spot comes with spotOfferHours", async () => {
+Deno.test("stage 4c: a registered class is the next class, and an offered spot comes with spotOfferHours", async () => {
   const classes = stand("M11", { list_upcoming_classes: ok({ classes: [
-    { ClassID: U(61), startsAt: "2026-10-02T15:00:00Z", place: "סטודיו", myStatus: "registered" },
-    { ClassID: U(62), startsAt: "2026-10-01T15:00:00Z", place: "פארק", myStatus: "offered" },
-    { ClassID: U(63), startsAt: "2026-09-30T15:00:00Z", place: "סטודיו", myStatus: null },
+    { ClassID: U(61), startsAt: "2099-10-02T15:00:00Z", place: "סטודיו", status: "active", myStatus: "registered" },
+    { ClassID: U(62), startsAt: "2099-10-01T15:00:00Z", place: "פארק", status: "active", myStatus: "offered" },
+    { ClassID: U(63), startsAt: "2099-09-30T15:00:00Z", place: "סטודיו", status: "active", myStatus: null },
   ] }) });
   const d = (await traineeHome(world(), traineeModules({ classes }))).data as Record<string, unknown>;
-  assertEquals(d.nextClass, { startsAt: "2026-10-02T15:00:00Z", place: "סטודיו" });
-  assertEquals(d.offers, [{ ClassID: U(62), startsAt: "2026-10-01T15:00:00Z", hours: 2 }]);
+  assertEquals(d.nextClass, { startsAt: "2099-10-02T15:00:00Z", place: "סטודיו" });
+  assertEquals(d.offers, [{ ClassID: U(62), startsAt: "2099-10-01T15:00:00Z", hours: 2 }]);
+});
+
+Deno.test("stage 4c execution decision 7: a cancelled class, or one that started, is not the next class", async () => {
+  const classes = stand("M11", { list_upcoming_classes: ok({ classes: [
+    { ClassID: U(61), startsAt: "2099-10-01T15:00:00Z", place: "בוטל", status: "cancelled", myStatus: "registered" },
+    { ClassID: U(62), startsAt: "2000-01-01T15:00:00Z", place: "עבר", status: "active", myStatus: "registered" },
+    { ClassID: U(63), startsAt: "2099-10-05T15:00:00Z", place: "סטודיו", status: "active", myStatus: "registered" },
+  ] }) });
+  const d = (await traineeHome(world(), traineeModules({ classes }))).data as Record<string, unknown>;
+  assertEquals(d.nextClass, { startsAt: "2099-10-05T15:00:00Z", place: "סטודיו" });
 });
 
 Deno.test("rule 5: a coach asking for the trainee home, or a trainee for the coach home, is NOT_ALLOWED", async () => {
@@ -130,7 +140,9 @@ Deno.test("module map v5: the coach's home counts active trainees, rewards to de
 Deno.test("stage 4c and 4d shape: open payments, today's classes and late cancel requests are counted", async () => {
   const d = (await coachHome(world(), {
     payments: stand("M09", { list_payments: ok([{ status: "open" }, { status: "paid" }, { status: "open" }]) }),
-    classes: stand("M11", { list_upcoming_classes: ok({ classes: [{ startsAt: TODAY }, { startsAt: "2099-01-01T10:00:00Z" }], lateRequests: [{}] }) }),
+    classes: stand("M11", { list_upcoming_classes: ok({ classes: [
+      { startsAt: TODAY, status: "active" }, { startsAt: TODAY, status: "cancelled" }, { startsAt: "2099-01-01T10:00:00Z", status: "active" },
+    ], lateRequests: [{}] }) }),
     challenges: stand("M08", { get_current_challenge: ok(null), list_completions: ok([]) }),
   })).data as Record<string, unknown>;
   assertEquals([d.openPayments, d.classesToday, d.lateRequests, d.challenge], [2, 1, 1, null]);

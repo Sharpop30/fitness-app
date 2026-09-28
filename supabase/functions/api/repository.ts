@@ -177,6 +177,51 @@ export interface ChallengeCompletion {
   prizeDeliveredAt: string | null;
 }
 
+// One trainee's place in a class (UC11 steps 4-9). The ERD keeps one row per class and trainee.
+export interface ClassRegistration {
+  ClassRegistrationID: string;
+  TraineeID: string;
+  fullName: string;
+  status: "registered" | "waitlist" | "offered" | "cancelled";
+  waitlistPosition: number | null;
+  offerExpiresAt: string | null;
+  attended: boolean | null;
+}
+
+export interface GroupClass {
+  ClassID: string;
+  CoachID: string;
+  startsAt: string;
+  place: string;
+  capacity: number;
+  status: "active" | "cancelled";
+  registrations: ClassRegistration[];
+}
+
+// What the atomic registration functions return (migration 0010): offered lists the trainees who got a spot now.
+export interface SpotResult {
+  status: "registered" | "waitlist" | "already" | "closed" | "ok" | "none" | "expired";
+  position?: number | null;
+  offered: string[];
+}
+
+export interface LateCancelRequest {
+  LateCancelRequestID: string;
+  ClassRegistrationID: string;
+  ClassID: string;
+  CoachID: string;
+  TraineeID: string;
+  fullName: string;
+  startsAt: string;
+  status: "pending" | "approved" | "rejected";
+}
+
+export interface Notification {
+  NotificationID: string;
+  messageText: string;
+  createdAt: string;
+}
+
 export interface Repository {
   findActorByAuthUser(authUserID: string): Promise<Actor | null>;
   isRegistered(caller: string, moduleName: string, actionName: string, role: string): Promise<boolean>;
@@ -224,6 +269,22 @@ export interface Repository {
   listCompletions(challengeID: string): Promise<ChallengeCompletion[]>;
   addCompletion(challengeID: string, traineeID: string): Promise<string | null>;
   markPrizeDelivered(challengeID: string, traineeID: string): Promise<boolean>;
+  // Classes (UC11), private to M11. Registering and freeing a spot are atomic (migration 0010).
+  publishClass(coachID: string, startsAt: string, place: string, capacity: number): Promise<string>;
+  getClass(classID: string): Promise<GroupClass | null>;
+  listClasses(coachID: string, from: string): Promise<GroupClass[]>;
+  cancelClass(classID: string): Promise<boolean>;
+  registerForClass(classID: string, traineeID: string, offerHours: number): Promise<SpotResult>;
+  releaseSpot(classID: string, traineeID: string | null, op: "cancel" | "accept" | "decline" | "expire", offerHours: number): Promise<SpotResult>;
+  setAttendance(classID: string, present: string[]): Promise<{ ClassRegistrationID: string; TraineeID: string }[]>;
+  addLateCancelRequest(classRegistrationID: string): Promise<void>;
+  listLateCancelRequests(coachID: string): Promise<LateCancelRequest[]>;
+  getLateCancelRequest(requestID: string): Promise<LateCancelRequest | null>;
+  decideLateCancelRequest(requestID: string, approve: boolean): Promise<boolean>;
+  // Notifications (UC11 step 7 and c, UC6 step 9), private to M12. Unread only, newest first.
+  addNotification(traineeID: string, messageText: string): Promise<void>;
+  listUnreadNotifications(traineeID: string): Promise<Notification[]>;
+  markNotificationRead(notificationID: string, traineeID: string): Promise<boolean>;
 }
 
 export class StorageUnavailable extends Error {}
@@ -492,6 +553,125 @@ export function createRepository(): Repository {
         .eq("ChallengeID", challengeID).eq("TraineeID", traineeID).maybeSingle());
       return exists !== null;
     },
+
+    async publishClass(coachID, startsAt, place, capacity) {
+      const row = must(await db.from("classes").insert({ CoachID: coachID, startsAt, place, capacity })
+        .select('"ClassID"').single()) as { ClassID: string };
+      return row.ClassID;
+    },
+
+    async getClass(classID) {
+      const row = must(await db.from("classes").select(CLASS_FIELDS).eq("ClassID", classID).maybeSingle()) as ClassRow | null;
+      return row ? toClass(row) : null;
+    },
+
+    async listClasses(coachID, from) {
+      const rows = must(await db.from("classes").select(CLASS_FIELDS)
+        .eq("CoachID", coachID).gte("startsAt", from).order("startsAt")) as unknown as ClassRow[];
+      return rows.map(toClass);
+    },
+
+    async cancelClass(classID) {
+      const rows = must(await db.from("classes").update({ status: "cancelled" })
+        .eq("ClassID", classID).eq("status", "active").select('"ClassID"')) as unknown[];
+      return rows.length > 0;
+    },
+
+    async registerForClass(classID, traineeID, offerHours) {
+      return must(await db.rpc("classes_register", { p_class: classID, p_trainee: traineeID, p_hours: offerHours })) as SpotResult;
+    },
+
+    async releaseSpot(classID, traineeID, op, offerHours) {
+      return must(await db.rpc("classes_release_spot", { p_class: classID, p_trainee: traineeID, p_op: op, p_hours: offerHours })) as SpotResult;
+    },
+
+    async setAttendance(classID, present) {
+      // Only registered trainees are marked (UC11 step 9); everyone else registered is marked absent.
+      const marked = must(await db.from("class_registrations").update({ attended: true })
+        .eq("ClassID", classID).eq("status", "registered").in("TraineeID", present)
+        .select('"ClassRegistrationID","TraineeID"')) as { ClassRegistrationID: string; TraineeID: string }[];
+      let absent = db.from("class_registrations").update({ attended: false }).eq("ClassID", classID).eq("status", "registered");
+      if (present.length) absent = absent.not("TraineeID", "in", `(${present.join(",")})`);
+      must(await absent);
+      return marked;
+    },
+
+    async addLateCancelRequest(classRegistrationID) {
+      const pending = must(await db.from("late_cancel_requests").select('"LateCancelRequestID"')
+        .eq("ClassRegistrationID", classRegistrationID).eq("status", "pending").limit(1)) as unknown[];
+      if (pending.length === 0) must(await db.from("late_cancel_requests").insert({ ClassRegistrationID: classRegistrationID }));
+    },
+
+    async listLateCancelRequests(coachID) {
+      const rows = must(await db.from("late_cancel_requests").select(LATE_FIELDS)
+        .eq("status", "pending").eq("class_registrations.classes.CoachID", coachID).order("createdAt")) as unknown as LateRow[];
+      return rows.filter((r) => r.class_registrations?.classes).map(toLate);
+    },
+
+    async getLateCancelRequest(requestID) {
+      const row = must(await db.from("late_cancel_requests").select(LATE_FIELDS)
+        .eq("LateCancelRequestID", requestID).maybeSingle()) as LateRow | null;
+      return row ? toLate(row) : null;
+    },
+
+    async decideLateCancelRequest(requestID, approve) {
+      const rows = must(await db.from("late_cancel_requests")
+        .update({ status: approve ? "approved" : "rejected", decidedAt: new Date().toISOString() })
+        .eq("LateCancelRequestID", requestID).eq("status", "pending").select('"LateCancelRequestID"')) as unknown[];
+      return rows.length > 0;
+    },
+
+    async addNotification(traineeID, messageText) {
+      must(await db.from("notifications").insert({ TraineeID: traineeID, messageText }));
+    },
+
+    async listUnreadNotifications(traineeID) {
+      return must(await db.from("notifications").select('"NotificationID","messageText","createdAt"')
+        .eq("TraineeID", traineeID).is("readAt", null).order("createdAt", { ascending: false })) as Notification[];
+    },
+
+    async markNotificationRead(notificationID, traineeID) {
+      const row = must(await db.from("notifications").select('"NotificationID"')
+        .eq("NotificationID", notificationID).eq("TraineeID", traineeID).maybeSingle());
+      if (!row) return false;
+      must(await db.from("notifications").update({ readAt: new Date().toISOString() })
+        .eq("NotificationID", notificationID).is("readAt", null));
+      return true;
+    },
+  };
+}
+
+const CLASS_FIELDS = '"ClassID","CoachID","startsAt","place","capacity","status",' +
+  'class_registrations("ClassRegistrationID","TraineeID","status","waitlistPosition","offerExpiresAt","attended",trainees("fullName"))';
+
+type ClassRow = Omit<GroupClass, "registrations"> & {
+  class_registrations: (Omit<ClassRegistration, "fullName"> & { trainees: { fullName: string } })[];
+};
+
+function toClass({ class_registrations, ...k }: ClassRow): GroupClass {
+  return {
+    ...k,
+    registrations: class_registrations
+      .map(({ trainees, ...r }) => ({ ...r, fullName: trainees.fullName }))
+      .sort((a, b) => (a.waitlistPosition ?? 0) - (b.waitlistPosition ?? 0) || a.fullName.localeCompare(b.fullName)),
+  };
+}
+
+const LATE_FIELDS = '"LateCancelRequestID","ClassRegistrationID","status",' +
+  'class_registrations!inner("ClassID","TraineeID",trainees("fullName"),classes!inner("CoachID","startsAt"))';
+
+interface LateRow {
+  LateCancelRequestID: string;
+  ClassRegistrationID: string;
+  status: LateCancelRequest["status"];
+  class_registrations: { ClassID: string; TraineeID: string; trainees: { fullName: string }; classes: { CoachID: string; startsAt: string } };
+}
+
+function toLate(r: LateRow): LateCancelRequest {
+  const g = r.class_registrations;
+  return {
+    LateCancelRequestID: r.LateCancelRequestID, ClassRegistrationID: r.ClassRegistrationID, status: r.status,
+    ClassID: g.ClassID, TraineeID: g.TraineeID, fullName: g.trainees.fullName, CoachID: g.classes.CoachID, startsAt: g.classes.startsAt,
   };
 }
 

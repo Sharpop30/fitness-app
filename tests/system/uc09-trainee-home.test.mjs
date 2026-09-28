@@ -1,9 +1,10 @@
 // System test, usecase-09 daily reminder and streak on the trainee's home (requirement 25), end to end through the one
 // Endpoint against the LOCAL stack. Clusters (doc-module-map section 6): normal, edge (a, b), failure (c).
-// S13 stays on the demo adapter until stage 4c; the action is tested here. Data: fresh "(test)" people (decision 9).
+// Stage 4c: the next class and the spot offers come from classes, and the coach's note as a message (UC9 v3).
+// Data: fresh "(test)" people (stage 4b plan, decision 9) and classes in hours from now (stage 4c plan, decision 11).
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { call, demoTokens, freshWorld, ID, psql, workoutDaysAgo } from "./demo-users.mjs";
+import { call, classInHours, demoTokens, freshWorld, ID, psql, workoutDaysAgo } from "./demo-users.mjs";
 
 let w;
 const home = (t) => call(t.token, "S13", "home", "get_trainee_home");
@@ -45,10 +46,29 @@ test("edge a: a new trainee with no workouts gets a home with a streak of 0 and 
   assert.deepEqual([h.streak, h.coins, h.nextWorkout.WorkoutID], [0, 0, t.workoutID]);
 });
 
+test("UC9 section 13 (stage 4c): the next class the trainee registered to, and a spot offered to them", async () => {
+  const t = w.trainees[3];
+  const later = classInHours(w.coachID, 72, 8, [[t.traineeID, "registered"]]);
+  classInHours(w.coachID, 30, 8, [[t.traineeID, "registered"]]);
+  const full = classInHours(w.coachID, 50, 1, [[w.trainees[0].traineeID, "registered"], [t.traineeID, "waitlist"]]);
+  await call(w.trainees[0].token, "S17", "classes", "cancel_registration", { classID: full });
+  const h = (await home(t)).data;
+  assert.equal(Date.parse(h.nextClass.startsAt) < Date.parse(psql(`select "startsAt" from classes where "ClassID"='${later}'`)), true);
+  assert.deepEqual(h.offers.map((o) => [o.ClassID, o.hours]), [[full, 2]]);
+  const messages = (await call(t.token, "S13", "notifications", "list_notifications")).data;
+  assert.ok(messages[0].messageText.startsWith("התפנה מקום בשיעור ב-"));
+});
+
 test("failure c: an item that cannot load is left out, and the rest of the home still comes", async () => {
-  // classes is registered but built in stage 4c: its items come back empty, and nothing else is lost.
-  const r = await home(w.trainees[0]);
-  assert.equal(r.ok, true);
-  assert.deepEqual([r.data.nextClass, r.data.offers], [null, []]);
-  assert.equal(typeof r.data.streak, "number");
+  // spotOfferHours renamed for this coach (rule 9: no deletion), so classes returns VALUE_NOT_SET, and nothing else is lost.
+  const key = (from, to) => psql(`update settings set "settingKey"='${to}' where "CoachID"='${w.coachID}' and "settingKey"='${from}'`);
+  key("spotOfferHours", "spotOfferHours (test off)");
+  try {
+    const r = await home(w.trainees[3]);
+    assert.equal(r.ok, true);
+    assert.deepEqual([r.data.nextClass, r.data.offers], [null, []]);
+    assert.equal(typeof r.data.streak, "number");
+  } finally {
+    key("spotOfferHours (test off)", "spotOfferHours");
+  }
 });

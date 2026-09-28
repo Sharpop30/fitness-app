@@ -2,7 +2,8 @@
 // And, with LIVE_DB=1 against the LOCAL stack, the screens on the Endpoint show what the database holds
 // (stage 4a plan, task 8; stage 4b plan, task 12; stage 3 report, the content-check debt).
 import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
-import { setSession } from "../api/client";
+import { setAdapter, setSession, type Envelope } from "../api/client";
+import { demoAdapter } from "../demo/adapter";
 import { accessToken } from "../identity/auth";
 import { SCREENS } from "../App";
 import { NavContext, type Nav } from "../nav";
@@ -36,8 +37,30 @@ test.each(CASES)("%s opens and shows its title", async (id, role, params, title)
   expect(screen.getByText(/נתוני דוגמה/)).toBeTruthy();
 });
 
+// Stage 4c report, gap 1: the class list and the publish form ask for no single class; one class only with its ID.
+test("S11 asks list_registrations only when it opens one class", async () => {
+  const asked: Envelope[] = [];
+  setAdapter((e, sess) => { asked.push(e); return demoAdapter(e, sess); });
+  setSession({ role: "coach", traineeID: null });
+  const S = SCREENS.S11;
+  try {
+    for (const params of [{}, { publish: true }]) {
+      render(<NavContext.Provider value={nav("coach")}><S {...params} /></NavContext.Provider>);
+      await screen.findByRole("heading", { level: 1 });
+      cleanup();
+    }
+    expect(asked.filter((e) => e.action === "list_registrations")).toEqual([]);
+    render(<NavContext.Provider value={nav("coach")}><S classID="d0000000-0000-4000-8000-00000000a001" /></NavContext.Provider>);
+    await screen.findByRole("heading", { level: 1, name: "פארק הירקון" });
+    expect(asked.filter((e) => e.action === "list_registrations").map((e) => e.payload)).toEqual([{ classID: "d0000000-0000-4000-8000-00000000a001" }]);
+  } finally {
+    setAdapter(demoAdapter);
+  }
+});
+
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
 // Stage 4a: S02 and S05. Stage 4b: S04 (the stage 3 debt), and every screen that moved in stage 4b (plan, task 12).
+// Stage 4c: S11, S13 and S17.
 describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on the Endpoint show the database", () => {
   // The shared helper (tests/system/demo-users.mjs) runs in its own Node process: it reads the local stack's status
   // and signs the demo coach and Noa in with a one-run password. Only the local Endpoint and those tokens come back.
@@ -187,5 +210,47 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     open("S05", { exerciseID: id });
     expect(await screen.findByRole("heading", { level: 1, name }, { timeout: 8000 })).toBeTruthy();
     expect(screen.getByText(/סרטון הדגמה מיוטיוב/)).toBeTruthy();
+  }, 30000);
+
+  // ---- Stage 4c: S11, S13 and S17 (stage 4c plan, task 10) ----
+  // Classes the coach sees: from the start of the Israel day three days back (module map v7).
+  const COACH_FROM = `((now() at time zone 'Asia/Jerusalem')::date - 3)::timestamp at time zone 'Asia/Jerusalem'`;
+
+  test("S11: every class from three days back, with how many are registered and waiting, and a past class marked", async () => {
+    open("S11");
+    const list = rows(`select k."status",
+                         (select count(*) from class_registrations r where r."ClassID"=k."ClassID" and r."status"='registered'), k."capacity",
+                         (select count(*) from class_registrations r where r."ClassID"=k."ClassID" and r."status" in ('waitlist','offered')),
+                         k."startsAt" < now()
+                       from classes k where k."CoachID"='${COACH}' and k."startsAt" >= ${COACH_FROM}`);
+    expect(list.length).toBeGreaterThan(0);
+    for (const [status, registered, capacity, waiting] of list) {
+      await shows(status === "cancelled" ? "בוטל" : new RegExp(`^${registered}/${capacity} רשומים${waiting !== "0" ? ` · ${waiting} בהמתנה` : ""}$`));
+    }
+    const past = list.filter(([, , , , p]) => p === "t").length;
+    if (past) expect((await screen.findAllByText("עבר", {}, { timeout: 8000 })).length).toBe(past);
+    else expect(screen.queryByText("עבר")).toBeNull();
+  }, 30000);
+
+  test("S17 (as Noa): every class that has not started, with her own status and place", async () => {
+    open("S17", {}, "trainee");
+    const list = rows(`select coalesce(r."status", '-'), k."status" from classes k
+                       left join class_registrations r on r."ClassID"=k."ClassID" and r."TraineeID"='${NOA}'
+                       where k."CoachID"='${COACH}' and k."startsAt" > now()`);
+    const count = (want: string) => list.filter(([mine, status]) => status === "active" && mine === want).length;
+    if (count("registered")) expect((await screen.findAllByText("רשום", {}, { timeout: 8000 })).length).toBe(count("registered"));
+    if (count("waitlist")) await shows(/^ברשימת המתנה, מקום \d+$/);
+    await shows(new RegExp(`אפשר לבטל עד ${psql(`select "settingValue" from settings where "CoachID"='${COACH}' and "settingKey"='cancelHours'`)} שעות`));
+  }, 30000);
+
+  test("S13 (as Noa): her unread messages, and her next class or none", async () => {
+    open("S13", {}, "trainee");
+    for (const [text] of rows(`select "messageText" from notifications where "TraineeID"='${NOA}' and "readAt" is null`)) {
+      await shows(new RegExp(escape(text)));
+    }
+    const next = rows(`select k."place" from classes k join class_registrations r using ("ClassID")
+                       where r."TraineeID"='${NOA}' and r."status"='registered' and k."status"='active' and k."startsAt" > now()
+                       order by k."startsAt" limit 1`);
+    await shows(next.length ? new RegExp(escape(next[0][0])) : "לא נרשמת לשיעור");
   }, 30000);
 });

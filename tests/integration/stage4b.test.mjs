@@ -79,8 +79,8 @@ test("S13 and S01: the homes read through the Orchestrator as M13, with the Regi
   // v6: progress reads streakGapDays from SETTINGS.
   for (const expected of ["M13>progress.get_streak:true:-", "M05>settings.get_settings:true:-", "M13>coins.get_balance:true:-",
     "M13>challenges.get_current_challenge:true:-"]) assert.ok(trainee.includes(expected), expected);
-  // classes is registered but built in stage 4c: refused, and the rest still comes (UC9 c).
-  assert.ok(trainee.includes("M13>classes.list_upcoming_classes:false:ACTION_NOT_ALLOWED"));
+  // classes is built in stage 4c (it was refused in 4b, and the rest still came, UC9 c).
+  assert.ok(trainee.includes("M13>classes.list_upcoming_classes:true:-"));
 
   const home = await call(t.coach, "S01", "home", "get_coach_home");
   assert.equal(typeof home.data.rewardsToDeliver, "number");
