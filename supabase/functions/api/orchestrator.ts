@@ -9,6 +9,7 @@ export interface ModuleContext {
   actor: Actor;
   repo: Repository;
   requestID: string;
+  caller: string; // the screen or module that asked, already checked against the Registry
   // Module-to-module requests go back through the Orchestrator; modules never import each other.
   call: (envelope: Envelope) => Promise<Reply>;
 }
@@ -56,6 +57,7 @@ export async function handle(
         actor,
         repo,
         requestID,
+        caller: envelope.caller,
         call: (inner) => handle({ ...inner, caller: modules[moduleName].id }, actor, repo, modules, requestID),
       };
       return await handler(ctx, envelope.payload ?? {});
