@@ -3,7 +3,7 @@
 | שדה | ערך |
 | :-- | :-- |
 | תאריך | 28.09.2026 |
-| הצ'ט | Claude Code, צ'ט שלב 4א |
+| הצ'ט | Claude Code, צ'ט שלב 4ב |
 
 ## מה נסגר
 
@@ -24,21 +24,27 @@
 
 12. **שלב 4א, trainees, exercises, programs ו-results: נסגר.** M01 (list_trainees, invite_trainee), M02 (create_exercise, attach_video, get_exercise) ו-M04 (log_workout, correct_result, list_results). LIVE_SCREENS: S02, S04 ו-S05. בענן: migration 0007 (שמירת אימון ותיקון אטומיים) והפונקציה api. בדיקות על מסד נקי: Unit 48, Integration 23, System 28, Vitest 79. מפת המודולים גרסה 4, ו-usecase-03, 04 ו-09 גרסה 2. הדוח: findings-stage-4a.md.
 
+13. **שלב 4ב, progress, feedback, coins, challenges ו-home: נסגר.** M05 (גרף, שיא, רצף), M06 (משוב, הערות מאמן), M07 (מטבעות, יעד, תגמולים, מימוש), M08 (אתגר שבועי), M13 (בית מתאמן ובית מאמן). LIVE_SCREENS: 13 מסכים (S02, S04 עד S07, S09, S10, S14 עד S16, S18, S20, S21); מסכי המתאמן יעבדו בדפדפן עם כניסת מתאמן בשלב 5. בענן: migrations 0008 (Registry, מפה גרסאות 4 עד 6) ו-0009 (מטבעות אטומיים), והפונקציה api. בדיקות על מסד נקי: Unit 114, Integration 30, System 60, Vitest 90. מפת המודולים גרסה 6; CLAUDE.md גרסה 3; usecase-05 עד 08 גרסה 2 ו-usecase-09 גרסה 3. הסקירה וההדגמה הציבוריות עודכנו למצב 4ב. הדוח: findings-stage-4b.md.
+
 ## מה ממתין
 
 | השלב | מה |
 | :-- | :-- |
-| 4ב | progress, feedback, coins, challenges, home. לבנות לפי החוזה שבמפה גרסה 4, "הפניות מ-results.log_workout": log_workout כבר פונה ל-build_feedback, award ו-check_progress. progress.get_streak חדש, ושורות ה-Registry שלו (M01, M13) נכנסות בשלב הזה. S14, S15, S16 ו-S06 עוברים ל-Endpoint כשהפעולות שלהם בנויות. חובות: בדיקת תוכן ל-S04 בבלוק החי של screens.test.tsx, ופערים 12 ו-13 (S05, S02) כשהמסכים נפתחים שוב |
-| 4ג עד 7 | לפי CLAUDE.md סעיף 6. get_trainee_card בסוף 4ד |
+| 4ג | classes ו-notifications. coins.award כבר מקבל attendance מ-M11 בלבד. home כבר קורא ל-classes.list_upcoming_classes (nextClass, offers, classesToday, lateRequests) לפי מבנה התשובה במפה. add_coach_note יפנה ל-notifications.notify_in_app (דוח 4ב, פער 4). S13, S11 ו-S17 עוברים ל-Endpoint כשהפעולות שלהם בנויות |
+| 4ד | payments, invoices, settings; get_trainee_card וחמש שורות ה-Registry שלו לפונה M01; S01, S03, S08, S12 ו-S19. דוח 4ב, פער 2 (הנוסח "עד 280 תווים" ב-S06) |
+| 5 עד 7 | לפי CLAUDE.md סעיף 6. בשלב 5 גם כניסת מתאמן ב-S23 וחידוש האסימון |
+| חובות פתוחים | פער 1 מ-4ב (שם תרגיל לא פעיל ב-S04) עם פער 11 מ-4א; פערים 12 ו-13 מ-4א (S05, S02); מבחני uc01 על מסד משומש; אימות פער 14 מ-4א בשלב 7 |
 
 ## כלים במחשב
 
 ~/bin: gh, supabase, deno, node, npm, npx. Docker Desktop נדרש פתוח לבדיקות מקומיות.
 
-**הרצה מקומית**: .claude/launch.json בשורש הפרויקט (מחוץ ל-Git): fitness-app (פורט 5174, מול המסד המקומי, app/.env.local) ו-fitness-app-cloud (פורט 5175, מול הענן, app/.env.cloud.local). שני קובצי הערכים אינם במאגר. הבדיקות המקומיות: `supabase db reset --local`, `supabase functions serve`, ואז `node --test --test-concurrency=1 tests/integration/*.test.mjs tests/system/*.test.mjs`; הן יוצרות את משתמשי ההדגמה המקומיים בעצמן (tests/system/demo-users.mjs). בדיקות התוכן של המסכים מול המסד: `LIVE_DB=1 npx vitest run` בתיקייה app. מבחני uc01 משלב 3 דורשים מסד נקי. שאילתת קריאה בענן: `supabase db query --linked`.
+**הרצה מקומית**: .claude/launch.json בשורש הפרויקט (מחוץ ל-Git): fitness-app (פורט 5174, מול המסד המקומי, app/.env.local) ו-fitness-app-cloud (פורט 5175, מול הענן, app/.env.cloud.local). שני קובצי הערכים אינם במאגר. הבדיקות המקומיות: `supabase db reset --local`, `supabase functions serve`, ואז `node --test --test-concurrency=1 tests/integration/*.test.mjs tests/system/*.test.mjs`; הן יוצרות את משתמשי ההדגמה המקומיים בעצמן (tests/system/demo-users.mjs). בדיקות התוכן של המסכים מול המסד: `LIVE_DB=1 npx vitest run` בתיקייה app. מבחני uc01 משלב 3 דורשים מסד נקי. מבחני 4ב יוצרים לעצמם מאמן ומתאמנים חדשים "(test)" ואימונים בתאריכים יחסיים (freshWorld, workoutDaysAgo ב-demo-users.mjs), ולכן אינם תלויים ביום ההרצה. שאילתת קריאה בענן: `supabase db query --linked`.
+
+**ההצגה**: הסקירה https://claude.ai/artifact/1SurjPwYwJHiCm5yGGK5Rf וההדגמה https://claude.ai/artifact/SAimtvMbbnEynAMCPzU6UA. ההדגמה נבנית מהקוד (`vite build` עם ערכי VITE_ ריקים, והקוד מוטמע בעמוד אחד), על נתוני דוגמה ובלי כתובת שרת. הבנייה האחרונה ב-presentations/fitness-app-demo.html, מחוץ למאגר.
 
 **לידיעה**: סנכרון Drive יוצר עותקים כפולים בשם "X 2" (קבצים ותיקיות). migration כפולה שוברת את `db reset` ואת ההעלאה לענן. לבדוק ב-`git status` בפתיחת כל שלב.
 
 ## הנחיית המשך
 
-פתח שיחה חדשה ב-Claude Code במחשב הצוות, קרא את CLAUDE.md, את file-system-index, את הקובץ הזה, את findings-stage-4a.md ואת doc-module-map.md גרסה 4, והתחל בתוכנית שלב 4ב לפי פרומפט 2 במנגנון הבנייה. לפני התוכנית: `git pull` של main, `git status` לבדיקת כפולים מסנכרון Drive, ו-Docker Desktop פתוח.
+פתח שיחה חדשה ב-Claude Code במחשב הצוות, קרא את CLAUDE.md גרסה 3, את file-system-index, את הקובץ הזה, את findings-stage-4b.md ואת doc-module-map.md גרסה 6, והתחל בתוכנית שלב 4ג לפי פרומפט 2 במנגנון הבנייה. לפני התוכנית: `git pull` של main, `git status` לבדיקת כפולים מסנכרון Drive, ו-Docker Desktop פתוח.
