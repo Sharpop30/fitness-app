@@ -3,7 +3,7 @@
 | שדה | ערך |
 | :-- | :-- |
 | תאריך | 28.09.2026 |
-| הצ'ט | Claude Code, צ'ט ההקמה והאפיון |
+| הצ'ט | Claude Code, צ'ט שלב 3 |
 
 ## מה נסגר
 
@@ -20,18 +20,23 @@
 8. **שלב 1, החוזה והשלד: נסגר.** Unit 6/6, Integration 8/8, בענן: 26 טבלאות עם RLS, 28 קודי שגיאה, 90 שורות Registry. הדוח: findings-stage-1.md.
 9. ה-PRD בגרסה 1.20.
 10. **שלב 2, העיצוב והמסכים: נסגר.** 23 מסכים אושרו (תצוגה: https://claude.ai/artifact/KDuZ5xb597GS94nnE43jkL). מפת המודולים גרסה 3. בדיקות: 71/71 באפליקציה. הדוח: findings-stage-2.md.
+11. **שלב 3, ה-Slice הראשון: נסגר.** S04 מול programs, על נתוני הדגמה במסד, מקומי ובענן. client.ts מנתב את S04 ל-Endpoint אחרי כניסה במייל וסיסמה; כל שאר המסכים על ההדגמה. בענן: migrations 0005 (נתוני הדגמה) ו-0006 (שמירה אטומית), הפונקציה api, וארבעה משתמשי הדגמה שהצוות יצר (הסיסמאות אצל הצוות). בדיקות: Unit 16, Integration 14, System 9, Vitest 76. CLAUDE.md גרסה 2, usecase-01 גרסה 2. הדוח: findings-stage-3.md.
 
 ## מה ממתין
 
 | השלב | מה |
 | :-- | :-- |
-| 3 | Slice ראשון: S04 ו-programs, ובדיקת מסלול בקשה מותרת בענן |
-| 4 עד 7 | לפי CLAUDE.md סעיף 6 |
+| 4א | trainees, exercises, programs, results. מעבירים ל-LIVE_SCREENS ב-client.ts את המסכים של האשכול |
+| 4ב עד 7 | לפי CLAUDE.md סעיף 6 |
 
 ## כלים במחשב
 
-~/bin: gh, supabase, deno, node, npm, npx. הרצת האפליקציה המקומית: תצורה fitness-app בקובץ .claude/launch.json בתיקיית האב. Docker Desktop נדרש פתוח לבדיקות מקומיות. **פער לידיעה**: CLAUDE.md סעיף 3 מונה את כלי המחשב בלי Deno, אף שהוא נדרש לבדיקות Unit. יתוקן בגרסה הבאה של המסמך, באישור הצוות.
+~/bin: gh, supabase, deno, node, npm, npx. Docker Desktop נדרש פתוח לבדיקות מקומיות.
+
+**הרצה מקומית**: .claude/launch.json בשורש הפרויקט (מחוץ ל-Git): fitness-app (פורט 5174, מול המסד המקומי, app/.env.local) ו-fitness-app-cloud (פורט 5175, מול הענן, app/.env.cloud.local). שני קובצי הערכים אינם במאגר. הבדיקות המקומיות: `supabase start`, `supabase functions serve`, ואז `node --test --test-concurrency=1 tests/integration/*.test.mjs tests/system/*.test.mjs`; הן יוצרות את משתמשי ההדגמה המקומיים בעצמן (tests/system/demo-users.mjs).
+
+**לידיעה**: סנכרון Drive יוצר עותקים כפולים בשם "X 2" (קבצים ותיקיות). migration כפולה שוברת את `db reset` ואת ההעלאה לענן. לבדוק ב-`git status` בפתיחת כל שלב.
 
 ## הנחיית המשך
 
-פתח שיחה חדשה, קרא את CLAUDE.md, את file-system-index ואת הקובץ הזה, והתחל בתוכנית שלב 3 לפי פרומפט 2 במנגנון הבנייה.
+פתח שיחה חדשה, קרא את CLAUDE.md, את file-system-index ואת הקובץ הזה, והתחל בתוכנית שלב 4א לפי פרומפט 2 במנגנון הבנייה. חובות פתוחים לשלב 4א מדוח שלב 3: בדיקת תוכן במסכים שעוברים ל-Endpoint, ומזהי ברירת מחדל של ההדגמה במסכים האלה.
