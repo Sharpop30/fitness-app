@@ -100,7 +100,7 @@
 | doc-stage-3-plan.md, findings-stage-3.md | project-docs | 28.09.2026. שלב 3 נסגר |
 | doc-stage-4a-plan.md, findings-stage-4a.md | project-docs | 28.09.2026. שלב 4א נסגר |
 | doc-stage-4b-plan.md, findings-stage-4b.md | project-docs | 28.09.2026. שלב 4ב נסגר |
-| doc-stage-4c-plan.md | project-docs | 28.09.2026. תוכנית שלב 4ג מאושרת |
+| doc-stage-4c-plan.md, findings-stage-4c.md | project-docs | 28.09.2026. שלב 4ג נסגר |
 | diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 28.09.2026 |
 | prototype-fitness-app.html | project-docs | 28.09.2026 (גרסה 1). פורסם: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
@@ -112,7 +112,7 @@
 | diagram-uc04-unified-operations.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-05-progress-tracking.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc05-progress-tracking.mmd | project-docs/mermaid | 28.09.2026 |
-| usecase-06-instant-feedback.md | project-docs | 28.09.2026 (גרסה 2) |
+| usecase-06-instant-feedback.md | project-docs | 28.09.2026 (גרסה 3) |
 | diagram-uc06-instant-feedback.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-07-coins-rewards.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc07-coins-rewards.mmd | project-docs/mermaid | 28.09.2026 |
@@ -122,7 +122,7 @@
 | diagram-uc09-daily-trigger.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-10-demo-videos.md | project-docs | 28.09.2026 |
 | diagram-uc10-demo-videos.mmd | project-docs/mermaid | 28.09.2026 |
-| usecase-11-class-registration.md | project-docs | 28.09.2026 |
+| usecase-11-class-registration.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc11-class-registration.mmd | project-docs/mermaid | 28.09.2026 |
 
 ## 6. כללי העבודה
