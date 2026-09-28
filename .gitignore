@@ -6,3 +6,10 @@ node_modules/
 *.log
 app/node_modules/
 app/dist/
+# Office lock files
+~$*
+# Presentation work files and earlier package rounds: kept on the team's computer and in Drive only
+.presentation-build/
+output/
+# Skill packages are tools, not project documents
+*.skill
