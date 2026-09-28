@@ -44,6 +44,9 @@ test("normal: the coach's note on a workout is seen by the trainee", async () =>
   assert.equal(r.ok, true);
   const notes = await call(t.token, "S16", "feedback", "get_workout_notes");
   assert.deepEqual(notes.data, [{ WorkoutLogID: log.WorkoutLogID, noteText: "שמור על הגב (test)" }]);
+  // Step 9 and UC9 v3 step 2 (stage 4c): the note also reaches the trainee's home as a message.
+  const messages = await call(t.token, "S13", "notifications", "list_notifications");
+  assert.deepEqual(messages.data.map((m) => m.messageText), ["המאמן הוסיף הערה לאימון שלך"]);
 });
 
 test("failure b: an empty note, or one longer than noteMaxLength, is NOTE_INVALID, logged, and not saved", async () => {
