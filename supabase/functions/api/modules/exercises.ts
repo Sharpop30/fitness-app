@@ -2,7 +2,7 @@
 // Requirements 1 and 10 (story-01, story-10; usecase-01 step 4; usecase-10 steps 1, 2, 5, 6, alternatives a, e).
 // Acceptance (UC10 section 13): a video belongs to the exercise, so it appears in every program that has it;
 // a new video replaces the old one.
-import { fail, ok } from "../errors.ts";
+import { type ErrorCode, fail, ok } from "../errors.ts";
 import type { ModuleContext, ModuleDef } from "../orchestrator.ts";
 import type { Exercise } from "../repository.ts";
 
@@ -27,11 +27,13 @@ async function exerciseInReach(ctx: ModuleContext, payload: Record<string, unkno
   return await ctx.repo.getExerciseInReach(id, ctx.actor.coachID);
 }
 
-// The longest upload comes from SETTINGS, through the Orchestrator (CLAUDE.md rule 8). Null means VALUE_NOT_SET.
-async function videoMaxSeconds(ctx: ModuleContext): Promise<number | null> {
+// The longest upload comes from SETTINGS, through the Orchestrator (CLAUDE.md rule 8). A value missing or not a
+// number is VALUE_NOT_SET; a failure of the inner request keeps its own code.
+async function videoMaxSeconds(ctx: ModuleContext): Promise<number | ErrorCode> {
   const r = await ctx.call({ module: "settings", action: "get_settings", payload: { key: "videoMaxSeconds" } });
-  const seconds = Number((r.data as Record<string, string> | null)?.videoMaxSeconds);
-  return r.ok && Number.isFinite(seconds) && seconds > 0 ? seconds : null;
+  if (!r.ok) return r.error!.code;
+  const seconds = Number((r.data as Record<string, string>).videoMaxSeconds);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : "VALUE_NOT_SET";
 }
 
 export const exercises: ModuleDef = {
@@ -67,7 +69,7 @@ export const exercises: ModuleDef = {
         const seconds = Number(payload.seconds);
         if (!Number.isFinite(seconds) || seconds <= 0) return fail("VIDEO_INVALID"); // UC10 alternative b
         const max = await videoMaxSeconds(ctx);
-        if (max === null) return fail("VALUE_NOT_SET");
+        if (typeof max === "string") return fail(max);
         if (seconds > max) return fail("VIDEO_TOO_LONG"); // UC10 alternative a
         // File storage (I04) comes in stage 5; until then the upload itself does not go through (stage 4a plan, decision 7).
         return fail("UPLOAD_FAILED");

@@ -3,17 +3,19 @@
 // Stage 4a builds list_trainees and invite_trainee; accept_invite and get_trainee_card come later (stage 4a plan, decisions 3, 6).
 // Acceptance (UC4 section 13): an invite appears in the list as "invited"; a bad contact detail creates nothing;
 // a channel that fails leaves the invite open.
-import { fail, ok } from "../errors.ts";
+import { type ErrorCode, fail, ok } from "../errors.ts";
 import type { ModuleContext, ModuleDef } from "../orchestrator.ts";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// The invite's validity comes from SETTINGS, through the Orchestrator (CLAUDE.md rule 8). Null means VALUE_NOT_SET.
-async function inviteValidDays(ctx: ModuleContext): Promise<number | null> {
+// The invite's validity comes from SETTINGS, through the Orchestrator (CLAUDE.md rule 8). A value missing or not a
+// number of days is VALUE_NOT_SET; a failure of the inner request keeps its own code.
+async function inviteValidDays(ctx: ModuleContext): Promise<number | ErrorCode> {
   const r = await ctx.call({ module: "settings", action: "get_settings", payload: { key: "inviteValidDays" } });
-  const days = Number((r.data as Record<string, string> | null)?.inviteValidDays);
-  return r.ok && Number.isInteger(days) && days > 0 ? days : null;
+  if (!r.ok) return r.error!.code;
+  const days = Number((r.data as Record<string, string>).inviteValidDays);
+  return Number.isInteger(days) && days > 0 ? days : "VALUE_NOT_SET";
 }
 
 function newToken(): string {
@@ -38,7 +40,7 @@ export const trainees: ModuleDef = {
       if ((channel === "email" || email) && !EMAIL.test(email)) return fail("INVITE_INVALID");
 
       const days = await inviteValidDays(ctx);
-      if (days === null) return fail("VALUE_NOT_SET");
+      if (typeof days === "string") return fail(days);
 
       const token = newToken();
       await ctx.repo.createInvite(ctx.actor.coachID, {
