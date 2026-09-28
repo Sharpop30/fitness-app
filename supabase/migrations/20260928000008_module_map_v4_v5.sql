@@ -1,7 +1,9 @@
 -- 0008: Registry rows from module map versions 4 and 5 that enter in stage 4b (stage 4b plan, task 1).
 -- v4 (stage 4a report, gap 1): progress.get_streak for trainees and home. The rows for get_trainee_card enter in 4d.
 -- v5 (stage 4b plan, decision 3): home reads rewards to deliver and challenge completions; S09 picks the exercise.
+-- v6 (stage 4b, task 3): progress reads streakGapDays from SETTINGS for get_streak.
 insert into registry_entries ("caller","moduleName","actionName","allowedRole") values
+  ('M05','settings','get_settings','module'),
   ('M01','progress','get_streak','module'),
   ('M13','progress','get_streak','module'),
   ('M13','coins','manage_rewards','module'),

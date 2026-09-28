@@ -93,7 +93,7 @@
 | diagram-07-erd-conceptual.mmd | project-docs/mermaid | 28.09.2026 |
 | doc-erd-logical.html | project-docs | 28.09.2026 |
 | diagram-07a עד 07f (ERD לוגי, שישה תחומים) | project-docs/mermaid | 28.09.2026 |
-| doc-module-map.md | project-docs | 28.09.2026 (גרסה 5) |
+| doc-module-map.md | project-docs | 28.09.2026 (גרסה 6) |
 | CLAUDE.md (מסמך הבנייה) | שורש המאגר | 28.09.2026 (גרסה 2) |
 | doc-stage-1-plan.md, findings-stage-1.md | project-docs | 28.09.2026. שלב 1 נסגר |
 | doc-stage-2-plan.md, findings-stage-2.md | project-docs | 28.09.2026. שלב 2 נסגר |
