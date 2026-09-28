@@ -7,8 +7,9 @@ import { createRepository, StorageUnavailable } from "./repository.ts";
 import { exercises } from "./modules/exercises.ts";
 import { programs } from "./modules/programs.ts";
 import { settings } from "./modules/settings.ts";
+import { trainees } from "./modules/trainees.ts";
 
-const modules: Modules = { exercises, programs, settings };
+const modules: Modules = { exercises, programs, settings, trainees };
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
