@@ -16,7 +16,7 @@ export default function S09CoachChallenge({ create }: { create?: boolean }) {
 
   if (create) {
     const publish = async () => {
-      const r = await call("S09", "challenges", "create_challenge", { challengeName: name, challengeType: type, targetValue: Number(target), extraPrize: prize, exerciseID: type === "exercise" ? "e1" : null });
+      const r = await call("S09", "challenges", "create_challenge", { challengeName: name, challengeType: type, targetValue: Number(target), extraPrize: prize, exerciseID: type === "exercise" ? "d0000000-0000-4000-8000-000000002001" : null });
       if (!r.ok) return nav.toast(r.error!.message);
       nav.back(); nav.toast("האתגר פורסם");
     };

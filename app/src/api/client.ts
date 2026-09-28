@@ -1,7 +1,12 @@
 // The only file in the app that talks to the server (CLAUDE.md section 5, structural test 2).
 // Every screen calls call("Sxx", module, action, payload): the caller is the screen itself.
-// Stage 2: the adapter is the demo adapter (no network). Stage 3 swaps in the real Endpoint here, and no screen changes.
+// Screens in LIVE_SCREENS go to the one Endpoint once the person signed in with the identity service; every other
+// screen stays on the demo adapter until its stage. Adding a screen is a line here, and the screen does not change.
 import { demoAdapter } from "../demo/adapter";
+import { accessToken, signOutIdentity } from "../identity/auth";
+
+// Stage 3: the first slice, S04 against programs (doc-module-map section 7).
+export const LIVE_SCREENS = new Set(["S04"]);
 
 export interface Envelope {
   caller: string;
@@ -40,16 +45,33 @@ export function setErrorTexts(texts: Record<string, string>) {
 
 export function setSession(s: Session | null) {
   session = s;
+  if (!s) signOutIdentity();
 }
 
 export function setAdapter(a: Adapter) {
   adapter = a;
 }
 
+// The Endpoint. Any failure to reach it is STORAGE_UNAVAILABLE: the change stays on the screen for a retry (UC1 c).
+export const endpointAdapter: Adapter = async (envelope) => {
+  try {
+    const res = await fetch(import.meta.env.VITE_API_URL as string, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
+      body: JSON.stringify(envelope),
+    });
+    return await res.json();
+  } catch {
+    return { ok: false, data: null, error: { code: "STORAGE_UNAVAILABLE", message: "" } };
+  }
+};
+
+const isLive = (caller: string) => LIVE_SCREENS.has(caller) && !!import.meta.env.VITE_API_URL && accessToken() !== null;
+
 export function call<T = any>(caller: string, module: string, action: string, payload: Record<string, unknown> = {}): Promise<Reply<T>> {
   if (!session && !(module === "trainees" && action === "accept_invite")) {
     return Promise.resolve({ ok: false, data: null, error: { code: "NOT_ALLOWED", message: "אין לך גישה לזה" } });
   }
-  return adapter({ caller, module, action, payload, lang: "he" }, session ?? { role: "trainee", traineeID: null }).then((r) =>
+  return (isLive(caller) ? endpointAdapter : adapter)({ caller, module, action, payload, lang: "he" }, session ?? { role: "trainee", traineeID: null }).then((r) =>
     r.error && !r.error.message ? { ...r, error: { ...r.error, message: errorTexts[r.error.code] ?? "משהו השתבש. נסה שוב" } } : r);
 }

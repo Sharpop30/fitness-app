@@ -88,7 +88,7 @@ const actions: Record<string, H> = {
   },
   "trainees.accept_invite": (p) => {
     if (p.expired) return fail("INVITE_EXPIRED");
-    const t = D.trainees.find((x) => x.TraineeID === (p.traineeID ?? "t4"));
+    const t = D.trainees.find((x) => x.TraineeID === (p.traineeID ?? "d0000000-0000-4000-8000-000000001004"));
     if (!t) return fail("INVITE_INVALID");
     t.joined = true;
     return ok({ TraineeID: t.TraineeID });

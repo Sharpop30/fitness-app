@@ -8,7 +8,7 @@ import { useNav } from "../nav";
 export default function S07PersonalGoal({ traineeID, goal }: { traineeID: string; goal?: any }) {
   const nav = useNav();
   const exs = useCall("S07", "exercises", "list_exercises");
-  const [exerciseID, setExerciseID] = useState<string>(goal?.status === "active" ? goal.ExerciseID : "e1");
+  const [exerciseID, setExerciseID] = useState<string>(goal?.status === "active" ? goal.ExerciseID : "d0000000-0000-4000-8000-000000002001");
   const [value, setValue] = useState<string>(goal?.status === "active" ? String(goal.targetWeight) : "");
 
   const save = async () => {
