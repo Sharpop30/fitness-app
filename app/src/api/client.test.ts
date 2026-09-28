@@ -3,7 +3,7 @@
 // on the demo adapter.
 // Synthetic values, no network.
 import { accessToken } from "../identity/auth";
-import { call, LIVE_SCREENS, setAdapter, setErrorTexts, setSession, type Envelope } from "./client";
+import { call, LIVE_SCREENS, now, setAdapter, setErrorTexts, setSession, type Envelope } from "./client";
 
 vi.mock("../identity/auth", () => ({ accessToken: vi.fn(() => "test-token"), signOutIdentity: vi.fn() }));
 
@@ -23,8 +23,25 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-test("stage 4b puts exactly the screens whose actions are all built on the Endpoint", () => {
-  expect([...LIVE_SCREENS].sort()).toEqual(["S02", "S04", "S05", "S06", "S07", "S09", "S10", "S14", "S15", "S16", "S18", "S20", "S21"]);
+test("stage 4c puts exactly the screens whose actions are all built on the Endpoint", () => {
+  expect([...LIVE_SCREENS].sort()).toEqual(
+    ["S02", "S04", "S05", "S06", "S07", "S09", "S10", "S11", "S13", "S14", "S15", "S16", "S17", "S18", "S20", "S21"]);
+});
+
+test("stage 4c: S11, S13 and S17, signed in, go to the Endpoint and declare themselves", async () => {
+  const s11 = await call("S11", "classes", "publish_class");
+  setSession({ role: "trainee", traineeID: null });
+  const s13 = await call("S13", "notifications", "list_notifications");
+  const s17 = await call("S17", "classes", "register", { classID: "x" });
+  expect([s11, s13, s17].map((r) => r.data.envelope.caller)).toEqual(["S11", "S13", "S17"]);
+  expect(s17.data.envelope).toEqual({ caller: "S17", module: "classes", action: "register", payload: { classID: "x" }, lang: "he" });
+  expect(demoSeen).toEqual([]);
+});
+
+test("decision 10: a live screen's clock is the real one; on demo data it is the demo's own day", () => {
+  expect(Math.abs(now("S11").getTime() - Date.now())).toBeLessThan(1000);
+  vi.mocked(accessToken).mockReturnValue(null);
+  expect(now("S11").toLocaleDateString("en-CA")).toBe("2026-09-28");
 });
 
 test("stage 4b: the coach's and the trainee's screens, signed in, go to the Endpoint and declare themselves", async () => {
@@ -61,7 +78,7 @@ test("S04, signed in, goes to the Endpoint with the full envelope and the identi
 });
 
 test("every other screen stays on the demo adapter", async () => {
-  for (const caller of ["S01", "S03", "S08", "S11", "S12", "S13", "S17", "S19", "S22", "S23"]) {
+  for (const caller of ["S01", "S03", "S08", "S12", "S19", "S22", "S23"]) {
     expect((await call(caller, "programs", "get_active_program")).data.from).toBe("demo");
   }
   expect(fetchMock).not.toHaveBeenCalled();

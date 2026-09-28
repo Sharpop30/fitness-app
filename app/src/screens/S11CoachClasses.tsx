@@ -1,7 +1,7 @@
 // S11 classes, coach (UC11, story 30): publish, see who is registered and waiting, mark attendance,
 // cancel a class, and decide late-cancel requests. Sub-views: publish, one class.
 import { useEffect, useState } from "react";
-import { call } from "../api/client";
+import { call, now } from "../api/client";
 import { useCall } from "../api/useCall";
 import { Badge, Button, Field, Item, Screen, WarnBox, fmtDate, fmtTime } from "../design/components";
 import { useNav } from "../nav";
@@ -10,7 +10,10 @@ export default function S11CoachClasses({ classID, publish }: { classID?: string
   const nav = useNav();
   const all = useCall("S11", "classes", "list_upcoming_classes");
   const one = useCall("S11", "classes", "list_registrations", { classID: classID ?? "" });
-  const [form, setForm] = useState({ date: "2026-10-02", time: "18:30", place: "פארק הירקון", capacity: "8" });
+  // "Past" and the default date follow the screen's clock, not a fixed demo day (stage 4c plan, decision 10).
+  const today = now("S11");
+  const isPast = (startsAt: string) => new Date(startsAt) < today;
+  const [form, setForm] = useState({ date: today.toLocaleDateString("en-CA"), time: "18:30", place: "פארק הירקון", capacity: "8" });
   const [present, setPresent] = useState<string[]>([]);
   useEffect(() => { if (one.data) setPresent(one.data.registered.filter((r: any) => r.attended).map((r: any) => r.TraineeID)); }, [one.data]);
 
@@ -37,7 +40,7 @@ export default function S11CoachClasses({ classID, publish }: { classID?: string
   if (classID) {
     const k = one.data;
     if (!k) return <Screen eyebrow="שיעור" title="">{null}</Screen>;
-    const past = new Date(k.startsAt) < new Date(2026, 8, 28);
+    const past = isPast(k.startsAt);
     const save = async () => {
       const r = await call("S11", "classes", "mark_attendance", { classID, present });
       nav.toast(r.data?.awarded ? `הנוכחות נשמרה. ${r.data.awarded} מתאמנים קיבלו מטבעות` : "הנוכחות נשמרה");
@@ -80,7 +83,7 @@ export default function S11CoachClasses({ classID, publish }: { classID?: string
           <Item key={k.ClassID} onClick={() => nav.go("S11", { classID: k.ClassID })}>
             <div><div>{fmtDate(k.startsAt)} · {fmtTime(k.startsAt)} · {k.place}</div>
               <div className="muted small">{k.status === "cancelled" ? "בוטל" : `${k.registered.length}/${k.capacity} רשומים${k.waitlist.length ? ` · ${k.waitlist.length} בהמתנה` : ""}`}</div></div>
-            {new Date(k.startsAt) < new Date(2026, 8, 28) && <Badge>עבר</Badge>}
+            {isPast(k.startsAt) && <Badge>עבר</Badge>}
           </Item>
         ))}
       </div>
