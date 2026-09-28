@@ -26,7 +26,7 @@
 
 | השלב | מה |
 | :-- | :-- |
-| 4א | trainees, exercises, programs, results. מעבירים ל-LIVE_SCREENS ב-client.ts את המסכים של האשכול |
+| 4א | התוכנית אושרה: project-docs/doc-stage-4a-plan.md. הבנייה במחשב הצוות, בענף stage-4a-core (הכרעה 1: במכולת הענן אין Deno, Supabase CLI ושירות Docker). ל-LIVE_SCREENS עוברים S02 ו-S05 בלבד |
 | 4ב עד 7 | לפי CLAUDE.md סעיף 6 |
 
 ## כלים במחשב
@@ -39,4 +39,4 @@
 
 ## הנחיית המשך
 
-פתח שיחה חדשה, קרא את CLAUDE.md, את file-system-index ואת הקובץ הזה, והתחל בתוכנית שלב 4א לפי פרומפט 2 במנגנון הבנייה. חובות פתוחים לשלב 4א מדוח שלב 3: בדיקת תוכן במסכים שעוברים ל-Endpoint, ומזהי ברירת מחדל של ההדגמה במסכים האלה.
+פתח שיחה חדשה ב-Claude Code במחשב הצוות, קרא את CLAUDE.md, את file-system-index, את הקובץ הזה ואת doc-stage-4a-plan.md, והתחל בבניית שלב 4א בענף stage-4a-core, משימה אחת בכל פעם. לפני משימה 1: `git pull` של main, `git status` לבדיקת כפולים מסנכרון Drive, ו-Docker Desktop פתוח. חובות פתוחים מדוח שלב 3 נכללו בתוכנית (משימה 8).
