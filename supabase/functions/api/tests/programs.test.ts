@@ -6,6 +6,7 @@ import { fail } from "../errors.ts";
 import { programs } from "../modules/programs.ts";
 import { exercises } from "../modules/exercises.ts";
 import { type Actor, type Exercise, type Program, type Repository, StorageUnavailable, type WorkoutDraft } from "../repository.ts";
+import { stage4bNotUsed } from "./fake-repo.ts";
 
 const U = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const COACH = U(1), OTHER_COACH = U(2), TRAINEE = U(11), OTHER_TRAINEE = U(12), STRANGER = U(13);
@@ -60,9 +61,10 @@ function world(opts: { storageDown?: boolean } = {}) {
       rows.push({ ProgramID: id, TraineeID: t, programName, isActive: true, createdAt: "2026-09-28", workouts: [{ WorkoutID: U(seq++), workoutName, items: [] }] });
       return id;
     },
-    // Stage 4a operations, not reached by the programs tests.
+    // Stage 4a and 4b operations, not reached by the programs tests.
     listTraineesForCoach: notUsed, createInvite: notUsed, createExercise: notUsed, getExerciseInReach: notUsed, attachVideo: notUsed,
     logWorkout: notUsed, getWorkoutLog: notUsed, correctResults: notUsed, listResults: notUsed,
+    ...stage4bNotUsed,
   };
   return { repo, rows, results };
 }

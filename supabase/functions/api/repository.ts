@@ -102,6 +102,81 @@ export interface SetCorrection {
   isDone: boolean;
 }
 
+// One note a coach wrote on a performed workout (UC6 steps 7-9).
+export interface CoachNote {
+  WorkoutLogID: string;
+  noteText: string;
+  createdAt: string;
+}
+
+// The active personal goal, with what the goal check needs from its exercise (UC7 step 1).
+export interface PersonalGoal {
+  PersonalGoalID: string;
+  TraineeID: string;
+  ExerciseID: string;
+  exerciseName: string;
+  isBodyweight: boolean;
+  targetWeight: number;
+}
+
+// One line of the coins ledger; the balance is their sum and is never stored (Business Logic rule 7).
+export interface CoinTransaction {
+  eventType: string;
+  eventRef: string;
+  amount: number;
+  createdAt: string;
+}
+
+export interface Reward {
+  RewardID: string;
+  rewardName: string;
+  priceCoins: number;
+  isActive: boolean;
+}
+
+export interface Redemption {
+  RedemptionID: string;
+  TraineeID: string;
+  fullName: string;
+  RewardID: string;
+  rewardName: string;
+  status: "pending" | "delivered";
+  deliveredAt: string | null;
+  createdAt: string;
+}
+
+export type RedeemResult =
+  | { status: "ok"; balance: number }
+  | { status: "insufficient"; balance: number }
+  | { status: "no_reward" };
+
+export interface Challenge {
+  ChallengeID: string;
+  challengeName: string;
+  challengeType: "count" | "exercise";
+  targetValue: number;
+  ExerciseID: string | null;
+  exerciseName: string | null;
+  extraPrize: string | null;
+  weekStart: string; // a Sunday, yyyy-mm-dd (UC8 step 3)
+}
+
+export interface NewChallenge {
+  challengeName: string;
+  challengeType: "count" | "exercise";
+  targetValue: number;
+  ExerciseID: string | null;
+  extraPrize: string | null;
+  weekStart: string;
+}
+
+export interface ChallengeCompletion {
+  TraineeID: string;
+  fullName: string;
+  completedAt: string;
+  prizeDeliveredAt: string | null;
+}
+
 export interface Repository {
   findActorByAuthUser(authUserID: string): Promise<Actor | null>;
   isRegistered(caller: string, moduleName: string, actionName: string, role: string): Promise<boolean>;
@@ -127,6 +202,28 @@ export interface Repository {
   getWorkoutLog(workoutLogID: string): Promise<WorkoutLog | null>;
   correctResults(workoutLogID: string, corrections: SetCorrection[]): Promise<void>;
   listResults(traineeID: string): Promise<WorkoutLog[]>;
+  // Progress (UC5 step 3): the exercises of the trainee's own results, whether active or swapped out since.
+  getExercisesByID(exerciseIDs: string[]): Promise<Exercise[]>;
+  // Feedback (UC6 steps 7-9): the coach's notes, private to M06.
+  addCoachNote(workoutLogID: string, coachID: string, noteText: string): Promise<void>;
+  listCoachNotes(traineeID: string): Promise<CoachNote[]>;
+  // Coins (UC7), private to M07. awardCoins is false when the event was already credited (one award per event).
+  awardCoins(traineeID: string, eventType: string, eventRef: string, amount: number): Promise<boolean>;
+  listCoinTransactions(traineeID: string): Promise<CoinTransaction[]>;
+  getActiveGoal(traineeID: string): Promise<PersonalGoal | null>;
+  setPersonalGoal(traineeID: string, exerciseID: string, targetWeight: number): Promise<void>;
+  achieveGoal(personalGoalID: string, amount: number): Promise<boolean>;
+  listRewards(coachID: string): Promise<Reward[]>;
+  addReward(coachID: string, rewardName: string, priceCoins: number): Promise<void>;
+  listRedemptions(coachID: string): Promise<Redemption[]>;
+  redeemReward(traineeID: string, rewardID: string): Promise<RedeemResult>;
+  markRewardDelivered(redemptionID: string, coachID: string): Promise<boolean>;
+  // Challenges (UC8), private to M08. createChallenge is null when the week already has one (CHALLENGE_EXISTS).
+  getChallengeForWeek(coachID: string, weekStart: string): Promise<Challenge | null>;
+  createChallenge(coachID: string, challenge: NewChallenge): Promise<string | null>;
+  listCompletions(challengeID: string): Promise<ChallengeCompletion[]>;
+  addCompletion(challengeID: string, traineeID: string): Promise<string | null>;
+  markPrizeDelivered(challengeID: string, traineeID: string): Promise<boolean>;
 }
 
 export class StorageUnavailable extends Error {}
@@ -141,6 +238,12 @@ export function createRepository(): Repository {
   const must = <T>(res: { data: T; error: unknown }): T => {
     if (res.error) throw new StorageUnavailable(String((res.error as { message?: string }).message ?? res.error));
     return res.data;
+  };
+  // An insert that a unique constraint refused is "already there" (false); any other error is the database failing.
+  const inserted = (res: { error: { code?: string; message?: string } | null }): boolean => {
+    if (res.error?.code === "23505") return false;
+    if (res.error) throw new StorageUnavailable(String(res.error.message ?? res.error));
+    return true;
   };
 
   return {
@@ -276,7 +379,128 @@ export function createRepository(): Repository {
         .eq("TraineeID", traineeID).order("performedAt", { ascending: false })) as unknown as LogRow[];
       return rows.map(toWorkoutLog);
     },
+
+    async getExercisesByID(exerciseIDs) {
+      if (exerciseIDs.length === 0) return [];
+      return must(await db.from("exercises").select(EXERCISE_FIELDS).in("ExerciseID", exerciseIDs)) as Exercise[];
+    },
+
+    async addCoachNote(workoutLogID, coachID, noteText) {
+      must(await db.from("coach_notes").insert({ WorkoutLogID: workoutLogID, CoachID: coachID, noteText }));
+    },
+
+    async listCoachNotes(traineeID) {
+      const rows = must(await db.from("coach_notes").select('"WorkoutLogID","noteText","createdAt",workout_logs!inner("TraineeID")')
+        .eq("workout_logs.TraineeID", traineeID).order("createdAt")) as unknown as (CoachNote & { workout_logs: unknown })[];
+      return rows.map(({ workout_logs: _, ...n }) => n);
+    },
+
+    async awardCoins(traineeID, eventType, eventRef, amount) {
+      return inserted(await db.from("coin_transactions").insert({ TraineeID: traineeID, eventType, eventRef, amount }));
+    },
+
+    async listCoinTransactions(traineeID) {
+      return must(await db.from("coin_transactions").select('"eventType","eventRef","amount","createdAt"')
+        .eq("TraineeID", traineeID).order("createdAt", { ascending: false })) as CoinTransaction[];
+    },
+
+    async getActiveGoal(traineeID) {
+      const row = must(await db.from("personal_goals").select('"PersonalGoalID","TraineeID","ExerciseID","targetWeight",exercises("exerciseName","isBodyweight")')
+        .eq("TraineeID", traineeID).eq("status", "active").maybeSingle()) as
+        (Omit<PersonalGoal, "exerciseName" | "isBodyweight"> & { exercises: { exerciseName: string; isBodyweight: boolean } }) | null;
+      if (!row) return null;
+      const { exercises, ...g } = row;
+      return { ...g, targetWeight: Number(g.targetWeight), exerciseName: exercises.exerciseName, isBodyweight: exercises.isBodyweight };
+    },
+
+    async setPersonalGoal(traineeID, exerciseID, targetWeight) {
+      // A change to the active goal updates it; a new row only when none is active (stage 4b plan, decision 6).
+      const updated = must(await db.from("personal_goals").update({ ExerciseID: exerciseID, targetWeight })
+        .eq("TraineeID", traineeID).eq("status", "active").select('"PersonalGoalID"')) as unknown[];
+      if (updated.length === 0) must(await db.from("personal_goals").insert({ TraineeID: traineeID, ExerciseID: exerciseID, targetWeight }));
+    },
+
+    async achieveGoal(personalGoalID, amount) {
+      return must(await db.rpc("coins_achieve_goal", { p_goal: personalGoalID, p_amount: amount })) as boolean;
+    },
+
+    async listRewards(coachID) {
+      return must(await db.from("rewards").select('"RewardID","rewardName","priceCoins","isActive"')
+        .eq("CoachID", coachID).eq("isActive", true).order("priceCoins")) as Reward[];
+    },
+
+    async addReward(coachID, rewardName, priceCoins) {
+      must(await db.from("rewards").insert({ CoachID: coachID, rewardName, priceCoins }));
+    },
+
+    async listRedemptions(coachID) {
+      type Row = Omit<Redemption, "fullName" | "rewardName" | "createdAt"> & {
+        trainees: { fullName: string }; rewards: { rewardName: string }; coin_transactions: { createdAt: string };
+      };
+      const rows = must(await db.from("redemptions")
+        .select('"RedemptionID","TraineeID","RewardID","status","deliveredAt",trainees!inner("fullName","CoachID"),rewards("rewardName"),coin_transactions("createdAt")')
+        .eq("trainees.CoachID", coachID)) as unknown as Row[];
+      return rows
+        .map(({ trainees, rewards, coin_transactions, ...r }) => ({
+          ...r, fullName: trainees.fullName, rewardName: rewards.rewardName, createdAt: coin_transactions.createdAt,
+        }))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
+
+    async redeemReward(traineeID, rewardID) {
+      return must(await db.rpc("coins_redeem", { p_trainee: traineeID, p_reward: rewardID })) as RedeemResult;
+    },
+
+    async markRewardDelivered(redemptionID, coachID) {
+      const row = must(await db.from("redemptions").select('"RedemptionID",trainees!inner("CoachID")')
+        .eq("RedemptionID", redemptionID).eq("trainees.CoachID", coachID).maybeSingle());
+      if (!row) return false;
+      must(await db.from("redemptions").update({ status: "delivered", deliveredAt: new Date().toISOString() })
+        .eq("RedemptionID", redemptionID).eq("status", "pending"));
+      return true;
+    },
+
+    async getChallengeForWeek(coachID, weekStart) {
+      const row = must(await db.from("challenges").select(CHALLENGE_FIELDS)
+        .eq("CoachID", coachID).eq("weekStart", weekStart).maybeSingle()) as ChallengeRow | null;
+      return row ? toChallenge(row) : null;
+    },
+
+    async createChallenge(coachID, challenge) {
+      const res = await db.from("challenges").insert({ CoachID: coachID, ...challenge }).select('"ChallengeID"').single();
+      return inserted(res) ? (res.data as { ChallengeID: string }).ChallengeID : null;
+    },
+
+    async listCompletions(challengeID) {
+      const rows = must(await db.from("challenge_completions").select('"TraineeID","completedAt","prizeDeliveredAt",trainees("fullName")')
+        .eq("ChallengeID", challengeID).order("completedAt")) as unknown as (Omit<ChallengeCompletion, "fullName"> & { trainees: { fullName: string } })[];
+      return rows.map(({ trainees, ...c }) => ({ ...c, fullName: trainees.fullName }));
+    },
+
+    async addCompletion(challengeID, traineeID) {
+      const res = await db.from("challenge_completions").insert({ ChallengeID: challengeID, TraineeID: traineeID })
+        .select('"ChallengeCompletionID"').single();
+      return inserted(res) ? (res.data as { ChallengeCompletionID: string }).ChallengeCompletionID : null;
+    },
+
+    async markPrizeDelivered(challengeID, traineeID) {
+      const rows = must(await db.from("challenge_completions").update({ prizeDeliveredAt: new Date().toISOString() })
+        .eq("ChallengeID", challengeID).eq("TraineeID", traineeID).is("prizeDeliveredAt", null).select('"ChallengeCompletionID"')) as unknown[];
+      if (rows.length > 0) return true;
+      // Already delivered is not an error; no completion at all is.
+      const exists = must(await db.from("challenge_completions").select('"ChallengeCompletionID"')
+        .eq("ChallengeID", challengeID).eq("TraineeID", traineeID).maybeSingle());
+      return exists !== null;
+    },
   };
+}
+
+const CHALLENGE_FIELDS = '"ChallengeID","challengeName","challengeType","targetValue","ExerciseID","extraPrize","weekStart",exercises("exerciseName")';
+
+type ChallengeRow = Omit<Challenge, "exerciseName"> & { exercises: { exerciseName: string } | null };
+
+function toChallenge({ exercises, ...c }: ChallengeRow): Challenge {
+  return { ...c, targetValue: Number(c.targetValue), exerciseName: exercises?.exerciseName ?? null };
 }
 
 const EXERCISE_FIELDS = '"ExerciseID","exerciseName","isBodyweight","videoType","videoUrl"';
