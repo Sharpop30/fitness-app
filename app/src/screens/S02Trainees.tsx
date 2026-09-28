@@ -34,7 +34,7 @@ export default function S02Trainees({ invite }: { invite?: boolean }) {
       <div className="list">
         {data?.map((t: any) => t.joined
           ? <Item key={t.TraineeID} onClick={() => nav.go("S03", { traineeID: t.TraineeID })}><span>{t.fullName}</span><span className="muted small">{t.hasProgram ? "יש תוכנית" : "אין תוכנית"}</span></Item>
-          : <Item key={t.TraineeID}><span>{t.fullName}</span><Badge tone="warn">הוזמן, טרם הצטרף</Badge></Item>)}
+          : <Item key={t.TraineeID ?? t.InviteID}><span>{t.fullName}</span><Badge tone="warn">הוזמן, טרם הצטרף</Badge></Item>)}
       </div>
       <Button onClick={() => nav.go("S02", { invite: true })}>הזמנת מתאמן</Button>
     </Screen>

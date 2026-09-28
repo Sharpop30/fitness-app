@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: מאושר, 28.09.2026, גרסה 4. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 28.09.2026, גרסה 3. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -10,7 +10,7 @@
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
 | המקורות | PRD גרסה 1.19; doc-mlp-scope; 11 סיפורי משתמש ו-11 מקרי שימוש (usecase-01 עד 11); doc-erd-conceptual ו-doc-erd-logical; prototype-fitness-app גרסה 1 |
-| גרסה ותאריך | 4, 28.09.2026 |
+| גרסה ותאריך | 3, 28.09.2026 |
 
 ## 2. הליבה
 
@@ -43,11 +43,11 @@
 
 | מזהה | המודול | האחריות האחת | הדרישות | קורא מהליבה | כותב לליבה | נתונים פרטיים | מצב |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| M01 | trainees | הזמנה, הצטרפות ורשימת מתאמנים | 19 | מאמן, תוכנית | מתאמן | INVITES | טרם נבנה |
+| M01 | trainees | הזמנה, הצטרפות ורשימת מתאמנים | 19 | מאמן | מתאמן | INVITES | טרם נבנה |
 | M02 | exercises | רשימת התרגילים וסרטוני ההדגמה | 1, 10 | מאמן | תרגיל | | טרם נבנה |
 | M03 | programs | בניית תוכנית והחלפת תרגיל | 1 | מתאמן, תרגיל | תוכנית | | טרם נבנה |
 | M04 | results | הזנת תוצאות ותיקונן | 12 | תוכנית | אימון שבוצע | | טרם נבנה |
-| M05 | progress | גרף התקדמות, שיא אישי ורצף | 4, 25 | אימון שבוצע, תרגיל | | | טרם נבנה |
+| M05 | progress | גרף התקדמות ושיא אישי | 4 | אימון שבוצע, תרגיל | | | טרם נבנה |
 | M06 | feedback | משוב מיידי והערות מאמן | 21 | אימון שבוצע | | COACH_NOTES | טרם נבנה |
 | M07 | coins | מטבעות, יעד אישי ותגמולים | 6, 24 | אימון שבוצע, תרגיל | | PERSONAL_GOALS, COIN_TRANSACTIONS, REWARDS, REDEMPTIONS | טרם נבנה |
 | M08 | challenges | אתגר שבועי והשלמה אוטומטית | 5 | אימון שבוצע, תוכנית | | CHALLENGES, CHALLENGE_COMPLETIONS | טרם נבנה |
@@ -95,11 +95,11 @@
 
 | המודול | הפעולה | המקור | מי רשאי |
 | :-- | :-- | :-- | :-- |
-| trainees | invite_trainee, accept_invite, list_trainees, get_trainee_card | UC4 | מאמן; accept: בעל ההזמנה. get_trainee_card מרכיב את הכרטיס דרך ה-Orchestrator מ-programs.get_active_program, coins.get_balance, payments.list_payments ו-progress.get_streak |
+| trainees | invite_trainee, accept_invite, list_trainees, get_trainee_card | UC4 | מאמן; accept: בעל ההזמנה |
 | exercises | list_exercises, create_exercise, attach_video, get_exercise | UC1, UC10 | מאמן; get: גם מתאמן |
 | programs | get_active_program, save_program, swap_exercise, start_new_program | UC1 | מאמן; get: גם המתאמן שלו |
 | results | log_workout, correct_result, list_results | UC3 | מתאמן (שלו); list: גם המאמן |
-| progress | get_progress_chart, detect_personal_records, get_streak | UC5, UC6, UC9 | מאמן, מתאמן (שלו); detect: feedback בלבד; get_streak: trainees, home בלבד |
+| progress | get_progress_chart, detect_personal_records | UC5, UC6 | מאמן, מתאמן (שלו); detect: feedback בלבד |
 | feedback | build_feedback, add_coach_note, get_workout_notes | UC6 | build: results בלבד; note: מאמן |
 | coins | award, get_balance, set_personal_goal, manage_rewards, redeem_reward, mark_reward_delivered | UC7 | award: results, challenges, classes בלבד |
 | challenges | create_challenge, get_current_challenge, check_progress, list_completions, mark_prize_delivered | UC8 | check: results בלבד |
@@ -113,10 +113,6 @@
 | settings | get_settings, update_settings, get_error_texts | כל מקרה שימוש עם טבלת ייחוס; get_error_texts: כלל החוזה 8 | מאמן; get_settings: גם המודולים; get_error_texts: מאמן ומתאמן, מ-S23 |
 
 **רשימת המותר (Registry)** היא טבלה: שורה לכל צירוף של פונה, מודול ופעולה מהטבלה שלמעלה. בקשה בלי שורה נדחית ונרשמת. הקובץ המלא נוצר בשלב 1 מהטבלה הזו.
-
-**שורות שנוספו בגרסה 4** (מדוח שלב 4א, פער 1), לפונה מודול: M01 מול programs.get_active_program, coins.get_balance, payments.list_payments ו-progress.get_streak; M13 מול progress.get_streak. הן נכנסות ל-Registry בשלב שבונה את הפעולה: get_streak בשלב 4ב, get_trainee_card בסוף 4ד.
-
-**כשל אחרי שמירת אימון** (UC3 סעיף 7; דוח שלב 4א, פער 2): אין תור בגרסה הראשונה. התוצאות נשארות שמורות, והשדות של הפנייה שנכשלה חוזרים ריקים. coins.award אידמפוטנטי לפי eventRef, ולכן חישוב חוזר אפשרי בגרסה הבאה.
 
 ### טבלת פעולות המסכים
 
@@ -152,7 +148,7 @@
 
 | הפעולה | data |
 | :-- | :-- |
-| trainees.list_trainees | רשימה: TraineeID או InviteID, fullName, isActive, joined, hasProgram. מתאמן שהצטרף מזוהה ב-TraineeID. הזמנה פתוחה שתוקפה לא פג חוזרת עם InviteID, TraineeID ריק ו-joined=false, כי המתאמן נוצר רק בהצטרפות |
+| trainees.list_trainees | רשימה: TraineeID, fullName, isActive, joined, hasProgram |
 | trainees.invite_trainee | link, קישור ההזמנה לשיתוף |
 | trainees.accept_invite | TraineeID |
 | trainees.get_trainee_card | trainee, coins, streak, openPayments, workouts, payments, goal (עם exerciseName) |
@@ -161,9 +157,8 @@
 | results.list_results | רשימת אימונים שבוצעו: WorkoutLogID, workoutName, performedAt, sets (עם isCorrected) |
 | results.log_workout | WorkoutLogID, ו-feedback: done, total, records, coins, goal, challenge, text |
 | progress.get_progress_chart | exercises, selected, isBodyweight, points (date, value) |
-| progress.get_streak | streak, streakGapDays (מ-SETTINGS). הקלט: traineeID |
 | feedback.get_workout_notes | רשימה: WorkoutLogID, noteText |
-| coins.get_balance | balance, history, rewards (הקטלוג הפעיל), goal (היעד האישי הפעיל, עם exerciseName, או ריק) |
+| coins.get_balance | balance, history, rewards (הקטלוג הפעיל) |
 | coins.manage_rewards | rewards, redemptions (עם fullName ו-rewardName). op בקלט: list או add |
 | coins.redeem_reward | balance |
 | challenges.get_current_challenge | האתגר, end, coins, ולמתאמן progress (value, target, exempt) |
@@ -180,18 +175,6 @@
 | home.get_trainee_home | reminder, streak, streakGapDays, coins, nextWorkout, nextClass, challenge, offers |
 | settings.get_settings | כל ערכי SETTINGS של המאמן, מפתח וערך |
 | settings.get_error_texts | לכל קוד שגיאה, ההסבר לבני אדם |
-
-### הפניות מ-results.log_workout
-
-אחרי השמירה, results פונה דרך ה-Orchestrator לשלושה מודולים (UC3 צעד 7; דוח שלב 4א, פער 10). כל בקשה נושאת workoutLogID ו-traineeID.
-
-| הפעולה | תוספת בקלט | data | מה results מעביר ל-feedback שב-log_workout |
-| :-- | :-- | :-- | :-- |
-| feedback.build_feedback | | records (שמות התרגילים עם שיא), text | records, text |
-| coins.award | reason: "workout", eventRef: workoutLogID | coins (הזיכוי), goal (האם היעד האישי הושג) | coins, goal |
-| challenges.check_progress | | challenge (האם האתגר הושלם עכשיו) | challenge |
-
-done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה את השדות שלה ריקים: records רשימה ריקה, coins אפס, goal ו-challenge שקר, text ריק.
 
 ### קודי השגיאה, רשימה סגורה (28 קודים)
 
@@ -287,4 +270,3 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 1 | 28.09.2026 | המפה המקורית. הכרעות: GitHub Pages; חשבון Supabase קיים של הצוות | הצוות |
 | 2 | 28.09.2026 | מפערי דוח שלב 1: נוסף קוד השגיאה UNEXPECTED_ERROR, ונוספה הפעולה invite_channel.send_invite. מה לא השתנה: הליבה, המודולים, שאר הפעולות והקודים, וסדר הבנייה | הצוות |
 | 3 | 28.09.2026 | מפערי דוח שלב 2: exercises.list_exercises לשורת S07; trainees.list_trainees לשורת S08; פעולה חדשה settings.get_error_texts מ-S23; תפריטי "עוד" ו"אני" כחלק ממעטפת הניווט; ומבנה התשובה של כל פעולה. מה לא השתנה: הליבה, מבנה המעטפה, המודולים והקודים | הצוות |
-| 4 | 28.09.2026 | מפערי דוח שלב 4א: M01 קורא מהליבה גם "תוכנית" (פער 9); progress מחשב את הרצף בפעולה חדשה get_streak, ו-get_trainee_card מרכיב את הכרטיס מ-programs, coins, payments ו-progress, עם חמש שורות Registry לפונה מודול (פער 1); coins.get_balance מחזיר גם goal; מבנה התשובה של list_trainees עם InviteID (פער 3); החוזה בין results לבין feedback, coins ו-challenges (פער 10); בלי תור לחישוב חוזר בגרסה הראשונה (פער 2). מה לא השתנה: הליבה, מבנה המעטפה, המודולים, קודי השגיאה וסדר הבנייה | הצוות |

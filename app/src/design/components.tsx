@@ -16,7 +16,7 @@ export function Screen({ eyebrow, title, children, noBack }: { eyebrow: string; 
   const tabs = nav.role === "coach" ? COACH_TABS : nav.role === "trainee" ? TRAINEE_TABS : [];
   return (
     <>
-      <div className="demo-bar">גרסת פיתוח, שלב 2. כל הנתונים הם נתוני דוגמה, ותשלומים וחשבוניות הם הדגמה בלבד.</div>
+      <div className="demo-bar">גרסת פיתוח. כל הנתונים הם נתוני דוגמה, ותשלומים וחשבוניות הם הדגמה בלבד.</div>
       <header className="hd">
         {nav.depth > 1 && !noBack ? <button className="back" onClick={nav.back}>‹ חזרה</button> : <div style={{ height: 30 }} />}
         <button className="theme" onClick={toggleTheme}>מצב כהה/בהיר</button>

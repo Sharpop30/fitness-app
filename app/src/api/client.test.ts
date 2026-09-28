@@ -1,5 +1,6 @@
-// Routing by caller (stage 3 plan, task 9; CLAUDE.md section 9, test 2): S04 goes to the one Endpoint once signed in
-// with the identity service; every other screen stays on the demo adapter. Synthetic values, no network.
+// Routing by caller (stage 3 plan, task 9; stage 4a plan, task 8; CLAUDE.md section 9, test 2): S02, S04 and S05 go to
+// the one Endpoint once signed in with the identity service; every other screen stays on the demo adapter.
+// Synthetic values, no network.
 import { accessToken } from "../identity/auth";
 import { call, LIVE_SCREENS, setAdapter, setErrorTexts, setSession, type Envelope } from "./client";
 
@@ -21,8 +22,17 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-test("stage 3 puts exactly S04 on the Endpoint", () => {
-  expect([...LIVE_SCREENS]).toEqual(["S04"]);
+test("stage 4a puts exactly S02, S04 and S05 on the Endpoint", () => {
+  expect([...LIVE_SCREENS].sort()).toEqual(["S02", "S04", "S05"]);
+});
+
+test("S02 and S05, signed in, go to the Endpoint and declare themselves as the caller", async () => {
+  const s02 = await call("S02", "trainees", "list_trainees");
+  const s05 = await call("S05", "exercises", "attach_video", { exerciseID: "x", kind: "link", url: "u" });
+  expect([s02.data.from, s05.data.from]).toEqual(["endpoint", "endpoint"]);
+  expect(s02.data.envelope).toEqual({ caller: "S02", module: "trainees", action: "list_trainees", payload: {}, lang: "he" });
+  expect(s05.data.envelope.caller).toBe("S05");
+  expect(demoSeen).toEqual([]);
 });
 
 test("S04, signed in, goes to the Endpoint with the full envelope and the identity token", async () => {
@@ -35,7 +45,7 @@ test("S04, signed in, goes to the Endpoint with the full envelope and the identi
 });
 
 test("every other screen stays on the demo adapter", async () => {
-  for (const caller of ["S01", "S03", "S05", "S14", "S23"]) {
+  for (const caller of ["S01", "S03", "S06", "S14", "S16", "S22", "S23"]) {
     expect((await call(caller, "programs", "get_active_program")).data.from).toBe("demo");
   }
   expect(fetchMock).not.toHaveBeenCalled();

@@ -3,7 +3,7 @@
 | שדה | ערך |
 | :-- | :-- |
 | תאריך | 28.09.2026 |
-| הצ'ט | Claude Code, צ'ט שלב 3 |
+| הצ'ט | Claude Code, צ'ט שלב 4א |
 
 ## מה נסגר
 
@@ -22,21 +22,23 @@
 10. **שלב 2, העיצוב והמסכים: נסגר.** 23 מסכים אושרו (תצוגה: https://claude.ai/artifact/KDuZ5xb597GS94nnE43jkL). מפת המודולים גרסה 3. בדיקות: 71/71 באפליקציה. הדוח: findings-stage-2.md.
 11. **שלב 3, ה-Slice הראשון: נסגר.** S04 מול programs, על נתוני הדגמה במסד, מקומי ובענן. client.ts מנתב את S04 ל-Endpoint אחרי כניסה במייל וסיסמה; כל שאר המסכים על ההדגמה. בענן: migrations 0005 (נתוני הדגמה) ו-0006 (שמירה אטומית), הפונקציה api, וארבעה משתמשי הדגמה שהצוות יצר (הסיסמאות אצל הצוות). בדיקות: Unit 16, Integration 14, System 9, Vitest 76. CLAUDE.md גרסה 2, usecase-01 גרסה 2. הדוח: findings-stage-3.md.
 
+12. **שלב 4א, trainees, exercises, programs ו-results: נסגר.** M01 (list_trainees, invite_trainee), M02 (create_exercise, attach_video, get_exercise) ו-M04 (log_workout, correct_result, list_results). LIVE_SCREENS: S02, S04 ו-S05. בענן: migration 0007 (שמירת אימון ותיקון אטומיים) והפונקציה api. בדיקות על מסד נקי: Unit 48, Integration 23, System 28, Vitest 79. מפת המודולים גרסה 4, ו-usecase-03, 04 ו-09 גרסה 2. הדוח: findings-stage-4a.md.
+
 ## מה ממתין
 
 | השלב | מה |
 | :-- | :-- |
-| 4א | התוכנית אושרה: project-docs/doc-stage-4a-plan.md. הבנייה במחשב הצוות, בענף stage-4a-core (הכרעה 1: במכולת הענן אין Deno, Supabase CLI ושירות Docker). ל-LIVE_SCREENS עוברים S02 ו-S05 בלבד |
-| 4ב עד 7 | לפי CLAUDE.md סעיף 6 |
+| 4ב | progress, feedback, coins, challenges, home. לבנות לפי החוזה שבמפה גרסה 4, "הפניות מ-results.log_workout": log_workout כבר פונה ל-build_feedback, award ו-check_progress. progress.get_streak חדש, ושורות ה-Registry שלו (M01, M13) נכנסות בשלב הזה. S14, S15, S16 ו-S06 עוברים ל-Endpoint כשהפעולות שלהם בנויות. חובות: בדיקת תוכן ל-S04 בבלוק החי של screens.test.tsx, ופערים 12 ו-13 (S05, S02) כשהמסכים נפתחים שוב |
+| 4ג עד 7 | לפי CLAUDE.md סעיף 6. get_trainee_card בסוף 4ד |
 
 ## כלים במחשב
 
 ~/bin: gh, supabase, deno, node, npm, npx. Docker Desktop נדרש פתוח לבדיקות מקומיות.
 
-**הרצה מקומית**: .claude/launch.json בשורש הפרויקט (מחוץ ל-Git): fitness-app (פורט 5174, מול המסד המקומי, app/.env.local) ו-fitness-app-cloud (פורט 5175, מול הענן, app/.env.cloud.local). שני קובצי הערכים אינם במאגר. הבדיקות המקומיות: `supabase start`, `supabase functions serve`, ואז `node --test --test-concurrency=1 tests/integration/*.test.mjs tests/system/*.test.mjs`; הן יוצרות את משתמשי ההדגמה המקומיים בעצמן (tests/system/demo-users.mjs).
+**הרצה מקומית**: .claude/launch.json בשורש הפרויקט (מחוץ ל-Git): fitness-app (פורט 5174, מול המסד המקומי, app/.env.local) ו-fitness-app-cloud (פורט 5175, מול הענן, app/.env.cloud.local). שני קובצי הערכים אינם במאגר. הבדיקות המקומיות: `supabase db reset --local`, `supabase functions serve`, ואז `node --test --test-concurrency=1 tests/integration/*.test.mjs tests/system/*.test.mjs`; הן יוצרות את משתמשי ההדגמה המקומיים בעצמן (tests/system/demo-users.mjs). בדיקות התוכן של המסכים מול המסד: `LIVE_DB=1 npx vitest run` בתיקייה app. מבחני uc01 משלב 3 דורשים מסד נקי. שאילתת קריאה בענן: `supabase db query --linked`.
 
 **לידיעה**: סנכרון Drive יוצר עותקים כפולים בשם "X 2" (קבצים ותיקיות). migration כפולה שוברת את `db reset` ואת ההעלאה לענן. לבדוק ב-`git status` בפתיחת כל שלב.
 
 ## הנחיית המשך
 
-פתח שיחה חדשה ב-Claude Code במחשב הצוות, קרא את CLAUDE.md, את file-system-index, את הקובץ הזה ואת doc-stage-4a-plan.md, והתחל בבניית שלב 4א בענף stage-4a-core, משימה אחת בכל פעם. לפני משימה 1: `git pull` של main, `git status` לבדיקת כפולים מסנכרון Drive, ו-Docker Desktop פתוח. חובות פתוחים מדוח שלב 3 נכללו בתוכנית (משימה 8).
+פתח שיחה חדשה ב-Claude Code במחשב הצוות, קרא את CLAUDE.md, את file-system-index, את הקובץ הזה, את findings-stage-4a.md ואת doc-module-map.md גרסה 4, והתחל בתוכנית שלב 4ב לפי פרומפט 2 במנגנון הבנייה. לפני התוכנית: `git pull` של main, `git status` לבדיקת כפולים מסנכרון Drive, ו-Docker Desktop פתוח.

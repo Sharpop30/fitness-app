@@ -6,7 +6,9 @@ import { demoAdapter } from "../demo/adapter";
 import { accessToken, signOutIdentity } from "../identity/auth";
 
 // Stage 3: the first slice, S04 against programs (doc-module-map section 7).
-export const LIVE_SCREENS = new Set(["S04"]);
+// Stage 4a: S02 and S05, whose actions are all built (stage 4a plan, decision 2). S03, S06, S14, S16 and S22 wait
+// for actions of later stages, so they stay on the demo adapter rather than show half the truth.
+export const LIVE_SCREENS = new Set(["S02", "S04", "S05"]);
 
 export interface Envelope {
   caller: string;
