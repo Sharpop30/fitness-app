@@ -1,4 +1,4 @@
-// An in-memory Repository for the unit tests of stages 4a to 4c (synthetic data, no database).
+// An in-memory Repository for the unit tests of stages 4a to 4d (synthetic data, no database).
 // Every operation a test does not supply rejects, so a module that reaches past what it should fails the test.
 import type { AuditRecord, Repository } from "../repository.ts";
 
@@ -19,6 +19,12 @@ export const stage4cNotUsed = {
   decideLateCancelRequest: notUsed, addNotification: notUsed, listUnreadNotifications: notUsed, markNotificationRead: notUsed,
 };
 
+// The stage 4d operations (payments, invoices and settings), in the same way.
+export const stage4dNotUsed = {
+  createPaymentRequest: notUsed, getPaymentRequest: notUsed, listPaymentRequests: notUsed, markPaymentPaid: notUsed,
+  createInvoice: notUsed, listInvoices: notUsed, updateCoachSettings: notUsed,
+};
+
 export function fakeRepo(over: Partial<Repository> = {}): { repo: Repository; audits: AuditRecord[] } {
   const audits: AuditRecord[] = [];
   const repo: Repository = {
@@ -29,6 +35,7 @@ export function fakeRepo(over: Partial<Repository> = {}): { repo: Repository; au
     logWorkout: notUsed, getWorkoutLog: notUsed, correctResults: notUsed, listResults: notUsed,
     ...stage4bNotUsed,
     ...stage4cNotUsed,
+    ...stage4dNotUsed,
     // Every row is registered: the Registry itself is tested in orchestrator.test.ts and in the integration tests.
     isRegistered: () => Promise.resolve(true),
     writeAudit: (e) => (audits.push(e), Promise.resolve()),

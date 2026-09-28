@@ -114,3 +114,57 @@ Deno.test("UC4 section 7: a database that fails gives STORAGE_UNAVAILABLE, witho
   assertEquals(await invite(w, { name: "דנה", channel: "link" }), fail("STORAGE_UNAVAILABLE"));
   assertEquals(w.invites, []);
 });
+
+// ---- get_trainee_card (UC4 step 7; module map v8; stage 4d plan, execution decision 4) ----
+
+// Stand-ins for the four modules the card reads, answering one action each.
+const answer = (id: string, action: string, reply: ReturnType<typeof ok | typeof fail>): ModuleDef =>
+  ({ id, actions: { [action]: async () => reply } });
+
+const cardModules = (over: Modules = {}): Modules => ({
+  programs: answer("M03", "get_active_program", ok({ workouts: [{}, {}, {}] })),
+  coins: answer("M07", "get_balance", ok({ balance: 75, goal: { exerciseName: "סקוואט (test)", targetWeight: 80 } })),
+  payments: answer("M09", "list_payments", ok([{ status: "open" }, { status: "paid" }])),
+  progress: answer("M05", "get_streak", ok({ streak: 4, streakGapDays: 3 })),
+  ...over,
+});
+
+function cardWorld() {
+  const w = world();
+  w.repo.isActiveTraineeOfCoach = async (t, c) => c === COACH && t === U(11);
+  return w;
+}
+const card = (w: ReturnType<typeof world>, modules: Modules, traineeID: string = U(11), actor: Actor = coach) =>
+  handle({ caller: "S03", module: "trainees", action: "get_trainee_card", payload: { traineeID } }, actor, w.repo, { trainees, ...modules });
+
+Deno.test("UC4 step 7: the card shows program, coins, streak, payments and goal, made of existing actions", async () => {
+  const w = cardWorld();
+  assertEquals(await card(w, cardModules()), ok({
+    trainee: { TraineeID: U(11), fullName: "נועה", isActive: true },
+    coins: 75, streak: 4, openPayments: 1, workouts: 3, payments: 2,
+    goal: { exerciseName: "סקוואט (test)", targetWeight: 80 },
+  }));
+  // One Audit trail: the screen's request and the four inner requests share one requestID.
+  const id = w.audits.find((a) => a.caller === "S03")!.requestID;
+  const inner = new Set(w.audits.filter((a) => a.requestID === id && a.caller === "M01").map((a) => a.moduleName));
+  assertEquals(inner, new Set(["programs", "coins", "payments", "progress"]));
+});
+
+Deno.test("execution decision 4: no active program is 0 workouts; an item that fails comes back empty, and the rest still comes", async () => {
+  const d = (await card(cardWorld(), cardModules({
+    programs: answer("M03", "get_active_program", fail("NO_ACTIVE_PROGRAM")),
+    payments: answer("M09", "list_payments", fail("STORAGE_UNAVAILABLE")),
+  }))).data as Record<string, unknown>;
+  assertEquals([d.workouts, d.openPayments, d.payments, d.coins, d.streak], [0, null, null, 75, 4]);
+  const e = (await card(cardWorld(), cardModules({ programs: answer("M03", "get_active_program", fail("STORAGE_UNAVAILABLE")) }))).data as Record<string, unknown>;
+  assertEquals(e.workouts, null);
+  const g = (await card(cardWorld(), cardModules({ coins: answer("M07", "get_balance", ok({ balance: 0, goal: null })) }))).data as Record<string, unknown>;
+  assertEquals(g.goal, null);
+});
+
+Deno.test("rule 5: a trainee of another coach, a bad ID, or a trainee asking, is NOT_ALLOWED", async () => {
+  const w = cardWorld();
+  assertEquals(await card(w, cardModules(), U(99)), fail("NOT_ALLOWED"));
+  assertEquals(await card(w, cardModules(), "not-an-id"), fail("NOT_ALLOWED"));
+  assertEquals(await card(w, cardModules(), U(11), { role: "trainee", coachID: COACH, traineeID: U(11) }), fail("NOT_ALLOWED"));
+});

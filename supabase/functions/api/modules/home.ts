@@ -2,7 +2,7 @@
 // Requirements 19 (story-19, usecase-04 step 6) and 25 (story-25, usecase-09). No data of its own, and no table.
 // Acceptance (UC9 section 13): the trainee sees the next workout, the next class, the challenge progress and the
 // streak. UC9 c and section 7: an item that fails is left out, and the rest of the screen still comes.
-// Until payments (4d) is built, its item comes back empty (stage 4b plan, task 7). Classes are built in 4c.
+// Payments are built in 4d and classes in 4c, so every item of both homes now has its source.
 import { fail, ok, type Reply } from "../errors.ts";
 import type { ModuleContext, ModuleDef } from "../orchestrator.ts";
 

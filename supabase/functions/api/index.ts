@@ -10,7 +10,9 @@ import { coins } from "./modules/coins.ts";
 import { exercises } from "./modules/exercises.ts";
 import { feedback } from "./modules/feedback.ts";
 import { home } from "./modules/home.ts";
+import { invoices } from "./modules/invoices.ts";
 import { notifications } from "./modules/notifications.ts";
+import { payments } from "./modules/payments.ts";
 import { programs } from "./modules/programs.ts";
 import { progress } from "./modules/progress.ts";
 import { results } from "./modules/results.ts";
@@ -18,7 +20,7 @@ import { settings } from "./modules/settings.ts";
 import { trainees } from "./modules/trainees.ts";
 
 const modules: Modules = {
-  challenges, classes, coins, exercises, feedback, home, notifications, programs, progress, results, settings, trainees,
+  challenges, classes, coins, exercises, feedback, home, invoices, notifications, payments, programs, progress, results, settings, trainees,
 };
 
 const CORS = {

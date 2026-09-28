@@ -132,7 +132,7 @@ Deno.test("module map v5: the coach's home counts active trainees, rewards to de
     coins: stand("M07", { manage_rewards: ok({ rewards: [], redemptions: [{ status: "pending" }, { status: "delivered" }] }) }),
     challenges: stand("M08", { get_current_challenge: ok({ challengeName: "שלושה אימונים (test)" }), list_completions: ok([{}, {}]) }),
   });
-  // payments (4d) and classes (4c) are not built yet: their items come back empty.
+  // No payments or classes module answers here: their items come back empty (UC9 c).
   assertEquals(r, ok({ activeTrainees: 2, openPayments: null, classesToday: null, lateRequests: null, rewardsToDeliver: 1,
     challenge: { challengeName: "שלושה אימונים (test)", completions: 2 } }));
 });
