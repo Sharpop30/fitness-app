@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: טיוטה לאישור הצוות, 28.09.2026, גרסה 5 (תיקון מסמכים לפני שלב 4ב, לפי פרומפט 4). לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 28.09.2026, גרסה 4. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -10,7 +10,7 @@
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
 | המקורות | PRD גרסה 1.19; doc-mlp-scope; 11 סיפורי משתמש ו-11 מקרי שימוש (usecase-01 עד 11); doc-erd-conceptual ו-doc-erd-logical; prototype-fitness-app גרסה 1 |
-| גרסה ותאריך | 5, 28.09.2026 |
+| גרסה ותאריך | 4, 28.09.2026 |
 
 ## 2. הליבה
 
@@ -109,14 +109,12 @@
 | invoices | create_invoice, list_invoices | UC2 | create: payments בלבד |
 | classes | publish_class, cancel_class, list_upcoming_classes, register, cancel_registration, list_registrations, mark_attendance, respond_to_spot_offer, request_late_cancel, decide_late_cancel | UC11 | לפי מקרה שימוש 11 |
 | notifications | notify_in_app, list_notifications, mark_read | UC6, UC9, UC11 | notify: classes, feedback בלבד |
-| home | get_coach_home, get_trainee_home | UC4, UC9 | מאמן; מתאמן. get_coach_home מרכיב את המסך דרך ה-Orchestrator מ-trainees.list_trainees, payments.list_payments, classes.list_upcoming_classes, coins.manage_rewards (op: list), challenges.get_current_challenge ו-challenges.list_completions |
+| home | get_coach_home, get_trainee_home | UC4, UC9 | מאמן; מתאמן |
 | settings | get_settings, update_settings, get_error_texts | כל מקרה שימוש עם טבלת ייחוס; get_error_texts: כלל החוזה 8 | מאמן; get_settings: גם המודולים; get_error_texts: מאמן ומתאמן, מ-S23 |
 
 **רשימת המותר (Registry)** היא טבלה: שורה לכל צירוף של פונה, מודול ופעולה מהטבלה שלמעלה. בקשה בלי שורה נדחית ונרשמת. הקובץ המלא נוצר בשלב 1 מהטבלה הזו.
 
 **שורות שנוספו בגרסה 4** (מדוח שלב 4א, פער 1), לפונה מודול: M01 מול programs.get_active_program, coins.get_balance, payments.list_payments ו-progress.get_streak; M13 מול progress.get_streak. הן נכנסות ל-Registry בשלב שבונה את הפעולה: get_streak בשלב 4ב, get_trainee_card בסוף 4ד.
-
-**שורות שנוספו בגרסה 5** (תוכנית שלב 4ב, הכרעה 3), נכנסות ל-Registry בשלב 4ב: M13 מול coins.manage_rewards ומול challenges.list_completions, כי get_coach_home מחזיר rewardsToDeliver ואת מספר המשלימים באתגר; ו-S09 מול exercises.list_exercises, לבחירת התרגיל באתגר מסוג "יעד בתרגיל".
 
 **כשל אחרי שמירת אימון** (UC3 סעיף 7; דוח שלב 4א, פער 2): אין תור בגרסה הראשונה. התוצאות נשארות שמורות, והשדות של הפנייה שנכשלה חוזרים ריקים. coins.award אידמפוטנטי לפי eventRef, ולכן חישוב חוזר אפשרי בגרסה הבאה.
 
@@ -132,7 +130,7 @@
 | S06 | results.list_results; feedback.add_coach_note, get_workout_notes |
 | S07 | coins.set_personal_goal; exercises.list_exercises |
 | S08 | payments.create_payment_request, list_payments; invoices.list_invoices; trainees.list_trainees |
-| S09 | challenges.create_challenge, get_current_challenge, list_completions, mark_prize_delivered; exercises.list_exercises |
+| S09 | challenges.create_challenge, get_current_challenge, list_completions, mark_prize_delivered |
 | S10 | coins.manage_rewards, mark_reward_delivered |
 | S11 | classes.publish_class, cancel_class, list_upcoming_classes, list_registrations, mark_attendance, decide_late_cancel |
 | S12 | settings.get_settings, update_settings |
@@ -164,7 +162,6 @@
 | results.log_workout | WorkoutLogID, ו-feedback: done, total, records, coins, goal, challenge, text |
 | progress.get_progress_chart | exercises, selected, isBodyweight, points (date, value) |
 | progress.get_streak | streak, streakGapDays (מ-SETTINGS). הקלט: traineeID |
-| progress.detect_personal_records | records: שמות התרגילים שנשבר בהם שיא באימון. הקלט: workoutLogID, traineeID. שיא הוא ערך גבוה מכל האימונים הקודמים באותו תרגיל: המשקל, או החזרות בתרגיל משקל גוף (UC5 ב). באימון הראשון בתרגיל אין שיא. ערך מתוקן נספר בערכו המתוקן |
 | feedback.get_workout_notes | רשימה: WorkoutLogID, noteText |
 | coins.get_balance | balance, history, rewards (הקטלוג הפעיל), goal (היעד האישי הפעיל, עם exerciseName, או ריק) |
 | coins.manage_rewards | rewards, redemptions (עם fullName ו-rewardName). op בקלט: list או add |
@@ -190,7 +187,7 @@
 
 | הפעולה | תוספת בקלט | data | מה results מעביר ל-feedback שב-log_workout |
 | :-- | :-- | :-- | :-- |
-| feedback.build_feedback | | records (שמות התרגילים עם שיא, מ-progress.detect_personal_records), text | records, text |
+| feedback.build_feedback | | records (שמות התרגילים עם שיא), text | records, text |
 | coins.award | reason: "workout", eventRef: workoutLogID | coins (הזיכוי), goal (האם היעד האישי הושג) | coins, goal |
 | challenges.check_progress | | challenge (האם האתגר הושלם עכשיו) | challenge |
 
@@ -228,8 +225,6 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | ALREADY_REGISTERED | כבר רשום או ממתין | אתה כבר רשום לשיעור הזה |
 | CANCEL_TOO_LATE | בתוך חלון הביטול | אפשר לבטל עד 24 שעות לפני. אפשר לבקש חריגה |
 | SPOT_OFFER_EXPIRED | זמן ההיענות להצעה עבר | המקום כבר הוצע לבא בתור |
-
-**קלט לא תקין בלי קוד ייעודי** (דוח שלב 4א, פער 7; תוכנית שלב 4ב, הכרעות 6 ו-7): הרשימה נשארת סגורה, והמסך מציג נוסח משלו. תרגיל בלי שם ויעד אישי חסר או לא חיובי מחזירים PROGRAM_INVALID. תגמול בלי שם או מחיר מחזיר VALUE_NOT_SET, כמו באב הטיפוס המאושר.
 
 ההסברים לבני אדם נשמרים ב-ERROR_CODES, ולא בקוד. "אסור" (NOT_ALLOWED, ACTION_NOT_ALLOWED) ו"עדיין לא" (VALUE_NOT_SET) הם קודים נפרדים.
 
@@ -293,4 +288,3 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 2 | 28.09.2026 | מפערי דוח שלב 1: נוסף קוד השגיאה UNEXPECTED_ERROR, ונוספה הפעולה invite_channel.send_invite. מה לא השתנה: הליבה, המודולים, שאר הפעולות והקודים, וסדר הבנייה | הצוות |
 | 3 | 28.09.2026 | מפערי דוח שלב 2: exercises.list_exercises לשורת S07; trainees.list_trainees לשורת S08; פעולה חדשה settings.get_error_texts מ-S23; תפריטי "עוד" ו"אני" כחלק ממעטפת הניווט; ומבנה התשובה של כל פעולה. מה לא השתנה: הליבה, מבנה המעטפה, המודולים והקודים | הצוות |
 | 4 | 28.09.2026 | מפערי דוח שלב 4א: M01 קורא מהליבה גם "תוכנית" (פער 9); progress מחשב את הרצף בפעולה חדשה get_streak, ו-get_trainee_card מרכיב את הכרטיס מ-programs, coins, payments ו-progress, עם חמש שורות Registry לפונה מודול (פער 1); coins.get_balance מחזיר גם goal; מבנה התשובה של list_trainees עם InviteID (פער 3); החוזה בין results לבין feedback, coins ו-challenges (פער 10); בלי תור לחישוב חוזר בגרסה הראשונה (פער 2). מה לא השתנה: הליבה, מבנה המעטפה, המודולים, קודי השגיאה וסדר הבנייה | הצוות |
-| 5 | 28.09.2026 | מתוכנית שלב 4ב, הכרעות 3, 5, 6 ו-7: שלוש שורות Registry, M13 מול coins.manage_rewards ו-challenges.list_completions, ו-S09 מול exercises.list_exercises; פירוט המקורות של get_coach_home; מבנה הקלט והתשובה של progress.detect_personal_records והגדרת השיא; הקודים לקלט לא תקין בלי קוד ייעודי. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, רשימת קודי השגיאה (28) וסדר הבנייה | |
