@@ -1,28 +1,36 @@
 // S17 classes, trainee (UC11, story 30): register, waitlist, cancel up to the window, and a late-cancel request.
+// Design stage: the late request checks its reply (finding 3), each class with the time column, the weekday and a status
+// badge (32, 33), neutral wording (37), loading, an error with a retry and "none yet" (2, 6, 30).
 import { call } from "../api/client";
 import { useCall } from "../api/useCall";
-import { Button, Screen, WarnBox, fmtDate, fmtTime } from "../design/components";
+import { Badge, Button, Empty, Load, Screen, WarnBox, When, fmtDay, fmtTime } from "../design/components";
 import { useNav } from "../nav";
 
 export default function S17TraineeClasses({ lateFor }: { lateFor?: any }) {
+  if (lateFor) return <LateCancel k={lateFor} />;
+  return <Classes />;
+}
+
+function LateCancel({ k }: { k: any }) {
+  const nav = useNav();
+  const send = async () => {
+    const r = await call("S17", "classes", "request_late_cancel", { classID: k.ClassID });
+    if (!r.ok) return nav.toast(r.error!.message);
+    nav.back(); nav.toast("הבקשה נשלחה למאמן");
+  };
+  return (
+    <Screen eyebrow="ביטול מאוחר" title={`${fmtDay(k.startsAt)} · ${fmtTime(k.startsAt)}`}>
+      <WarnBox>אפשר לבטל עד {k.cancelHours} שעות לפני השיעור, ולכן ההרשמה נשארת בינתיים.</WarnBox>
+      <div>אפשר לשלוח למאמן בקשה חריגה. אם הבקשה תאושר, ההרשמה תבוטל ותגיע הודעה.</div>
+      <Button onClick={send}>שליחת בקשה חריגה למאמן</Button>
+      <Button secondary onClick={nav.back}>חזרה בלי לבקש</Button>
+    </Screen>
+  );
+}
+
+function Classes() {
   const nav = useNav();
   const all = useCall("S17", "classes", "list_upcoming_classes");
-
-  if (lateFor) {
-    const send = async () => {
-      await call("S17", "classes", "request_late_cancel", { classID: lateFor.ClassID });
-      nav.back(); nav.toast("הבקשה נשלחה למאמן");
-    };
-    return (
-      <Screen eyebrow="ביטול מאוחר" title={`${fmtDate(lateFor.startsAt)} · ${fmtTime(lateFor.startsAt)}`}>
-        <WarnBox>אפשר לבטל עד {lateFor.cancelHours} שעות לפני השיעור, ולכן ההרשמה נשארת בינתיים.</WarnBox>
-        <div>אפשר לשלוח למאמן בקשה חריגה. אם הוא יאשר, ההרשמה תבוטל ותקבל הודעה.</div>
-        <Button onClick={send}>שליחת בקשה חריגה למאמן</Button>
-        <Button secondary onClick={nav.back}>חזרה בלי לבקש</Button>
-      </Screen>
-    );
-  }
-
   const register = async (classID: string) => {
     const r = await call("S17", "classes", "register", { classID });
     if (!r.ok) return nav.toast(r.error!.message);
@@ -38,23 +46,36 @@ export default function S17TraineeClasses({ lateFor }: { lateFor?: any }) {
 
   return (
     <Screen eyebrow="שיעורים קבוצתיים" title="שיעורים" noBack>
-      <div className="list">
-        {all.data?.classes.map((k: any) => {
-          const free = k.capacity - k.registered.length;
-          return (
-            <div className="card col" key={k.ClassID}>
-              <div className="row between"><b>{fmtDate(k.startsAt)} · {fmtTime(k.startsAt)}</b><span className="muted small">{k.place}</span></div>
-              {k.status === "cancelled" ? <WarnBox><span className="small">השיעור בוטל בידי המאמן</span></WarnBox>
-                : k.myStatus === "registered" ? <div className="row between"><span className="badge ok">רשום</span><Button secondary small onClick={() => cancel(k)}>ביטול הרשמה</Button></div>
-                : k.myStatus === "waitlist" ? <span className="badge warn">ברשימת המתנה, מקום {k.myWaitPosition}</span>
-                : k.myStatus === "offered" ? <span className="badge ok">התפנה לך מקום. אשר במסך הבית</span>
-                : free > 0 ? <div className="row between"><span className="muted small">{free} מקומות פנויים</span><Button small onClick={() => register(k.ClassID)}>הרשמה</Button></div>
-                : <div className="row between"><span className="muted small">השיעור מלא</span><Button secondary small onClick={() => register(k.ClassID)}>הצטרפות להמתנה</Button></div>}
-            </div>
-          );
-        })}
-      </div>
-      {all.data && <div className="muted small">אפשר לבטל עד {all.data.cancelHours} שעות לפני השיעור. אחרי זה אפשר לשלוח למאמן בקשה חריגה.</div>}
+      <Load state={all}>{(d: any) => <>
+        {d.classes.length
+          ? <div className="list">
+            {d.classes.map((k: any) => {
+              const free = k.capacity - k.registered.length;
+              const cancelled = k.status === "cancelled";
+              const badge = cancelled ? <Badge tone="warn">בוטל</Badge>
+                : k.myStatus === "registered" ? <Badge tone="ok">רשום</Badge>
+                : k.myStatus === "waitlist" ? <Badge tone="warn">בהמתנה, מקום {k.myWaitPosition}</Badge>
+                : k.myStatus === "offered" ? <Badge tone="ok">התפנה לך מקום</Badge> : null;
+              return (
+                <div className="card col" key={k.ClassID}>
+                  <div className="row">
+                    <When at={k.startsAt} />
+                    <div className="grow"><div className="t">{k.place}</div><div className="muted small">{cancelled ? "" : free > 0 ? `${free} מקומות פנויים` : "השיעור מלא"}</div></div>
+                    {badge}
+                  </div>
+                  {cancelled ? <div className="muted small">השיעור בוטל בידי המאמן.</div>
+                    : k.myStatus === "registered" ? <Button secondary small onClick={() => cancel(k)}>ביטול הרשמה</Button>
+                    : k.myStatus === "offered" ? <div className="muted small">אפשר לאשר את המקום במסך הבית.</div>
+                    : k.myStatus === "waitlist" ? null
+                    : free > 0 ? <Button small onClick={() => register(k.ClassID)}>הרשמה</Button>
+                    : <Button secondary small onClick={() => register(k.ClassID)}>הצטרפות להמתנה</Button>}
+                </div>
+              );
+            })}
+          </div>
+          : <Empty title="אין שיעורים קרובים" sub="כשהמאמן יפרסם שיעור, הוא יופיע כאן." />}
+        <div className="muted small">אפשר לבטל עד {d.cancelHours} שעות לפני השיעור. אחרי זה אפשר לשלוח למאמן בקשה חריגה.</div>
+      </>}</Load>
     </Screen>
   );
 }

@@ -91,13 +91,13 @@ export function call<T = any>(caller: string, module: string, action: string, pa
     return Promise.resolve({ ok: false, data: null, error: { code: "NOT_ALLOWED", message: "אין לך גישה לזה" } });
   }
   return (isLive(caller) ? endpointAdapter : adapter)({ caller, module, action, payload, lang: "he" }, session ?? { role: "trainee", traineeID: null }).then((r) =>
-    r.error && !r.error.message ? { ...r, error: { ...r.error, message: errorTexts[r.error.code] ?? "משהו השתבש. נסה שוב" } } : r);
+    r.error && !r.error.message ? { ...r, error: { ...r.error, message: errorTexts[r.error.code] ?? "משהו השתבש. אפשר לנסות שוב" } } : r);
 }
 
 // I04, from the browser (module map v9): the file goes straight to the upload address the Endpoint gave (prepare_upload).
 // Any refusal or failure is UPLOAD_FAILED (UC10 c). On demo data there is no store, and the demo upload always goes through.
 export async function uploadFile(uploadUrl: string, file: Blob): Promise<Reply<null>> {
-  const failed: Reply<null> = { ok: false, data: null, error: { code: "UPLOAD_FAILED", message: errorTexts.UPLOAD_FAILED ?? "משהו השתבש. נסה שוב" } };
+  const failed: Reply<null> = { ok: false, data: null, error: { code: "UPLOAD_FAILED", message: errorTexts.UPLOAD_FAILED ?? "משהו השתבש. אפשר לנסות שוב" } };
   if (!isLive("S05")) return { ok: true, data: null, error: null };
   try {
     const res = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });

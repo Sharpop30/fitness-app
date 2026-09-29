@@ -69,6 +69,7 @@ main { flex: 1; padding: 16px 18px 28px; display: flex; flex-direction: column; 
 .hero .sub { color: var(--heroSub); font-size: 12px; }
 .hero .sub + .big, .hero .sub + .lead { margin-top: 4px; }
 .hero .lead { font-size: 18px; font-weight: 500; }
+.hero .lead + .sub { margin-top: 3px; }
 .hero .big { font-size: 20px; font-weight: 500; font-family: var(--mono); }
 .hero .num { font-size: 24px; font-weight: 500; color: var(--heroNum); font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .hero .cap { font-size: 10px; color: var(--heroSub); letter-spacing: .04em; }
@@ -89,6 +90,7 @@ button.item:hover { border-color: var(--line-in); }
 .when .d { font-size: 11px; color: var(--muted); margin-top: 2px; }
 .av { width: 38px; height: 38px; border-radius: 50%; background: var(--tint); color: var(--tintInk); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex: none; }
 .tintrow { display: flex; align-items: center; gap: 12px; background: var(--tint); border-radius: 14px; padding: 12px 14px; width: 100%; border: 0; text-align: right; color: var(--ink); font-size: 13px; cursor: pointer; }
+.lead-text { font-size: 16px; }
 .notice { background: var(--tint); border-radius: 14px; padding: 12px 14px; }
 .warnbox { background: var(--warn); border-radius: 14px; padding: 12px 14px; }
 .confirm { background: var(--warn); border-radius: 18px; padding: 14px 16px; }

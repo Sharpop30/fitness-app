@@ -2,7 +2,7 @@
 // this file only routes between them. The "More" and "Me" tabs are navigation menus, with no action of their own.
 import { useMemo, useRef, useState, type ComponentType } from "react";
 import { setSession } from "./api/client";
-import { Chevron, Item, Screen } from "./design/components";
+import { Row, Screen } from "./design/components";
 import { NavContext, useNav, type Nav, type Role, type Route } from "./nav";
 import S01 from "./screens/S01CoachHome";
 import S02 from "./screens/S02Trainees";
@@ -33,28 +33,30 @@ function CoachMenu() {
   return (
     <Screen eyebrow="כלים" title="עוד" noBack>
       <div className="list">
-        <Item onClick={() => nav.go("S05")}><span>רשימת התרגילים והסרטונים</span><Chevron /></Item>
-        <Item onClick={() => nav.go("S09")}><span>אתגר שבועי</span><Chevron /></Item>
-        <Item onClick={() => nav.go("S10")}><span>תגמולים ומימושים</span><Chevron /></Item>
-        <Item onClick={() => nav.go("S08")}><span>תשלומים וחשבוניות</span><Chevron /></Item>
-        <Item onClick={() => nav.go("S12")}><span>הגדרות: מטבעות, מחירים ונוסחים</span><Chevron /></Item>
-        <Item onClick={nav.signOut}><span>יציאה</span><Chevron /></Item>
+        <Row title="רשימת התרגילים והסרטונים" onClick={() => nav.go("S05")} />
+        <Row title="אתגר שבועי" onClick={() => nav.go("S09")} />
+        <Row title="תגמולים ומימושים" onClick={() => nav.go("S10")} />
+        <Row title="תשלומים וחשבוניות" onClick={() => nav.go("S08")} />
+        <Row title="הגדרות: מטבעות, מחירים ונוסחים" onClick={() => nav.go("S12")} />
+        <Row title="יציאה" onClick={nav.signOut} />
       </div>
     </Screen>
   );
 }
 
+// The trainee's menu. It has no action of its own (module map section 4), so the name, the balance and the "to pay"
+// badge of prototype version 2 are not shown here (design stage, finding 35: a gap, as it needs a map row).
 function TraineeMenu() {
   const nav = useNav();
   return (
     <Screen eyebrow="החשבון שלי" title="אני" noBack>
       <div className="list">
-        <Item onClick={() => nav.go("S21")}><span>גרף ההתקדמות שלי</span><Chevron /></Item>
-        <Item onClick={() => nav.go("S16")}><span>האימונים שלי והערות המאמן</span><Chevron /></Item>
-        <Item onClick={() => nav.go("S18")}><span>מטבעות ותגמולים</span><Chevron /></Item>
-        <Item onClick={() => nav.go("S20")}><span>האתגר השבועי</span><Chevron /></Item>
-        <Item onClick={() => nav.go("S19")}><span>תשלומים וחשבוניות</span><Chevron /></Item>
-        <Item onClick={nav.signOut}><span>יציאה</span><Chevron /></Item>
+        <Row title="גרף ההתקדמות שלי" onClick={() => nav.go("S21")} />
+        <Row title="האימונים שלי והערות המאמן" onClick={() => nav.go("S16")} />
+        <Row title="מטבעות ותגמולים" onClick={() => nav.go("S18")} />
+        <Row title="האתגר השבועי" onClick={() => nav.go("S20")} />
+        <Row title="תשלומים וחשבוניות" onClick={() => nav.go("S19")} />
+        <Row title="יציאה" onClick={nav.signOut} />
       </div>
     </Screen>
   );
@@ -81,7 +83,7 @@ export default function App() {
     role, tab, depth: stack.length,
     go: (screen, params = {}) => { setStack((s) => [...s, { screen, params }]); window.scrollTo(0, 0); },
     replace: (screen, params = {}) => setStack((s) => [...s.slice(0, -1), { screen, params }]),
-    back: () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s)),
+    back: () => { setStack((s) => (s.length > 1 ? s.slice(0, -1) : s)); window.scrollTo(0, 0); },
     setTab: (t) => { setTabState(t); setStack([{ screen: t, params: {} }]); window.scrollTo(0, 0); },
     signIn: (r, traineeID) => {
       setSession({ role: r, traineeID: traineeID ?? null });

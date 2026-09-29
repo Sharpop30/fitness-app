@@ -3,7 +3,7 @@
 // decisions 1, 6, 9). A sign-in kept from the last visit opens straight away. On demo data, the role choice stays.
 import { useEffect, useState } from "react";
 import { call, setErrorTexts } from "../api/client";
-import { Button, Field, Hero, Screen } from "../design/components";
+import { Button, Field, Picture, Screen } from "../design/components";
 import { identityConfigured, restoreSession, signInWithPassword, signOutIdentity } from "../identity/auth";
 import { useNav } from "../nav";
 
@@ -36,21 +36,22 @@ export default function S23SignIn() {
   const signIn = async () => {
     const outcome = await signInWithPassword(email.trim(), password);
     if (outcome === "ok") return enterLive();
-    nav.toast(outcome === "wrong" ? "המייל או הסיסמה לא נכונים" : "משהו השתבש. נסה שוב");
+    nav.toast(outcome === "wrong" ? "המייל או הסיסמה לא נכונים" : "משהו השתבש. אפשר לנסות שוב");
   };
 
   return (
-    <Screen eyebrow="כניסה" title="כניסה לאפליקציה" noBack>
-      <Hero><div className="sub">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו</div><div className="big">תוכניות, תשלומים ומעקב במקום אחד</div></Hero>
+    <Screen eyebrow="ביצועים, מעקב ותשלומים" title="כניסה לאפליקציה" noBack>
+      <Picture size="tall" />
+      <div className="lead-text">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו: תוכניות, תשלומים ומעקב במקום אחד.</div>
       {live ? <>
         <Field label="מייל"><input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
         <Field label="סיסמה"><input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
         <Button onClick={signIn}>כניסה</Button>
       </> : <>
+        <div className="muted small">בגרסת הדוגמה הכניסה היא בחירת תפקיד, בלי מייל וסיסמה.</div>
         <Button onClick={() => enter("coach")}>כניסה כמאמן (דוגמה)</Button>
         <Button secondary onClick={() => enter("trainee", "d0000000-0000-4000-8000-000000001001")}>כניסה כמתאמן (דוגמה)</Button>
         <Button secondary onClick={() => nav.go("S22")}>פתיחת הזמנה כמתאמן חדש</Button>
-        <div className="muted small">בגרסת הפיתוח הכניסה היא בחירת תפקיד לדוגמה. הכניסה האמיתית, במייל וסיסמה, תתחבר בשלב הממשקים.</div>
       </>}
     </Screen>
   );

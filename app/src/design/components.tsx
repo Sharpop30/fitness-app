@@ -3,6 +3,7 @@
 // states, a button that shows it is sending, labels tied to fields, and the text helpers for names, numbers and dates.
 import { cloneElement, isValidElement, useEffect, useId, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { useNav } from "../nav";
+import { identityConfigured } from "../identity/auth";
 
 // ---- Icons: 1.8 strokes with round caps (FORM) ----
 const svg = (d: ReactNode, size = 20) => (
@@ -47,12 +48,14 @@ function ThemeButton() {
   return <button className="theme" onClick={toggle}>{dark ? "מצב בהיר" : "מצב כהה"}</button>;
 }
 
+// The demo bar (finding 1, design stage decision 2): with the identity service, real data, and only payments are a demo;
+// on demo data, everything is sample data.
 export function Screen({ eyebrow, title, children, noBack }: { eyebrow: ReactNode; title: ReactNode; children: ReactNode; noBack?: boolean }) {
   const nav = useNav();
   const tabs = nav.role === "coach" ? COACH_TABS : nav.role === "trainee" ? TRAINEE_TABS : [];
   return (
     <>
-      <div className="demo-bar">גרסת פיתוח. כל הנתונים הם נתוני דוגמה, ותשלומים וחשבוניות הם הדגמה בלבד.</div>
+      <div className="demo-bar">{identityConfigured() ? "תשלומים וחשבוניות הם הדגמה בלבד." : "גרסת דוגמה. כל הנתונים הם נתוני דוגמה, ותשלומים וחשבוניות הם הדגמה בלבד."}</div>
       <header className="hd">
         <div className="hd-top">
           {nav.depth > 1 && !noBack ? <button className="back" onClick={nav.back}>{ICONS.back}<span>חזרה</span></button> : <span />}
@@ -145,6 +148,13 @@ export function Load<T>({ state, children }: { state: { data: T | null; error: {
   if (state.error) return <ErrorState error={state.error} onRetry={state.reload} />;
   if (state.loading || state.data == null) return <Loading />;
   return <>{children(state.data)}</>;
+}
+
+// A decorative picture (design stage, task 4). Decorative, so hidden from screen readers; until a picture is approved
+// by the team, a soft placeholder of the same size keeps the layout.
+export function Picture({ src, size }: { src?: string; size?: "tall" | "short" }) {
+  const cls = `img${size ? " " + size : ""}`;
+  return src ? <img className={cls} src={src} alt="" aria-hidden="true" /> : <div className={cls} aria-hidden="true" />;
 }
 
 // ---- Buttons ----
@@ -263,6 +273,15 @@ export function ExerciseSets({ name, bodyweight, sets, extra }: { name: string; 
       <div className="chips">{sets.map((s, i) => <span className="setchip" key={i}>{!s.isDone ? "—" : bodyweight ? s.reps : `${s.weight} × ${s.reps}`}</span>)}</div>
     </div>
   );
+}
+
+// A logged workout's sets, grouped by exercise in the order done. Bodyweight: every set without weight.
+export function byExercise(sets: any[]): { id: string; name: string; bodyweight: boolean; sets: any[] }[] {
+  const ids = [...new Set(sets.map((s) => s.ExerciseID))] as string[];
+  return ids.map((id) => {
+    const mine = sets.filter((s) => s.ExerciseID === id);
+    return { id, name: mine[0].exerciseName ?? "", bodyweight: mine.every((s) => !s.weight), sets: mine };
+  });
 }
 
 export const payLabel: Record<string, string> = { monthly: "מנוי חודשי", pack10: "חבילת 10 אימונים (כרטיסייה)" };

@@ -100,10 +100,10 @@ const actions: Record<string, H> = {
     const t = D.trainees.find((x) => x.TraineeID === tid);
     if (!t) return fail("NOT_ALLOWED");
     const prog = activeProgram(tid);
-    const goal = D.goals.find((g) => g.TraineeID === tid) ?? null;
+    const goal = D.goals.find((g) => g.TraineeID === tid && g.status === "active") ?? null; // the active goal only, as the server
     return ok({ trainee: t, coins: balance(tid), streak: streak(tid), openPayments: D.payments.filter((q) => q.TraineeID === tid && q.status === "open").length,
       workouts: prog?.workouts.length ?? 0, payments: D.payments.filter((q) => q.TraineeID === tid).length,
-      goal: goal && { ...goal, exerciseName: ex(goal.ExerciseID).exerciseName } });
+      goal: goal && { PersonalGoalID: goal.PersonalGoalID, ExerciseID: goal.ExerciseID, exerciseName: ex(goal.ExerciseID).exerciseName, targetWeight: goal.targetWeight } });
   },
   // ---- M02 exercises ----
   "exercises.list_exercises": () => ok(D.exercises),
@@ -163,7 +163,9 @@ const actions: Record<string, H> = {
   "results.list_results": (p, s) => {
     const tid = String(p.traineeID ?? me(s));
     if (!mine(s, tid)) return fail("NOT_ALLOWED");
-    return ok(D.logs.filter((l) => l.TraineeID === tid).sort((a, b) => +b.performedAt - +a.performedAt));
+    // Each set with its exercise's name, as the server gives it (repository SetResult).
+    return ok(D.logs.filter((l) => l.TraineeID === tid).sort((a, b) => +b.performedAt - +a.performedAt)
+      .map((l) => ({ ...l, sets: l.sets.map((x) => ({ ...x, exerciseName: ex(x.ExerciseID).exerciseName })) })));
   },
   "results.log_workout": (p, s) => {
     const tid = me(s);

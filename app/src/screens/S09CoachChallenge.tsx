@@ -1,8 +1,10 @@
 // S09 weekly challenge, coach (UC8, story 5): one challenge a week, automatic completion, prize handover.
+// Design stage: marking a prize checks the reply (finding 3), loading and an error with a retry (2, 6), avatars and
+// names isolated (8).
 import { useState } from "react";
 import { call } from "../api/client";
-import { useCall } from "../api/useCall";
-import { Button, Empty, Field, Hero, Item, Screen, Segmented, fmtDate } from "../design/components";
+import { both, useCall } from "../api/useCall";
+import { Avatar, Badge, Button, Empty, Field, Hero, Item, Load, Name, Screen, Segmented, fmtDate } from "../design/components";
 import { useNav } from "../nav";
 
 export default function S09CoachChallenge({ create }: { create?: boolean }) {
@@ -31,13 +33,15 @@ function NewChallenge() {
       <Field label="שם"><input id="challengeName" value={name} onChange={(e) => setName(e.target.value)} /></Field>
       <Segmented value={type} options={[["count", "מספר אימונים"], ["exercise", "יעד בתרגיל"]]} onChange={setType} />
       {type === "exercise" && (
-        <Field label="תרגיל">
-          <select id="challengeExercise" value={exerciseID} onChange={(e) => setExerciseID(e.target.value)}>
-            {exs.data?.map((e: any) => <option key={e.ExerciseID} value={e.ExerciseID}>{e.exerciseName}</option>)}
-          </select>
-        </Field>
+        <Load state={exs}>{(list: any[]) => (
+          <Field label="תרגיל">
+            <select id="challengeExercise" value={exerciseID} onChange={(e) => setExerciseID(e.target.value)}>
+              {list.map((e: any) => <option key={e.ExerciseID} value={e.ExerciseID}>{e.exerciseName}</option>)}
+            </select>
+          </Field>
+        )}</Load>
       )}
-      <Field label="ערך היעד"><input id="challengeTarget" type="number" value={target} onChange={(e) => setTarget(e.target.value)} /></Field>
+      <Field label="ערך היעד"><input id="challengeTarget" type="number" inputMode="numeric" value={target} onChange={(e) => setTarget(e.target.value)} /></Field>
       <Field label="פרס נוסף (לא חובה)"><input id="challengePrize" value={prize} onChange={(e) => setPrize(e.target.value)} placeholder="לדוגמה: חולצה" /></Field>
       <div className="muted small">כל המתאמנים משתתפים. באתגר על תרגיל, מי שהתרגיל אינו בתוכנית שלו פטור. השבוע מתחיל ביום ראשון.</div>
       <Button onClick={publish}>פרסום האתגר</Button>
@@ -51,18 +55,26 @@ function CurrentChallenge() {
   const done = useCall("S09", "challenges", "list_completions");
   const c = ch.data;
   const deliver = async (traineeID: string) => {
-    await call("S09", "challenges", "mark_prize_delivered", { traineeID });
+    const r = await call("S09", "challenges", "mark_prize_delivered", { traineeID });
+    if (!r.ok) return nav.toast(r.error!.message);
     done.reload(); nav.toast("סומן: הפרס נמסר");
   };
+  // get_current_challenge answers null when there is no challenge this week: loaded, not missing.
+  const state = { ...both({ ...ch, data: ch.loading || ch.error ? null : { c: ch.data } }, done) };
   return (
     <Screen eyebrow={c ? `שבוע ${fmtDate(c.weekStart)} עד ${fmtDate(c.end)}` : "אתגר שבועי"} title="אתגר שבועי">
-      {c ? <Hero><div className="sub">האתגר של השבוע</div><div className="big">{c.challengeName}</div><div className="sub">פרס: {c.coins} מטבעות{c.extraPrize ? ` + ${c.extraPrize}` : ""}</div></Hero> : <Empty>אין אתגר השבוע</Empty>}
-      <h2>השלימו</h2>
-      <div className="list">
-        {done.data?.length ? done.data.map((x: any) => (
-          <Item key={x.TraineeID}><span>{x.fullName}</span>{x.prizeDeliveredAt ? <span className="badge ok">הפרס נמסר</span> : <Button secondary small onClick={() => deliver(x.TraineeID)}>סימון מסירת פרס</Button>}</Item>
-        )) : <Empty>עוד אף אחד</Empty>}
-      </div>
+      <Load state={state}>{([{ c: cur }, list]: [{ c: any }, any[]]) => <>
+        {cur
+          ? <Hero><div className="sub">האתגר של השבוע</div><div className="lead">{cur.challengeName}</div><div className="sub">פרס: {cur.coins} מטבעות{cur.extraPrize ? ` + ${cur.extraPrize}` : ""}</div></Hero>
+          : <Empty title="אין אתגר השבוע" sub="אתגר חדש מתחיל ביום ראשון, וכל המתאמנים משתתפים." />}
+        <h2>השלימו</h2>
+        {list.length
+          ? <div className="list">{list.map((x: any) => (
+            <Item key={x.TraineeID}><Avatar name={x.fullName} /><span className="grow t"><Name>{x.fullName}</Name></span>
+              {x.prizeDeliveredAt ? <Badge tone="ok">הפרס נמסר</Badge> : <Button secondary small onClick={() => deliver(x.TraineeID)}>סימון מסירת פרס</Button>}</Item>
+          ))}</div>
+          : <Empty title="עוד אף אחד לא השלים" />}
+      </>}</Load>
       <Button secondary onClick={() => nav.go("S09", { create: true })}>אתגר חדש</Button>
     </Screen>
   );

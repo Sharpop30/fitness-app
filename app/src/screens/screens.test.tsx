@@ -34,7 +34,7 @@ test.each(CASES)("%s opens and shows its title", async (id, role, params, title)
   const S = SCREENS[id];
   render(<NavContext.Provider value={nav(role)}><S {...params} /></NavContext.Provider>);
   expect(await screen.findByRole("heading", { level: 1, name: title })).toBeTruthy();
-  expect(screen.getByText(/נתוני דוגמה/)).toBeTruthy();
+  expect(screen.getByText(/תשלומים וחשבוניות הם הדגמה בלבד/)).toBeTruthy(); // the demo bar (design stage, decision 2)
 });
 
 // Stage 4c report, gap 1: the class list and the publish form ask for no single class; one class only with its ID.
@@ -93,7 +93,11 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     const S = SCREENS[id];
     render(<NavContext.Provider value={nav(role)}><S {...params} /></NavContext.Provider>);
   };
-  const lineOf = async (name: string) => (await screen.findAllByText(name, {}, { timeout: 8000 }))[0].parentElement!.textContent;
+  // The whole row, tile or hero stat a text sits in (design stage: a row's title and its second line are separate elements).
+  const lineOf = async (name: string) => {
+    const el = (await screen.findAllByText(name, {}, { timeout: 8000 }))[0];
+    return (el.closest(".item, .tile, .side, .card") ?? el.parentElement!).textContent;
+  };
   const shows = async (text: string | RegExp) => expect((await screen.findAllByText(text, {}, { timeout: 8000 })).length).toBeGreaterThan(0);
   const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   // This week's Sunday in Israel (UC8; stage 4b plan, decision 8).
@@ -196,7 +200,7 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     for (const [name] of rows(`select "inviteeName" from invites where "CoachID" = '${COACH}' and status = 'open' and "expiresAt" > now()`)) {
       expect(await lineOf(name)).toContain("הוזמן, טרם הצטרף");
     }
-    expect(screen.getByText(/נתוני דוגמה/)).toBeTruthy();
+    expect(screen.getByText(/תשלומים וחשבוניות הם הדגמה בלבד/)).toBeTruthy(); // the demo bar (design stage, decision 2)
   }, 30000);
 
   test("S05: every exercise in reach with its video label, and an exercise with a video shows it", async () => {
@@ -260,7 +264,7 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
                        where k."CoachID"='${COACH}' and k."startsAt" > now()`);
     const count = (want: string) => list.filter(([mine, status]) => status === "active" && mine === want).length;
     if (count("registered")) expect((await screen.findAllByText("רשום", {}, { timeout: 8000 })).length).toBe(count("registered"));
-    if (count("waitlist")) await shows(/^ברשימת המתנה, מקום \d+$/);
+    if (count("waitlist")) await shows(/^בהמתנה, מקום \d+$/);
     await shows(new RegExp(`אפשר לבטל עד ${psql(`select "settingValue" from settings where "CoachID"='${COACH}' and "settingKey"='cancelHours'`)} שעות`));
   }, 30000);
 
@@ -283,7 +287,7 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     open("S01");
     const active = psql(`select count(*) from trainees where "CoachID"='${COACH}' and "isActive"`);
     const openPays = psql(`select count(*) from payment_requests where "CoachID"='${COACH}' and "status"='open'`);
-    await shows(new Date().toLocaleDateString("he-IL", { day: "numeric", month: "numeric" }));
+    await shows(new RegExp(escape(new Date().toLocaleDateString("he-IL", { day: "numeric", month: "numeric" })) + "$")); // "…· יום ד׳, 30.9"
     expect(await lineOf("מתאמנים פעילים")).toContain(active);
     expect(await lineOf("תשלומים פתוחים")).toContain(openPays);
   }, 30000);
@@ -292,12 +296,12 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     open("S03", { traineeID: NOA });
     expect(await screen.findByRole("heading", { level: 1, name: psql(`select "fullName" from trainees where "TraineeID"='${NOA}'`) }, { timeout: 8000 })).toBeTruthy();
     expect(await lineOf("מטבעות")).toContain(psql(`select coalesce(sum("amount"),0) from coin_transactions where "TraineeID"='${NOA}'`));
-    expect(await lineOf("תשלום פתוח")).toContain(psql(`select count(*) from payment_requests where "TraineeID"='${NOA}' and "status"='open'`));
+    expect(await lineOf("לתשלום")).toContain(psql(`select count(*) from payment_requests where "TraineeID"='${NOA}' and "status"='open'`));
     const workouts = psql(`select count(*) from workouts w join programs p using ("ProgramID") where p."TraineeID"='${NOA}' and p."isActive"`);
     await shows(`${workouts} אימונים`);
     const [goal] = rows(`select e."exerciseName", g."targetWeight" from personal_goals g join exercises e using ("ExerciseID")
                          where g."TraineeID"='${NOA}' and g."status"='active'`);
-    await shows(goal ? `${goal[0]} ${Number(goal[1])} ק"ג` : "אין יעד פעיל");
+    await shows(goal ? new RegExp(`^${escape(`${goal[0]} ${Number(goal[1])} ק"ג`)} · פעיל$`) : "אין יעד פעיל");
   }, 30000);
 
   test("S08: every request of the coach, with the trainee, type and amount, and the invoice of each paid one", async () => {
@@ -305,9 +309,12 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     const list = rows(`select t."fullName", p."paymentType", p."amount", p."status", coalesce(i."invoiceNumber"::text, '') from payment_requests p
                        join trainees t using ("TraineeID") left join invoices i using ("PaymentRequestID") where p."CoachID"='${COACH}'`);
     expect(list.length).toBeGreaterThan(0);
+    await shows(`${list[0][0]}`);
+    const lines = [...document.querySelectorAll(".item")].map((e) => e.textContent ?? "");
     for (const [name, type, amount, , number] of list) {
-      await shows(`${name} · ${PAY[type]}`);
-      await shows(new RegExp(`^₪${Number(amount)} · `));
+      // Each request is one row: the trainee and the type, then the amount with a thousands separator (design stage).
+      const money = `₪${Number(amount).toLocaleString("he-IL")}`;
+      expect(lines.some((l) => l.includes(`${name} · ${PAY[type]}`) && l.includes(money))).toBe(true);
       if (number) await shows(`חשבונית ${number}`);
     }
     const open_ = list.filter(([, , , status]) => status === "open").length;
@@ -340,6 +347,6 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
 
   test("S06: the note form shows the longest note from SETTINGS (stage 4b report, gap 2)", async () => {
     open("S06", { traineeID: NOA, noteFor: "d0000000-0000-4000-8000-000000006001" });
-    await shows(`עד ${setting("noteMaxLength")} תווים.`);
+    await shows(new RegExp(`עד ${setting("noteMaxLength")} תווים`));
   }, 30000);
 });
