@@ -135,3 +135,10 @@ test("an unreachable Endpoint is STORAGE_UNAVAILABLE, with the human text from E
   const r = await call("S04", "programs", "save_program", {});
   expect(r).toEqual({ ok: false, data: null, error: { code: "STORAGE_UNAVAILABLE", message: "השינוי לא נשמר כרגע. נסה שוב" } });
 });
+
+test("a gateway answer that is not the Endpoint's reply (503 while the function is down) is STORAGE_UNAVAILABLE too", async () => {
+  fetchMock.mockResolvedValueOnce({ json: async () => ({ message: "name resolution failed" }) } as any);
+  const r = await call("S02", "trainees", "list_trainees");
+  expect(r.ok).toBe(false);
+  expect(r.error?.code).toBe("STORAGE_UNAVAILABLE");
+});

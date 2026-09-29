@@ -66,16 +66,21 @@ export function setAdapter(a: Adapter) {
 }
 
 // The Endpoint. Any failure to reach it is STORAGE_UNAVAILABLE: the change stays on the screen for a retry (UC1 c).
+// That includes an answer that is not the Endpoint's reply, like the gateway's 503 when the function is down (design
+// stage, acceptance review): the screen shows the error with a retry instead of loading forever.
+const isReply = (r: any): r is Reply => r !== null && typeof r === "object" && typeof r.ok === "boolean";
 export const endpointAdapter: Adapter = async (envelope) => {
+  const unavailable: Reply<null> = { ok: false, data: null, error: { code: "STORAGE_UNAVAILABLE", message: "" } };
   try {
     const res = await fetch(import.meta.env.VITE_API_URL as string, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
       body: JSON.stringify(envelope),
     });
-    return await res.json();
+    const body = await res.json();
+    return isReply(body) ? body : unavailable;
   } catch {
-    return { ok: false, data: null, error: { code: "STORAGE_UNAVAILABLE", message: "" } };
+    return unavailable;
   }
 };
 
