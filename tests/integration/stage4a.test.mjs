@@ -3,7 +3,7 @@
 // It writes: two invites, one exercise (set inactive at the end, so the demo list stays at eight), and one workout for Noa.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { ANON, API, call, demoTokens, ID, lastAudit, psql, strangerCoachToken } from "../system/demo-users.mjs";
+import { ANON, API, call, demoTokens, EMAIL, ID, lastAudit, psql, strangerCoachToken, tokenOf } from "../system/demo-users.mjs";
 
 let t;
 let stranger;
@@ -38,7 +38,7 @@ test("S02: invite_trainee by link saves an open invite for the SETTINGS days, an
   const name = `בדיקה ${Date.now()}`;
   const r = await call(t.coach, "S02", "trainees", "invite_trainee", { name, email: "", channel: "link" });
   assert.equal(r.ok, true);
-  const token = r.data.link.replace("#join-", "");
+  const token = tokenOf(r.data.link);
   assert.equal(psql(`select status || ':' || round(extract(epoch from "expiresAt" - "createdAt") / 86400) from invites where token='${token}'`), "open:7");
   assert.deepEqual(trail("S02", "invite_trainee"), [
     "S02>trainees.invite_trainee:true:-", "M01>settings.get_settings:true:-", "M01>settings.get_settings:true:-",
@@ -48,15 +48,16 @@ test("S02: invite_trainee by link saves an open invite for the SETTINGS days, an
   assert.equal(list.data.find((x) => x.fullName === name).joined, false);
 });
 
-test("S02: by email the channel is not built yet, so INVITE_DELIVERY_FAILED, and the invite stays open", async () => {
+// Stage 5: the channel (I03) is built. An address the identity service already knows is its failure case (execution decision 3).
+test("S02: by email to an address already known, the channel refuses: INVITE_DELIVERY_FAILED, and the invite stays open", async () => {
   const name = `במייל ${Date.now()}`;
-  const r = await call(t.coach, "S02", "trainees", "invite_trainee", { name, email: "dana@example.com", channel: "email" });
+  const r = await call(t.coach, "S02", "trainees", "invite_trainee", { name, email: EMAIL.maya, channel: "email" });
   assert.equal(r.error.code, "INVITE_DELIVERY_FAILED");
   assert.equal(psql(`select status from invites where "inviteeName"='${name}'`), "open");
   assert.deepEqual(trail("S02", "invite_trainee"), [
     "S02>trainees.invite_trainee:true:-",
     "M01>settings.get_settings:true:-", "M01>settings.get_settings:true:-",
-    "M01>invite_channel.send_invite:true:-", "M01>invite_channel.send_invite:false:ACTION_NOT_ALLOWED",
+    "M01>invite_channel.send_invite:true:-", "M01>invite_channel.send_invite:false:INVITE_DELIVERY_FAILED",
     "S02>trainees.invite_trainee:false:INVITE_DELIVERY_FAILED",
   ]);
 });
@@ -77,14 +78,14 @@ test("S05: create_exercise, attach_video and get_exercise pass the envelope; the
   assert.equal((await call(t.noa, "S14", "exercises", "get_exercise", { exerciseID: made.data.ExerciseID })).ok, true);
 });
 
-test("S05: a link that is not YouTube is VIDEO_INVALID, and a long upload is VIDEO_TOO_LONG, against the SETTINGS value", async () => {
+test("S05: a link that is not YouTube is VIDEO_INVALID, and a long upload is VIDEO_TOO_LONG, against the SETTINGS value (prepare_upload from stage 5)", async () => {
   const bad = await call(t.coach, "S05", "exercises", "attach_video", { exerciseID: ID.squat, kind: "link", url: "https://vimeo.com/1" });
   assert.equal(bad.error.code, "VIDEO_INVALID");
-  const long = await call(t.coach, "S05", "exercises", "attach_video", { exerciseID: ID.squat, kind: "upload", seconds: 120 });
+  const long = await call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: ID.squat, contentType: "video/mp4", seconds: 120, megabytes: 10 });
   assert.equal(long.error.code, "VIDEO_TOO_LONG");
-  assert.deepEqual(trail("S05", "attach_video"), [
-    "S05>exercises.attach_video:true:-", "M02>settings.get_settings:true:-", "M02>settings.get_settings:true:-",
-    "S05>exercises.attach_video:false:VIDEO_TOO_LONG",
+  assert.deepEqual(trail("S05", "prepare_upload"), [
+    "S05>exercises.prepare_upload:true:-", "M02>settings.get_settings:true:-", "M02>settings.get_settings:true:-",
+    "S05>exercises.prepare_upload:false:VIDEO_TOO_LONG",
   ]);
 });
 

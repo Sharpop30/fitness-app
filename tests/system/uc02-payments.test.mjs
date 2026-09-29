@@ -1,6 +1,7 @@
 // System Test, usecase-02 end to end (doc-module-map section 6; stage 4d plan, task 10): norm, edge, failure, against the
-// LOCAL stack, on a fresh coach and trainees "(test)" (decision 10). The payment gateway (I02) is built in stage 5
-// (decision 1): until then the demo payment ends in alternative c, and the payment that goes through is in the unit tests.
+// LOCAL stack, on a fresh coach and trainees "(test)" (decision 10). Stage 5 builds the payment gateway (I02), so the main
+// flow goes through end to end. Failure c runs when the function is served in decline mode (stage 5 plan, decision 4):
+//   supabase functions serve --env-file supabase/functions/.env.decline, and PAYMENT_GATEWAY_MODE=decline for node.
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import { call, demoTokens, freshWorld, paymentRequest, psql } from "./demo-users.mjs";
@@ -56,7 +57,23 @@ test("failure b: paying a paid request is PAYMENT_ALREADY_PAID, with no second i
   assert.equal(psql(`select count(*) from invoices where "PaymentRequestID"='${id}'`), "1");
 });
 
-test("failure c: the gateway does not answer (not built until stage 5): PAYMENT_GATEWAY_UNAVAILABLE, open, no invoice", async () => {
+const declining = process.env.PAYMENT_GATEWAY_MODE === "decline";
+
+test("norm, steps 5-10: the trainee pays; the request is paid, with one numbered demo invoice, for both of them", { skip: declining && "decline mode" }, async () => {
+  const [a] = w.trainees;
+  const id = paymentRequest(w.coachID, a.traineeID);
+  const r = await call(a.token, "S19", "payments", "pay_demo", { paymentRequestID: id });
+  assert.equal(r.ok, true, JSON.stringify(r.error));
+  const mine = (await call(a.token, "S19", "payments", "list_payments")).data.find((p) => p.PaymentRequestID === id);
+  const coachSees = (await call(w.coachToken, "S08", "payments", "list_payments")).data.find((p) => p.PaymentRequestID === id);
+  assert.deepEqual([mine.status, mine.invoiceNumber], ["paid", r.data.invoiceNumber]);
+  assert.deepEqual([coachSees.status, coachSees.invoiceNumber], ["paid", r.data.invoiceNumber]);
+  const invoice = (await call(a.token, "S19", "invoices", "list_invoices")).data.find((i) => i.invoiceNumber === r.data.invoiceNumber);
+  assert.deepEqual([invoice.amount, invoice.isDemo], [350, true]);
+  assert.equal(psql(`select count(*) from invoices where "PaymentRequestID"='${id}'`), "1");
+});
+
+test("failure c: the gateway declines: PAYMENT_GATEWAY_UNAVAILABLE, open, no invoice", { skip: !declining && "run in decline mode" }, async () => {
   const [a] = w.trainees;
   const id = paymentRequest(w.coachID, a.traineeID);
   assert.equal((await call(a.token, "S19", "payments", "pay_demo", { paymentRequestID: id })).error?.code, "PAYMENT_GATEWAY_UNAVAILABLE");
