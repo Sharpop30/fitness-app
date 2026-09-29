@@ -58,6 +58,10 @@ export async function demoTokens() {
   const password = `local-only-${randomBytes(12).toString("hex")}`;
   for (const email of Object.values(EMAIL)) await ensureUser(email, password);
   if (psql("select demo.load()") !== "t") throw new Error("demo.load() did not load the demo data");
+  // Locally the demo coach is loaded after the migrations, so the value 0012 adds to every coach is added here too.
+  psql(`insert into settings ("CoachID","settingKey","settingValue")
+        select "CoachID", 'videoMaxMegabytes', '50' from settings where "settingKey" = 'videoMaxSeconds'
+        on conflict ("CoachID","settingKey") do nothing`);
   const tokens = {};
   for (const [who, email] of Object.entries(EMAIL)) tokens[who] = await signIn(email, password);
   return tokens;
