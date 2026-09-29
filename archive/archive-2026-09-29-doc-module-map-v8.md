@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: מאושר, 29.09.2026, גרסה 9. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 28.09.2026, גרסה 8. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -10,7 +10,7 @@
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
 | המקורות | PRD גרסה 1.19; doc-mlp-scope; 11 סיפורי משתמש ו-11 מקרי שימוש (usecase-01 עד 11); doc-erd-conceptual ו-doc-erd-logical; prototype-fitness-app גרסה 1 |
-| גרסה ותאריך | 9, 29.09.2026 |
+| גרסה ותאריך | 8, 28.09.2026 |
 
 ## 2. הליבה
 
@@ -73,9 +73,9 @@
 | מזהה | הממשק | הסוג | מה מאחוריו |
 | :-- | :-- | :-- | :-- |
 | I01 | Identity Connector | מתאם (Connector) | Supabase Auth |
-| I02 | Payment Gateway | שער (Gateway) | מימוש מדומה בגרסה הראשונה, שמאשר; ספק אמיתי [טרם נקבע] |
-| I03 | Invite Channel | מתאם | קישור לשיתוף, מלא מכתובת האתר (SITE_URL), ומייל דרך שירות ההזמנות של Supabase Auth |
-| I04 | File Storage | דרייבר בתוך ה-Repository | Supabase Storage, דלי אחד (videos) לסרטונים שהועלו: פתוח לצפייה, וכתיבה רק בכתובת חתומה שה-Endpoint מנפיק |
+| I02 | Payment Gateway | שער (Gateway) | מימוש מדומה בגרסה הראשונה; ספק אמיתי [טרם נקבע] |
+| I03 | Invite Channel | מתאם | קישור לשיתוף, ומייל דרך Supabase |
+| I04 | File Storage | דרייבר בתוך ה-Repository | Supabase Storage, לסרטונים שהועלו |
 
 ### מודולי Frontend
 
@@ -95,8 +95,8 @@
 
 | המודול | הפעולה | המקור | מי רשאי |
 | :-- | :-- | :-- | :-- |
-| trainees | invite_trainee, accept_invite, list_trainees, get_trainee_card, get_me | UC4 | מאמן; accept: בעל ההזמנה, משתמש מזוהה שעוד אינו מאמן או מתאמן; get_me: מאמן ומתאמן. get_trainee_card מרכיב את הכרטיס דרך ה-Orchestrator מ-programs.get_active_program, coins.get_balance, payments.list_payments ו-progress.get_streak |
-| exercises | list_exercises, create_exercise, prepare_upload, attach_video, get_exercise | UC1, UC10 | מאמן; get: גם מתאמן |
+| trainees | invite_trainee, accept_invite, list_trainees, get_trainee_card | UC4 | מאמן; accept: בעל ההזמנה. get_trainee_card מרכיב את הכרטיס דרך ה-Orchestrator מ-programs.get_active_program, coins.get_balance, payments.list_payments ו-progress.get_streak |
+| exercises | list_exercises, create_exercise, attach_video, get_exercise | UC1, UC10 | מאמן; get: גם מתאמן |
 | programs | get_active_program, save_program, swap_exercise, start_new_program | UC1 | מאמן; get: גם המתאמן שלו |
 | results | log_workout, correct_result, list_results | UC3 | מתאמן (שלו); list: גם המאמן |
 | progress | get_progress_chart, detect_personal_records, get_streak | UC5, UC6, UC9 | מאמן, מתאמן (שלו); detect: feedback בלבד; get_streak: trainees, home בלבד |
@@ -124,14 +124,6 @@
 
 **החוזים שנוספו בגרסה 8** (תוכנית שלב 4ד, הכרעות 2 עד 6), ושורה אחת: S06 מול settings.get_settings, כדי שהמסך יציג את אורך ההערה המרבי (noteMaxLength) מ-SETTINGS ולא מספר קבוע (דוח 4ב, פער 2). נכנסת ל-Registry בשלב 4ד, יחד עם שלוש שורות M01 מגרסה 4 שנותרו (programs.get_active_program, coins.get_balance, payments.list_payments).
 
-**החוזים שנוספו בגרסה 9** (תוכנית שלב 5, הכרעות 1 עד 5 ו-7), ושלוש שורות Registry, נכנסות ב-0012: S23 מול trainees.get_me, למאמן ולמתאמן; S05 מול exercises.prepare_upload, למאמן.
-
-**הצטרפות בהזמנה** (תוכנית שלב 5, הכרעה 3): משתמש שזוהה בשירות הזהות ואין לו שורה ב-COACHES או ב-TRAINEES מקבל תפקיד trainee בלי מזהה מתאמן, ורק לבקשה S22 מול trainees.accept_invite. כל בקשה אחרת שלו נדחית ב-NOT_ALLOWED ונרשמת, כמו היום. ההצטרפות אטומית: המתאמן נוצר וההזמנה נסגרת יחד, בתנאי שהיא פתוחה ובתוקף, כך שאסימון אחד יוצר מתאמן אחד.
-
-**הסרטון שהועלה** (תוכנית שלב 5, הכרעה 5): בשני צעדים, דרך ה-Endpoint. exercises.prepare_upload בודק את האורך מול videoMaxSeconds ואת הגודל מול videoMaxMegabytes, ומחזיר כתובת העלאה חתומה לנתיב אחד של התרגיל. client.ts מעלה את הקובץ לכתובת הזו. exercises.attach_video בסוג upload מקבל את הנתיב, ושומר אותו רק אחרי שה-Repository מצא את הקובץ בדלי. העלאה שלא הושלמה מחזירה UPLOAD_FAILED, והתרגיל נשאר בלי שינוי.
-
-**השער המדומה** (תוכנית שלב 5, הכרעה 4): payment_gateway.charge מאשר. לבדיקת הכשל, משתנה סביבה מקומי (PAYMENT_GATEWAY_MODE=decline) גורם לו לדחות; תשובה שאינה מגיעה בזמן היא כשל. בשני המקרים payments מחזיר PAYMENT_GATEWAY_UNAVAILABLE, כמו בגרסה 8.
-
 **התשלום לדוגמה, בלי מצב ביניים** (UC2 סעיף 7; תוכנית 4ד, הכרעה 3): payments.pay_demo פונה ל-payment_gateway.charge, ואז ל-invoices.create_invoice, ורק אז מסמן את הבקשה "שולמה", בתנאי שהיא עדיין פתוחה. create_invoice אידמפוטנטי לפי הבקשה, ולכן לבקשה ששולמה יש תמיד חשבונית, וניסיון חוזר אחרי כשל אינו יוצר חשבונית שנייה. שתי בקשות תשלום במקביל: אחת מצליחה, והשנייה מקבלת PAYMENT_ALREADY_PAID. כשל בשער, או שער שעוד לא נבנה, מחזיר PAYMENT_GATEWAY_UNAVAILABLE, והבקשה נשארת פתוחה בלי חשבונית.
 
 **קריאה לאורך הקשר בין בקשה לחשבונית** (תוכנית 4ד, הכרעה 2): payments.list_payments מחזיר את מספר החשבונית של כל בקשה, ו-invoices.list_invoices את שם המתאמן ואת סוג התשלום של הבקשה. שני אלה נקראים ב-Repository לאורך הקשר שב-ERD (INVOICES.PaymentRequestID), לקריאה בלבד. הכתיבה ל-PAYMENT_REQUESTS נעשית רק ב-payments, ול-INVOICES רק ב-invoices.
@@ -146,7 +138,7 @@
 | S02 | trainees.list_trainees, trainees.invite_trainee |
 | S03 | trainees.get_trainee_card |
 | S04 | programs.get_active_program, save_program, swap_exercise, start_new_program; exercises.list_exercises |
-| S05 | exercises.list_exercises, create_exercise, prepare_upload, attach_video, get_exercise |
+| S05 | exercises.list_exercises, create_exercise, attach_video, get_exercise |
 | S06 | results.list_results; feedback.add_coach_note, get_workout_notes; settings.get_settings (noteMaxLength) |
 | S07 | coins.set_personal_goal; exercises.list_exercises |
 | S08 | payments.create_payment_request, list_payments; invoices.list_invoices; trainees.list_trainees |
@@ -164,7 +156,7 @@
 | S20 | challenges.get_current_challenge |
 | S21 | progress.get_progress_chart |
 | S22 | trainees.accept_invite |
-| S23 | שירות הזהות; trainees.get_me ו-settings.get_error_texts, פעם אחת אחרי הכניסה, והלקוח שומר את ההסברים |
+| S23 | שירות הזהות; settings.get_error_texts, פעם אחת אחרי הכניסה, והלקוח שומר את ההסברים |
 
 ### מבנה התשובה של כל פעולה
 
@@ -173,12 +165,10 @@
 | הפעולה | data |
 | :-- | :-- |
 | trainees.list_trainees | רשימה: TraineeID או InviteID, fullName, isActive, joined, hasProgram. מתאמן שהצטרף מזוהה ב-TraineeID. הזמנה פתוחה שתוקפה לא פג חוזרת עם InviteID, TraineeID ריק ו-joined=false, כי המתאמן נוצר רק בהצטרפות |
-| trainees.invite_trainee | link, קישור ההזמנה לשיתוף: SITE_URL?join=אסימון. SITE_URL חסר מחזיר VALUE_NOT_SET |
-| trainees.accept_invite | TraineeID. הקלט: token (אסימון ההזמנה מהקישור), fullName (ריק: השם שבהזמנה). המייל משירות הזהות. הזמנה שפגה או שכבר נוצלה מחזירה INVITE_EXPIRED; משתמש שכבר מאמן או מתאמן מחזיר NOT_ALLOWED |
-| trainees.get_me | role (coach או trainee), traineeID (ריק למאמן), fullName |
+| trainees.invite_trainee | link, קישור ההזמנה לשיתוף |
+| trainees.accept_invite | TraineeID |
 | trainees.get_trainee_card | trainee, coins, streak, openPayments, workouts, payments, goal (עם exerciseName). הקלט: traineeID. workouts הוא מספר האימונים בתוכנית הפעילה (0 כשאין); openPayments מספר הבקשות הפתוחות; payments מספר הבקשות; goal היעד הפעיל, או ריק. פנייה שנכשלה מחזירה את השדה שלה ריק |
-| exercises.list_exercises, get_exercise, create_exercise, attach_video | תרגיל או רשימה: ExerciseID, exerciseName, isBodyweight, videoType, videoUrl. בסרטון שהועלה, videoUrl היא כתובת הצפייה בדלי. הקלט של attach_video: exerciseID, ו-kind: link עם url, או upload עם path מ-prepare_upload |
-| exercises.prepare_upload | uploadUrl, path. הקלט: exerciseID, seconds, megabytes, contentType. לא וידאו מחזיר VIDEO_INVALID; אורך מעל videoMaxSeconds או גודל מעל videoMaxMegabytes מחזירים VIDEO_TOO_LONG |
+| exercises.list_exercises, get_exercise, create_exercise, attach_video | תרגיל או רשימה: ExerciseID, exerciseName, isBodyweight, videoType, videoUrl |
 | programs.get_active_program | התוכנית, ובה workouts ובכל אחד items עם exerciseName ו-hasVideo; ו-inactive, רשימת התוכניות הלא פעילות |
 | results.list_results | רשימת אימונים שבוצעו: WorkoutLogID, workoutName, performedAt, sets (עם isCorrected) |
 | results.log_workout | WorkoutLogID, ו-feedback: done, total, records, coins, goal, challenge, text |
@@ -194,8 +184,7 @@
 | payments.list_payments | רשימה: PaymentRequestID, fullName, paymentType, amount, status, createdAt, invoiceNumber, מהחדשה לישנה. למאמן, traineeID בקלט מסנן למתאמן אחד שלו; המתאמן מקבל רק את שלו |
 | payments.create_payment_request | null. הקלט: traineeID, paymentType (monthly או pack10). הסכום נקרא מ-SETTINGS (priceMonthly, pricePack10) ונשמר בבקשה. מחיר חסר או סוג לא מוכר מחזירים VALUE_NOT_SET |
 | payments.pay_demo | invoiceNumber. הקלט: paymentRequestID |
-| payment_gateway.charge | null. הקלט: paymentRequestID, amount. אין שדה כרטיס. דחייה או חוסר תשובה: PAYMENT_GATEWAY_UNAVAILABLE |
-| invite_channel.send_invite | null. הקלט: name, email, link. השירות לא אישר שליחה (כולל מייל שכבר רשום בשירות הזהות): INVITE_DELIVERY_FAILED |
+| payment_gateway.charge | null. הקלט: paymentRequestID, amount. אין שדה כרטיס |
 | invoices.create_invoice | invoiceNumber. הקלט: paymentRequestID, amount. חשבונית אחת לכל בקשה, מסומנת הדגמה |
 | invoices.list_invoices | רשימה: invoiceNumber, fullName, paymentType, amount, issuedAt, isDemo, מהחדשה לישנה, באותו סינון כמו list_payments |
 | classes.list_upcoming_classes | classes (עם registered, waitlist, myStatus, myWaitPosition), cancelHours, ולמאמן lateRequests (LateCancelRequestID, fullName, startsAt). הטווח: למאמן, שיעורים מתחילת היום לפני שלושה ימים, כדי לסמן נוכחות אחרי השיעור (UC11 צעד 9); למתאמן, שיעורים שעוד לא התחילו. למאמן, registered (TraineeID, fullName, attended) ו-waitlist (TraineeID, fullName); למתאמן, registered ו-waitlist כרשימות באותו אורך, בלי שמות ובלי מזהים, כך שנראה רק מספר המקומות התפוסים והממתינים, ו-myStatus ו-myWaitPosition שלו (כלל 5) |
@@ -286,7 +275,7 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 2. עיצוב ומסכים | D01 ו-S01 עד S23 על נתוני הדגמה, בלי פנייה לשרת | **אישור המסכים בידי הצוות** | |
 | 3. Slice ראשון | S04 מול programs ו-Repository מלא, על נתוני הדגמה במסד | שינוי בתוכנית במסד נראה במסך | |
 | 4. מודולי הליבה העסקית | 4א: trainees, exercises, programs, results. 4ב: progress, feedback, coins, challenges, home. 4ג: classes, notifications. 4ד: payments, invoices, settings | Unit, Integration ו-System ירוקים לכל תת שלב | |
-| 5. ממשקי הקלט | Identity, Invite Channel, File Storage, Payment Gateway המדומה | כל ממשק מול החוזה שלו | ספק מייל: הוכרע בתוכנית שלב 5 (הכרעה 8). המייל המובנה של Supabase בגרסה הראשונה; מתאמנים אמיתיים בקישור |
+| 5. ממשקי הקלט | Identity, Invite Channel, File Storage, Payment Gateway המדומה | כל ממשק מול החוזה שלו | ספק מייל: המכסה של Supabase מספיקה? |
 | 6. AI | לא בגרסה הראשונה | | |
 | 7. נתוני אמת ופריסה | הסרת נתוני ההדגמה, יצירת חשבון המאמן, רשימת התרגילים וקישורי היוטיוב, פריסה | מבחני הקבלה המבניים כולם | **אישור הפריסה בידי הצוות** |
 
@@ -296,8 +285,7 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | :-- | :-- | :-- | :-- |
 | חשבון Supabase: מי פותח, ובאיזה אזור | הכול | מסמך הבנייה | שלב 1 |
 | תוכן הרשימה המוכנה וקישורי היוטיוב | exercises | נתוני ההקמה | שלב 7 |
-| משך שמירת מקום, תוקף הזמנה, אורך הערה, גודל קובץ | classes, trainees, feedback, exercises | SETTINGS | אינו עוצר: ערכים מאושרים באב הטיפוס. גודל הקובץ: videoMaxMegabytes, 50 (תוכנית שלב 5, הכרעה 7) |
-| ספק מייל חיצוני (SMTP) להזמנות למתאמנים שאינם בצוות | invite_channel | החלפת מימוש | אינו עוצר: הכרעת צוות לפני שלב 7 |
+| משך שמירת מקום, תוקף הזמנה, אורך הערה, גודל קובץ | classes, trainees, feedback, exercises | SETTINGS | אינו עוצר: ערכים מאושרים באב הטיפוס |
 | יעדים מספריים למדדים | דוחות | doc-okr-kpi | אינו עוצר |
 | ספק סליקה אמיתי | payment_gateway | החלפת מימוש | אינו עוצר |
 
@@ -324,4 +312,3 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 6 | 28.09.2026 | מפער שנמצא בשלב 4ב, משימה 3: שורת Registry אחת, M05 מול settings.get_settings, ל-streakGapDays של get_streak. מה לא השתנה: כל השאר | הצוות |
 | 7 | 28.09.2026 | מתוכנית שלב 4ג, הכרעות 2, 3 ו-4: החוזה של notifications.notify_in_app (traineeID, messageText; data null); הטווח של classes.list_upcoming_classes (למאמן משלושה ימים אחורה, למתאמן שיעורים שעוד לא התחילו); המתאמן מקבל את הנרשמים והממתינים בלי שמות ומזהים; ומבנה lateRequests. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, ה-Registry, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
 | 8 | 28.09.2026 | מתוכנית שלב 4ד, הכרעות 2 עד 6, ומדוח 4ג, פער 5: שורת Registry אחת, S06 מול settings.get_settings (noteMaxLength); הסדר ב-pay_demo בלי מצב ביניים; הקריאה לאורך הקשר בין בקשה לחשבונית; החוזים של create_payment_request, charge, create_invoice, update_settings ו-get_trainee_card, והסינון של list_payments ו-list_invoices; ההסבר לבני אדם של CANCEL_TOO_LATE בלי מספר קבוע; NOT_ALLOWED על שיעור שבוטל או התחיל ועל קלט לא תקין ב-notify_in_app. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
-| 9 | 29.09.2026 | מתוכנית שלב 5, הכרעות 1 עד 5, 7 ו-8: הפעולות trainees.get_me ו-exercises.prepare_upload, ושלוש שורות Registry (S23 מול get_me למאמן ולמתאמן, S05 מול prepare_upload); מי רשאי ל-accept_invite והקלט שלו; קישור ההזמנה מ-SITE_URL; החוזים של send_invite, charge ו-attach_video בהעלאה; הדלי videos; videoMaxMegabytes; השער של שלב 5 הוכרע. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, רשימת קודי השגיאה (28), הטבלאות וסדר הבנייה |
