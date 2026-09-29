@@ -3,6 +3,7 @@
 import { audit } from "./audit.ts";
 import { type Envelope, fail, type Reply } from "./errors.ts";
 import { handle, type Modules } from "./orchestrator.ts";
+import { isScreenCaller } from "./registry.ts";
 import { type Actor, createRepository, StorageUnavailable } from "./repository.ts";
 import { invite_channel } from "./interfaces/invite_channel.ts";
 import { payment_gateway } from "./interfaces/payment_gateway.ts";
@@ -64,19 +65,25 @@ Deno.serve(async (req) => {
   }
 
   const repo = createRepository();
+  // Rejected before the Orchestrator, and still logged: request and reply share one requestID.
+  const refuse = async (code: "NOT_ALLOWED" | "CALLER_INVALID") => {
+    const entry = { requestID: crypto.randomUUID(), caller: envelope.caller ?? "-", moduleName: envelope.module ?? "-", actionName: envelope.action ?? "-" };
+    if (!(await audit(repo, { ...entry, isOk: true, errorCode: null }))) return reply(fail("AUDIT_FAILED"));
+    await audit(repo, { ...entry, isOk: false, errorCode: code });
+    return reply(fail(code));
+  };
   try {
+    // Only a screen calls from outside; a declared module or "system" would reach module-only actions (security
+    // review 1, finding 1). A missing caller goes on, and the Orchestrator answers CALLER_MISSING.
+    if (envelope.caller !== undefined && envelope.caller !== null && envelope.caller !== "" && !isScreenCaller(envelope.caller)) {
+      return await refuse("CALLER_INVALID");
+    }
     const user = await authUser(req);
     const known = user ? await repo.findActorByAuthUser(user.id) : null;
     const actor: Actor | null = known ? { ...known, authUserID: user!.id, email: user!.email }
       : user && isJoining(envelope) ? { role: "trainee", coachID: "", traineeID: null, authUserID: user.id, email: user.email }
       : null;
-    if (!actor) {
-      // Rejected before the Orchestrator, and still logged: request and reply share one requestID.
-      const entry = { requestID: crypto.randomUUID(), caller: envelope.caller ?? "-", moduleName: envelope.module ?? "-", actionName: envelope.action ?? "-" };
-      if (!(await audit(repo, { ...entry, isOk: true, errorCode: null }))) return reply(fail("AUDIT_FAILED"));
-      await audit(repo, { ...entry, isOk: false, errorCode: "NOT_ALLOWED" });
-      return reply(fail("NOT_ALLOWED"));
-    }
+    if (!actor) return await refuse("NOT_ALLOWED");
     return reply(await handle(envelope, actor, repo, modules));
   } catch (e) {
     return reply(fail(e instanceof StorageUnavailable ? "STORAGE_UNAVAILABLE" : "UNEXPECTED_ERROR"));

@@ -9,6 +9,11 @@ export const CALLERS = new Set<string>([...SCREENS, ...MODULES, "system"]);
 
 export const isModuleCaller = (caller: string) => caller.startsWith("M");
 
+// From outside, only a screen may be the caller. A module is the caller only inside the Orchestrator (ctx.call), so a
+// request that declares a module or "system" is refused (security review 1, finding 1).
+const SCREEN_SET = new Set(SCREENS);
+export const isScreenCaller = (caller: unknown) => typeof caller === "string" && SCREEN_SET.has(caller);
+
 export function isKnownCaller(caller: string): boolean {
   return CALLERS.has(caller);
 }

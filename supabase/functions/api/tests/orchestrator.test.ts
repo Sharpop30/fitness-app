@@ -99,3 +99,10 @@ Deno.test("registered but not yet built is refused, not crashed", async () => {
   const { repo } = fakeRepo({ rows: ["S02|trainees|list_trainees|coach"] });
   assertEquals(await handle({ caller: "S02", module: "trainees", action: "list_trainees" }, coach, repo, modules), fail("ACTION_NOT_ALLOWED"));
 });
+
+// Security review 1, finding 1: from outside only a screen is a caller; the Endpoint refuses the rest.
+import { isScreenCaller } from "../registry.ts";
+Deno.test("isScreenCaller: S01 to S23 only; not a module, system, another string or a number", () => {
+  for (const c of ["S01", "S12", "S23"]) assertEquals(isScreenCaller(c), true, c);
+  for (const c of ["M01", "M14", "system", "S00", "S24", "s01", "", 7, null, undefined]) assertEquals(isScreenCaller(c), false, String(c));
+});
