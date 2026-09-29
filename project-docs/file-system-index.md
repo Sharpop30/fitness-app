@@ -103,6 +103,7 @@
 | doc-stage-4c-plan.md, findings-stage-4c.md | project-docs | 28.09.2026. שלב 4ג נסגר |
 | doc-stage-4d-plan.md, findings-stage-4d.md | project-docs | 28.09.2026. שלב 4ד נסגר |
 | doc-stage-5-plan.md, findings-stage-5.md | project-docs | 29.09.2026. שלב 5 נסגר |
+| doc-design-review-brief.md | project-docs | 29.09.2026. הנחיות לסשן סקירת העיצוב |
 | doc-security-review-1.md | project-docs | 29.09.2026. סקירת אבטחה ראשונה; ממצא 1 תוקן |
 | doc-invite-email-template.md | project-docs | 29.09.2026. נוסח מייל ההזמנה בעברית, אושר |
 | diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 28.09.2026 |
