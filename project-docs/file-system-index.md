@@ -102,6 +102,7 @@
 | doc-stage-4b-plan.md, findings-stage-4b.md | project-docs | 28.09.2026. שלב 4ב נסגר |
 | doc-stage-4c-plan.md, findings-stage-4c.md | project-docs | 28.09.2026. שלב 4ג נסגר |
 | doc-stage-4d-plan.md, findings-stage-4d.md | project-docs | 28.09.2026. שלב 4ד נסגר |
+| doc-stage-5-plan.md | project-docs | 29.09.2026. תוכנית שלב 5 אושרה; טיוטות משימה 0 ב-drafts |
 | diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 28.09.2026 |
 | prototype-fitness-app.html | project-docs | 28.09.2026 (גרסה 1). פורסם: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
