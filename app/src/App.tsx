@@ -2,7 +2,7 @@
 // this file only routes between them. The "More" and "Me" tabs are navigation menus, with no action of their own.
 import { useMemo, useRef, useState, type ComponentType } from "react";
 import { setSession } from "./api/client";
-import { Item, Screen } from "./design/components";
+import { Chevron, Item, Screen } from "./design/components";
 import { NavContext, useNav, type Nav, type Role, type Route } from "./nav";
 import S01 from "./screens/S01CoachHome";
 import S02 from "./screens/S02Trainees";
@@ -33,12 +33,12 @@ function CoachMenu() {
   return (
     <Screen eyebrow="כלים" title="עוד" noBack>
       <div className="list">
-        <Item onClick={() => nav.go("S05")}><span>רשימת התרגילים והסרטונים</span><span>›</span></Item>
-        <Item onClick={() => nav.go("S09")}><span>אתגר שבועי</span><span>›</span></Item>
-        <Item onClick={() => nav.go("S10")}><span>תגמולים ומימושים</span><span>›</span></Item>
-        <Item onClick={() => nav.go("S08")}><span>תשלומים וחשבוניות</span><span>›</span></Item>
-        <Item onClick={() => nav.go("S12")}><span>הגדרות: מטבעות, מחירים ונוסחים</span><span>›</span></Item>
-        <Item onClick={nav.signOut}><span>יציאה</span><span>›</span></Item>
+        <Item onClick={() => nav.go("S05")}><span>רשימת התרגילים והסרטונים</span><Chevron /></Item>
+        <Item onClick={() => nav.go("S09")}><span>אתגר שבועי</span><Chevron /></Item>
+        <Item onClick={() => nav.go("S10")}><span>תגמולים ומימושים</span><Chevron /></Item>
+        <Item onClick={() => nav.go("S08")}><span>תשלומים וחשבוניות</span><Chevron /></Item>
+        <Item onClick={() => nav.go("S12")}><span>הגדרות: מטבעות, מחירים ונוסחים</span><Chevron /></Item>
+        <Item onClick={nav.signOut}><span>יציאה</span><Chevron /></Item>
       </div>
     </Screen>
   );
@@ -49,12 +49,12 @@ function TraineeMenu() {
   return (
     <Screen eyebrow="החשבון שלי" title="אני" noBack>
       <div className="list">
-        <Item onClick={() => nav.go("S21")}><span>גרף ההתקדמות שלי</span><span>›</span></Item>
-        <Item onClick={() => nav.go("S16")}><span>האימונים שלי והערות המאמן</span><span>›</span></Item>
-        <Item onClick={() => nav.go("S18")}><span>מטבעות ותגמולים</span><span>›</span></Item>
-        <Item onClick={() => nav.go("S20")}><span>האתגר השבועי</span><span>›</span></Item>
-        <Item onClick={() => nav.go("S19")}><span>תשלומים וחשבוניות</span><span>›</span></Item>
-        <Item onClick={nav.signOut}><span>יציאה</span><span>›</span></Item>
+        <Item onClick={() => nav.go("S21")}><span>גרף ההתקדמות שלי</span><Chevron /></Item>
+        <Item onClick={() => nav.go("S16")}><span>האימונים שלי והערות המאמן</span><Chevron /></Item>
+        <Item onClick={() => nav.go("S18")}><span>מטבעות ותגמולים</span><Chevron /></Item>
+        <Item onClick={() => nav.go("S20")}><span>האתגר השבועי</span><Chevron /></Item>
+        <Item onClick={() => nav.go("S19")}><span>תשלומים וחשבוניות</span><Chevron /></Item>
+        <Item onClick={nav.signOut}><span>יציאה</span><Chevron /></Item>
       </div>
     </Screen>
   );

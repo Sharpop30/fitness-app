@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { call, isLive, uploadFile } from "../api/client";
 import { useCall } from "../api/useCall";
-import { Button, Empty, Field, FileButton, Item, Screen, VideoPlayer } from "../design/components";
+import { Button, CheckLine, Empty, Field, FileButton, Item, Screen, VideoPlayer } from "../design/components";
 import { useNav } from "../nav";
 
 export default function S05Exercises({ exerciseID, create }: { exerciseID?: string; create?: boolean }) {
@@ -26,7 +26,7 @@ export default function S05Exercises({ exerciseID, create }: { exerciseID?: stri
     return (
       <Screen eyebrow="תרגיל חדש" title="הוספת תרגיל">
         <Field label="שם התרגיל"><input id="exerciseName" value={name} onChange={(e) => setName(e.target.value)} placeholder="לדוגמה: פרפר" /></Field>
-        <label className="row"><input id="isBodyweight" type="checkbox" style={{ width: "auto" }} checked={bodyweight} onChange={(e) => setBodyweight(e.target.checked)} /><span>תרגיל משקל גוף</span></label>
+        <CheckLine id="isBodyweight" label="תרגיל משקל גוף" checked={bodyweight} onChange={setBodyweight} />
         <Button onClick={add}>שמירה</Button>
       </Screen>
     );

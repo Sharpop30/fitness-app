@@ -41,7 +41,7 @@ export default function S23SignIn() {
 
   return (
     <Screen eyebrow="כניסה" title="כניסה לאפליקציה" noBack>
-      <Hero><div className="sub">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו</div><div className="big" style={{ marginTop: 6 }}>תוכניות, תשלומים ומעקב במקום אחד</div></Hero>
+      <Hero><div className="sub">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו</div><div className="big">תוכניות, תשלומים ומעקב במקום אחד</div></Hero>
       {live ? <>
         <Field label="מייל"><input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
         <Field label="סיסמה"><input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>

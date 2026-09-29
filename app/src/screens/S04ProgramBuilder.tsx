@@ -99,7 +99,7 @@ export default function S04ProgramBuilder({ traineeID }: { traineeID: string }) 
         <div className="card col" key={w.WorkoutID}>
           <div className="row between"><b>{w.workoutName}</b><button className="link" onClick={() => addItem(wi)}>+ תרגיל</button></div>
           {w.items.map((it, ii) => (
-            <div className="row between" key={it.WorkoutItemID} style={{ borderTop: "1px solid var(--line)", paddingTop: 8 }}>
+            <div className="row between divider" key={it.WorkoutItemID}>
               <div>
                 <div>{exName(it.ExerciseID)} {hasVideo(it.ExerciseID) && <Badge>סרטון</Badge>}</div>
                 <div className="muted small mono">{it.targetSets} סטים · {it.targetReps} חזרות · {it.targetWeight ? `${it.targetWeight} ק"ג` : "משקל גוף"}</div>

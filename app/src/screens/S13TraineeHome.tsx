@@ -1,7 +1,7 @@
 // S13 trainee home (UC9, story 25): the daily reminder, the streak, notifications and a freed-up class spot.
 import { call } from "../api/client";
 import { useCall } from "../api/useCall";
-import { Button, Item, Notice, Screen, fmtDate, fmtTime } from "../design/components";
+import { Chevron, Button, Item, Notice, Screen, fmtDate, fmtTime } from "../design/components";
 import { useNav } from "../nav";
 
 export default function S13TraineeHome() {
@@ -36,11 +36,11 @@ export default function S13TraineeHome() {
         ))}
         <div className="list">
           <Item onClick={() => h.nextWorkout ? nav.go("S14", { workoutID: h.nextWorkout.WorkoutID }) : undefined}>
-            <div><div className="muted small">האימון הבא</div><div>{h.nextWorkout ? h.nextWorkout.workoutName : "התוכנית שלך בהכנה אצל המאמן"}</div></div><span>›</span></Item>
+            <div><div className="muted small">האימון הבא</div><div>{h.nextWorkout ? h.nextWorkout.workoutName : "התוכנית שלך בהכנה אצל המאמן"}</div></div><Chevron /></Item>
           <Item onClick={() => nav.setTab("S17")}>
-            <div><div className="muted small">השיעור הבא שלך</div><div>{h.nextClass ? `${fmtDate(h.nextClass.startsAt)} · ${fmtTime(h.nextClass.startsAt)} · ${h.nextClass.place}` : "לא נרשמת לשיעור"}</div></div><span>›</span></Item>
+            <div><div className="muted small">השיעור הבא שלך</div><div>{h.nextClass ? `${fmtDate(h.nextClass.startsAt)} · ${fmtTime(h.nextClass.startsAt)} · ${h.nextClass.place}` : "לא נרשמת לשיעור"}</div></div><Chevron /></Item>
           <Item onClick={() => nav.go("S20")}>
-            <div><div className="muted small">האתגר השבועי</div><div>{!h.challenge ? "אין אתגר השבוע" : h.challenge.exempt ? "השבוע אתה פטור" : `${h.challenge.challengeName}: ${h.challenge.value}/${h.challenge.target}`}</div></div><span>›</span></Item>
+            <div><div className="muted small">האתגר השבועי</div><div>{!h.challenge ? "אין אתגר השבוע" : h.challenge.exempt ? "השבוע אתה פטור" : `${h.challenge.challengeName}: ${h.challenge.value}/${h.challenge.target}`}</div></div><Chevron /></Item>
         </div>
       </>}
     </Screen>

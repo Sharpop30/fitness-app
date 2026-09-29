@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { call, isLive } from "../api/client";
 import { useCall } from "../api/useCall";
-import { Button, Empty, Item, Screen, VideoPlayer } from "../design/components";
+import { Chevron, Button, Empty, Item, Screen, VideoPlayer } from "../design/components";
 import { useNav } from "../nav";
 
 type SetT = { ExerciseID: string; setNumber: number; reps: number; weight: number; isDone: boolean; isCorrected: boolean };
@@ -26,7 +26,7 @@ export default function S14Workout({ workoutID, videoOf }: { workoutID?: string;
       <Screen eyebrow="התוכנית שלי" title="אימון" noBack>
         {prog.error ? <Empty>{prog.error.message}</Empty> : prog.data?.workouts.map((x: any) => (
           <Item key={x.WorkoutID} onClick={() => nav.go("S14", { workoutID: x.WorkoutID })}>
-            <div><div>{x.workoutName}</div><div className="muted small">{x.items.length} תרגילים</div></div><span>›</span></Item>
+            <div><div>{x.workoutName}</div><div className="muted small">{x.items.length} תרגילים</div></div><Chevron /></Item>
         ))}
       </Screen>
     );

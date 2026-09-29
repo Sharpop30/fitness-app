@@ -1,6 +1,6 @@
 // S03 trainee card (UC4 step 7, story 19): everything about one trainee, without leaving the screen.
 import { useCall } from "../api/useCall";
-import { Card, Item, Screen } from "../design/components";
+import { Chevron, Card, Item, Screen } from "../design/components";
 import { useNav } from "../nav";
 
 export default function S03TraineeCard({ traineeID }: { traineeID: string }) {
@@ -18,8 +18,8 @@ export default function S03TraineeCard({ traineeID }: { traineeID: string }) {
       </div>
       <div className="list">
         <Item onClick={() => nav.go("S04", { traineeID })}><span>תוכנית אימון</span><span className="muted small">{data.workouts ? `${data.workouts} אימונים` : "טרם נבנתה"}</span></Item>
-        <Item onClick={() => nav.go("S21", { traineeID })}><span>התקדמות וגרף</span><span className="muted small">›</span></Item>
-        <Item onClick={() => nav.go("S06", { traineeID })}><span>אימונים שבוצעו והערות</span><span className="muted small">›</span></Item>
+        <Item onClick={() => nav.go("S21", { traineeID })}><span>התקדמות וגרף</span><Chevron /></Item>
+        <Item onClick={() => nav.go("S06", { traineeID })}><span>אימונים שבוצעו והערות</span><Chevron /></Item>
         <Item onClick={() => nav.go("S08", { traineeID })}><span>תשלומים וחשבוניות</span><span className="muted small">{data.payments}</span></Item>
         <Item onClick={() => nav.go("S07", { traineeID, goal: data.goal })}><span>יעד אישי</span><span className="muted small">{g}</span></Item>
       </div>
