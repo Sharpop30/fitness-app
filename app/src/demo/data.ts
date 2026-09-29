@@ -8,7 +8,7 @@ export const sundayOf = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0
 export const settings: Record<string, string> = {
   coinsWorkout: "10", coinsGoal: "30", coinsChallenge: "50", coinsAttendance: "5",
   priceMonthly: "350", pricePack10: "600",
-  cancelHours: "24", streakGapDays: "3", videoMaxSeconds: "60", spotOfferHours: "2", inviteValidDays: "7", noteMaxLength: "280",
+  cancelHours: "24", streakGapDays: "3", videoMaxSeconds: "60", spotOfferHours: "2", inviteValidDays: "7", noteMaxLength: "280", videoMaxMegabytes: "50",
   feedbackFull: "כל הכבוד! השלמת את כל הסטים לפי התוכנית.",
   feedbackPartial: "עבודה טובה. כל סט נחשב, ממשיכים באימון הבא.",
   feedbackRecord: "שיא אישי חדש! ההתקדמות שלך נראית.",

@@ -1,9 +1,10 @@
 // System Test, usecase-04 steps 1-3 and 6 end to end (doc-module-map section 6; stage 4a plan, task 7): norm, edge,
-// failure, against the LOCAL stack. The coach invites on S02 and reads the list there. Joining (steps 4-5) is stage 5.
+// failure, against the LOCAL stack. The coach invites on S02 and reads the list there. Joining (steps 4-5) is in
+// uc04-join.test.mjs (stage 5).
 // Stage 4d (plan, task 10) adds step 7: the trainee card on S03, on a fresh coach and trainee "(test)".
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { call, demoTokens, freshWorld, ID, paymentRequest, psql, strangerCoachToken, workoutDaysAgo } from "./demo-users.mjs";
+import { call, demoTokens, EMAIL, freshWorld, ID, paymentRequest, psql, strangerCoachToken, workoutDaysAgo } from "./demo-users.mjs";
 
 let t, stranger;
 before(async () => {
@@ -19,7 +20,7 @@ test("norm: an invite by link appears in the list as invited, not joined, with n
   const name = `דנה (test ${Date.now()})`;
   const r = await invite({ name, email: "", channel: "link" });
   assert.equal(r.ok, true);
-  assert.match(r.data.link, /^#join-[0-9a-f]{48}$/);
+  assert.match(r.data.link, /^http:\/\/localhost:5174\/fitness-app\/\?join=[0-9a-f]{48}$/); // SITE_URL (stage 5)
   const row = await listed(name);
   assert.deepEqual([row.TraineeID, row.joined, row.hasProgram], [null, false, false]);
   assert.equal(psql(`select "InviteID" from invites where "inviteeName"='${name}'`), row.InviteID);
@@ -41,10 +42,10 @@ test("failure b: a bad contact detail creates no invite (INVITE_INVALID)", async
 });
 
 test("failure c: when the channel does not send, INVITE_DELIVERY_FAILED, and the invite stays open in the list", async () => {
-  // The email channel (I03) is built in stage 5, so today every email invite reaches this case.
+  // Stage 5: the channel refuses an address the identity service already knows (execution decision 3).
   const name = `במייל (test ${Date.now()})`;
-  assert.equal((await invite({ name, email: "dana@example.com", channel: "email" })).error.code, "INVITE_DELIVERY_FAILED");
-  assert.equal(psql(`select status || ':' || "inviteeEmail" from invites where "inviteeName"='${name}'`), "open:dana@example.com");
+  assert.equal((await invite({ name, email: EMAIL.itai, channel: "email" })).error.code, "INVITE_DELIVERY_FAILED");
+  assert.equal(psql(`select status || ':' || "inviteeEmail" from invites where "inviteeName"='${name}'`), `open:${EMAIL.itai}`);
   assert.equal((await listed(name)).joined, false);
 });
 

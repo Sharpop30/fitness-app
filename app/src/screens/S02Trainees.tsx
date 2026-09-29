@@ -15,6 +15,8 @@ export default function S02Trainees({ invite }: { invite?: boolean }) {
     const send = async (channel: "email" | "link") => {
       const r = await call("S02", "trainees", "invite_trainee", { name, email, channel });
       if (!r.ok) return nav.toast(r.error!.message);
+      // I03, the link channel (stage 5; stage 4a report, gap 5): the full link to share, on the clipboard.
+      if (channel === "link") await navigator.clipboard?.writeText(r.data.link).catch(() => undefined);
       nav.back();
       nav.toast(channel === "email" ? "ההזמנה נשלחה במייל" : "הקישור הועתק. אפשר לשתף אותו בוואטסאפ");
     };

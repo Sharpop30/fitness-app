@@ -49,13 +49,14 @@ test("9.4: the invite validity and the longest video follow SETTINGS, with no co
   try {
     setting("inviteValidDays", "3");
     const r = await call(t.coach, "S02", "trainees", "invite_trainee", { name: `שלושה ימים (test ${Date.now()})`, channel: "link" });
-    const token = r.data.link.replace("#join-", "");
+    const token = new URL(r.data.link).searchParams.get("join");
     assert.equal(psql(`select round(extract(epoch from "expiresAt" - "createdAt") / 86400) from invites where token='${token}'`), "3");
 
-    const upload = (seconds) => call(t.coach, "S05", "exercises", "attach_video", { exerciseID: ID.press, kind: "upload", seconds });
+    // From stage 5 the check is in prepare_upload, which answers with an upload address within the limit.
+    const upload = (seconds) => call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: ID.press, contentType: "video/mp4", seconds, megabytes: 10 });
     assert.equal((await upload(120)).error.code, "VIDEO_TOO_LONG");
     setting("videoMaxSeconds", "150");
-    assert.equal((await upload(120)).error.code, "UPLOAD_FAILED"); // within the new limit; the upload itself is stage 5
+    assert.equal((await upload(120)).ok, true); // within the new limit
   } finally {
     setting("inviteValidDays", "7");
     setting("videoMaxSeconds", "60");

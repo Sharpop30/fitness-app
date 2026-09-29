@@ -2,8 +2,8 @@
 
 | שדה | ערך |
 | :-- | :-- |
-| תאריך | 29.09.2026 |
-| הצ'ט | Claude Code, צ'ט שלב 5 |
+| תאריך | 28.09.2026 |
+| הצ'ט | Claude Code, צ'ט שלב 4ד |
 
 ## מה נסגר
 
@@ -30,14 +30,12 @@
 
 15. **שלב 4ד, payments, invoices ו-settings: נסגר. שלב 4 הושלם.** M09 (בקשת תשלום במחיר מ-SETTINGS, רשימה, תשלום הדגמה: חיוב, חשבונית, ואז "שולמה"), M10 (חשבונית אחת לכל בקשה), M14 update_settings (מפתחות קיימים, הכול או כלום), ו-M01 get_trainee_card. LIVE_SCREENS: 21 מסכים; רק S22 ו-S23 על ההדגמה. בית המאמן בלי שורות סירוב. בענן: migration 0011 (שלוש שורות M01, S06 מול get_settings, נוסח CANCEL_TOO_LATE) והפונקציה api. בדיקות על מסד נקי: Unit 177, Integration 44, System 89, Vitest 104. מפת המודולים גרסה 8; CLAUDE.md גרסה 4; usecase-02 גרסה 2. התשלום המוצלח מקצה לקצה ממתין לשער I02 בשלב 5. הדוח: findings-stage-4d.md.
 
-16. **שלב 5, הממשקים: נסגר.** I01 (הרשמה, כניסה לשני התפקידים דרך trainees.get_me, כניסה מקישור המייל, חידוש, כניסה שנשמרת בין טעינות, יציאה; בשרת, מצטרף רשאי רק ל-S22), I02 (שער הדגמה שמאשר; התשלום המוצלח מקצה לקצה), I03 (קישור מלא מ-SITE_URL, ומייל דרך שירות ההזמנות של Supabase Auth), I04 (הדלי videos, העלאה בשני צעדים דרך exercises.prepare_upload, נגן ב-S05 וב-S14). settings.get_error_texts נבנה בשרת. S12 מציג את המגבלות ואת התזכורת. 23 המסכים ב-LIVE_SCREENS. בענן: migration 0012, הפונקציה api ו-SITE_URL; הצוות שינה את הגדרות הזהות, נכנס כמאמן וכנועה, ושלח הזמנה במייל שהגיעה. בדיקות על מסד נקי: Unit 198, Integration ו-System 157 (ואחד במצב decline), Vitest 114. מפת המודולים גרסה 10; CLAUDE.md גרסה 6; usecase-04 גרסה 3 ו-usecase-10 גרסה 2; נוסח מייל ההזמנה בעברית אושר (doc-invite-email-template.md). הדוח: findings-stage-5.md.
-
 ## מה ממתין
 
 | השלב | מה |
 | :-- | :-- |
-| 7 | נתוני אמת ופריסה, לפי CLAUDE.md סעיף 6 (שלב 6, AI, אינו בגרסה הראשונה). להכין בתוכנית: הסרת נתוני ההדגמה, הזמנת הבדיקה בענן ומשתמשי הזהות שנשארו (דוח 5, פערים 5 ו-10), קישורי היוטיוב האמיתיים, קובץ GitHub Actions, ו-SITE_URL מול כתובת הפריסה |
-| לצוות, בלוח הבקרה | להדביק את נוסח מייל ההזמנה (doc-invite-email-template.md) ב-Authentication, Email Templates, Invite user. ספק מייל חיצוני למתאמנים שאינם בצוות: להכרעה לפני שלב 7 (דוח 5, פער 2) |
+| 5 | הממשקים: Identity (כניסת מתאמן ב-S23, הצטרפות ב-S22, חידוש האסימון), Invite Channel, File Storage, ו-Payment Gateway המדומה, עם מבחן System לתשלום המוצלח ו-pay_demo עם שורות M10 ב-Integration (דוח 4ד, פער 3). להציע בתוכנית: videoMaxSeconds, noteMaxLength ו-reminderText ב-S12 (דוח 4ד, פער 4, להכרעת הצוות) |
+| 6 עד 7 | לפי CLAUDE.md סעיף 6 |
 | חובות פתוחים | פער 1 מ-4ב (שם תרגיל לא פעיל ב-S04) עם פער 11 מ-4א; פערים 12 ו-13 מ-4א (S05, S02); מבחני uc01 על מסד משומש; אימות פער 14 מ-4א בשלב 7 (נראה שוב בענן ב-4ג); מחיקת שורת הבדיקה ב-stage3-acceptance (דוח 4ד, פער 8) |
 | להכרעת הצוות | כפולי Drive: presentations/presentation-community 2 במאגר, output/presentation-community 2 מחוץ למאגר, ותיקיית הספרייה "course-library 3" (CLAUDE.md סעיף 10 קורא לה course-library) |
 
@@ -45,7 +43,7 @@
 
 ~/bin: gh, supabase, deno, node, npm, npx. Docker Desktop נדרש פתוח לבדיקות מקומיות.
 
-**הרצה מקומית** (עודכן בשלב 5): קובצי הערכים של הפונקציה supabase/functions/.env ו-.env.decline, מחוץ ל-Git (SITE_URL, PUBLIC_API_URL, PAYMENT_GATEWAY_MODE). הכשל של השער: `supabase functions serve --env-file supabase/functions/.env.decline`, ואז `PAYMENT_GATEWAY_MODE=decline node --test tests/system/uc02-payments.test.mjs tests/integration/stage4d.test.mjs`. שינוי ב-config.toml (למשל כתובות ההחזרה) נטען רק אחרי `supabase stop` ו-`supabase start`. המייל המקומי: Mailpit בפורט 54324. בדיקת S05 ו-S14 בבדיקות התוכן (LIVE_DB=1) צריכה שמבחן UC10 רץ קודם על אותו מסד.  .claude/launch.json בשורש הפרויקט (מחוץ ל-Git): fitness-app (פורט 5174, מול המסד המקומי, app/.env.local) ו-fitness-app-cloud (פורט 5175, מול הענן, app/.env.cloud.local). שני קובצי הערכים אינם במאגר. הבדיקות המקומיות: `supabase db reset --local`, `supabase functions serve`, ואז `node --test --test-concurrency=1 tests/integration/*.test.mjs tests/system/*.test.mjs`; הן יוצרות את משתמשי ההדגמה המקומיים בעצמן (tests/system/demo-users.mjs). בדיקות התוכן של המסכים מול המסד: `LIVE_DB=1 npx vitest run` בתיקייה app. מבחני uc01 משלב 3 דורשים מסד נקי. מבחני 4ב עד 4ד יוצרים לעצמם מאמן ומתאמנים חדשים "(test)", אימונים בתאריכים יחסיים ושיעורים בשעות יחסיות (freshWorld, workoutDaysAgo, classInHours ו-paymentRequest ב-demo-users.mjs), ולכן אינם תלויים ביום ההרצה. שאילתת קריאה בענן: `supabase db query --linked`.
+**הרצה מקומית**: .claude/launch.json בשורש הפרויקט (מחוץ ל-Git): fitness-app (פורט 5174, מול המסד המקומי, app/.env.local) ו-fitness-app-cloud (פורט 5175, מול הענן, app/.env.cloud.local). שני קובצי הערכים אינם במאגר. הבדיקות המקומיות: `supabase db reset --local`, `supabase functions serve`, ואז `node --test --test-concurrency=1 tests/integration/*.test.mjs tests/system/*.test.mjs`; הן יוצרות את משתמשי ההדגמה המקומיים בעצמן (tests/system/demo-users.mjs). בדיקות התוכן של המסכים מול המסד: `LIVE_DB=1 npx vitest run` בתיקייה app. מבחני uc01 משלב 3 דורשים מסד נקי. מבחני 4ב עד 4ד יוצרים לעצמם מאמן ומתאמנים חדשים "(test)", אימונים בתאריכים יחסיים ושיעורים בשעות יחסיות (freshWorld, workoutDaysAgo, classInHours ו-paymentRequest ב-demo-users.mjs), ולכן אינם תלויים ביום ההרצה. שאילתת קריאה בענן: `supabase db query --linked`.
 
 **ההצגה**: הסקירה https://claude.ai/artifact/1SurjPwYwJHiCm5yGGK5Rf וההדגמה https://claude.ai/artifact/SAimtvMbbnEynAMCPzU6UA. ההדגמה נבנית מהקוד (`vite build` עם ערכי VITE_ ריקים, והקוד מוטמע בעמוד אחד), על נתוני דוגמה ובלי כתובת שרת. הבנייה האחרונה ב-presentations/fitness-app-demo.html, מחוץ למאגר.
 
@@ -53,4 +51,4 @@
 
 ## הנחיית המשך
 
-פתח שיחה חדשה ב-Claude Code במחשב הצוות, קרא את CLAUDE.md גרסה 6, את file-system-index, את הקובץ הזה, את findings-stage-5.md ואת doc-module-map.md גרסה 10, והתחל בתוכנית שלב 7 (נתוני אמת ופריסה) לפי פרומפט 2 במנגנון הבנייה. הפריסה לייצור דורשת אישור הצוות (CLAUDE.md סעיף 10). לפני התוכנית: `git pull` של main, `git status` לבדיקת כפולים מסנכרון Drive, ו-Docker Desktop פתוח. כל התשובות לצוות בעברית.
+פתח שיחה חדשה ב-Claude Code במחשב הצוות, קרא את CLAUDE.md גרסה 4, את file-system-index, את הקובץ הזה, את findings-stage-4d.md ואת doc-module-map.md גרסה 8, והתחל בתוכנית שלב 5 (הממשקים) לפי פרומפט 2 במנגנון הבנייה. לפני התוכנית: `git pull` של main, `git status` לבדיקת כפולים מסנכרון Drive, ו-Docker Desktop פתוח.

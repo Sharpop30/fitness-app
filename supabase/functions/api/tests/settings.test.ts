@@ -11,7 +11,7 @@ import { fakeRepo, U } from "./fake-repo.ts";
 const COACH = U(1), OTHER_COACH = U(2);
 const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
 const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: U(11) };
-const ROWS = new Set(["S12/get_settings/coach", "S12/update_settings/coach", "S06/get_settings/coach"]);
+const ROWS = new Set(["S12/get_settings/coach", "S12/update_settings/coach", "S06/get_settings/coach", "S22/get_error_texts/trainee"]);
 
 function world(opts: { storageDown?: boolean } = {}) {
   const store: Record<string, Record<string, string>> = {
@@ -71,4 +71,21 @@ Deno.test("module map v8: S06 reads noteMaxLength from SETTINGS", async () => {
 
 Deno.test("a database that falls returns STORAGE_UNAVAILABLE, and never throws", async () => {
   assertEquals(await world({ storageDown: true }).update({ priceMonthly: "400" }), fail("STORAGE_UNAVAILABLE"));
+});
+
+// ---- get_error_texts (module map v3 and v10; stage 5) ----
+
+Deno.test("get_error_texts: every code with its text for people, as ERROR_CODES holds it", async () => {
+  const { repo } = fakeRepo({ listErrorTexts: async () => ({ INVITE_EXPIRED: "ההזמנה כבר לא בתוקף. בקש חדשה" }) });
+  const newcomer: Actor = { role: "trainee", coachID: "", traineeID: null, authUserID: U(90), email: "x@example.com" };
+  const r = await handle({ caller: "S22", module: "settings", action: "get_error_texts" }, newcomer, repo, { settings });
+  assertEquals(r, ok({ INVITE_EXPIRED: "ההזמנה כבר לא בתוקף. בקש חדשה" }));
+});
+
+Deno.test("stage 5: videoMaxMegabytes is a positive whole number", async () => {
+  const w = world();
+  w.store[COACH].videoMaxMegabytes = "50";
+  for (const bad of ["0", "ten", "1.5"]) assertEquals((await w.update({ videoMaxMegabytes: bad })).error?.code, "VALUE_NOT_SET");
+  assertEquals(await w.update({ videoMaxMegabytes: "80" }), ok(null));
+  assertEquals(w.store[COACH].videoMaxMegabytes, "80");
 });

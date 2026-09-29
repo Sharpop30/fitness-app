@@ -88,13 +88,13 @@
 | story-30-class-registration.md | project-docs | 28.09.2026 |
 | usecase-01-training-programs.md | project-docs | 28.09.2026 (גרסה 2) |
 | gap-note-library.md | project-docs | 27.09.2026 |
-| session-state.md | project-docs | 28.09.2026 |
+| session-state.md | project-docs | 29.09.2026 |
 | doc-erd-conceptual.html | project-docs | 28.09.2026 |
 | diagram-07-erd-conceptual.mmd | project-docs/mermaid | 28.09.2026 |
 | doc-erd-logical.html | project-docs | 28.09.2026 |
 | diagram-07a עד 07f (ERD לוגי, שישה תחומים) | project-docs/mermaid | 28.09.2026 |
-| doc-module-map.md | project-docs | 28.09.2026 (גרסה 8) |
-| CLAUDE.md (מסמך הבנייה) | שורש המאגר | 28.09.2026 (גרסה 4) |
+| doc-module-map.md | project-docs | 29.09.2026 (גרסה 10) |
+| CLAUDE.md (מסמך הבנייה) | שורש המאגר | 29.09.2026 (גרסה 6) |
 | doc-stage-1-plan.md, findings-stage-1.md | project-docs | 28.09.2026. שלב 1 נסגר |
 | doc-stage-2-plan.md, findings-stage-2.md | project-docs | 28.09.2026. שלב 2 נסגר |
 | doc-stage-3-plan.md, findings-stage-3.md | project-docs | 28.09.2026. שלב 3 נסגר |
@@ -102,6 +102,8 @@
 | doc-stage-4b-plan.md, findings-stage-4b.md | project-docs | 28.09.2026. שלב 4ב נסגר |
 | doc-stage-4c-plan.md, findings-stage-4c.md | project-docs | 28.09.2026. שלב 4ג נסגר |
 | doc-stage-4d-plan.md, findings-stage-4d.md | project-docs | 28.09.2026. שלב 4ד נסגר |
+| doc-stage-5-plan.md, findings-stage-5.md | project-docs | 29.09.2026. שלב 5 נסגר |
+| doc-invite-email-template.md | project-docs | 29.09.2026. נוסח מייל ההזמנה בעברית, אושר |
 | diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 28.09.2026 |
 | prototype-fitness-app.html | project-docs | 28.09.2026 (גרסה 1). פורסם: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
@@ -109,7 +111,7 @@
 | diagram-uc02-payments-invoices.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-03-results-entry.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc03-results-entry.mmd | project-docs/mermaid | 28.09.2026 |
-| usecase-04-unified-operations.md | project-docs | 28.09.2026 (גרסה 2) |
+| usecase-04-unified-operations.md | project-docs | 29.09.2026 (גרסה 3) |
 | diagram-uc04-unified-operations.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-05-progress-tracking.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc05-progress-tracking.mmd | project-docs/mermaid | 28.09.2026 |
@@ -121,7 +123,7 @@
 | diagram-uc08-weekly-challenge.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-09-daily-trigger.md | project-docs | 28.09.2026 (גרסה 3) |
 | diagram-uc09-daily-trigger.mmd | project-docs/mermaid | 28.09.2026 |
-| usecase-10-demo-videos.md | project-docs | 28.09.2026 |
+| usecase-10-demo-videos.md | project-docs | 29.09.2026 (גרסה 2) |
 | diagram-uc10-demo-videos.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-11-class-registration.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc11-class-registration.mmd | project-docs/mermaid | 28.09.2026 |

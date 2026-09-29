@@ -1,6 +1,6 @@
 # CLAUDE.md: מסמך הבנייה של fitness-app
 
-**מעמד**: מאושר, גרסה 6, 29.09.2026. מסמך הבנייה לפי מתודולוגיית הכוכב (פריט 45), פרק ח, ומנגנון הבנייה (פריט 46). הוא מתרגם את מפת המודולים לקוד, ואינו מוסיף עליה. משתנה בידי הצוות בלבד, בגרסה חדשה. סוכן שמוצא בו טעות מדווח פער, ואינו עורך.
+**מעמד**: מאושר, גרסה 4, 28.09.2026. מסמך הבנייה לפי מתודולוגיית הכוכב (פריט 45), פרק ח, ומנגנון הבנייה (פריט 46). הוא מתרגם את מפת המודולים לקוד, ואינו מוסיף עליה. משתנה בידי הצוות בלבד, בגרסה חדשה. סוכן שמוצא בו טעות מדווח פער, ואינו עורך.
 
 ## 1. המקורות המחייבים
 
@@ -40,10 +40,7 @@
 | השם | היכן | מה |
 | :-- | :-- | :-- |
 | SUPABASE_URL | Edge Function (מסופק אוטומטית), ובנייה של האתר | כתובת הפרויקט |
-| SUPABASE_SERVICE_ROLE_KEY | Edge Function בלבד (מסופק אוטומטית) | גישת ה-Repository למסד ולאחסון, ו-I03 לשירות ההזמנות של Supabase Auth. אסור באתר |
-| SITE_URL | Edge Function, Secrets של הפלטפורמה (ערך ציבורי) | כתובת האתר, לקישור ההזמנה. במקומי כתובת השרת המקומי |
-| PUBLIC_API_URL | Edge Function, קובץ הערכים המקומי בלבד, מחוץ למאגר. בענן אינו מוגדר | הכתובת שהדפדפן מגיע אליה, לכתובות האחסון שה-Repository מחזיר. במקומי http://127.0.0.1:54321, כי שם SUPABASE_URL פנימי ל-Docker. חסר: SUPABASE_URL |
-| PAYMENT_GATEWAY_MODE | Edge Function, קובץ הערכים המקומי בלבד, מחוץ למאגר. לעולם לא בענן | approve כברירת מחדל; decline לבדיקת הכשל של I02 |
+| SUPABASE_SERVICE_ROLE_KEY | Edge Function בלבד (מסופק אוטומטית) | גישת ה-Repository למסד. אסור באתר |
 | VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY | GitHub Actions secrets | לשירות הזהות בלבד. המפתח הציבורי נועד לדפדפן |
 | VITE_API_URL | GitHub Actions secrets | כתובת ה-Endpoint |
 | SUPABASE_ACCESS_TOKEN | מחשב הצוות, דרך `supabase login` | הרשאת ה-CLI לפרויקט |
@@ -68,7 +65,7 @@
 | מהמפה | הקובץ |
 | :-- | :-- |
 | C01 Endpoint ו-Orchestrator | supabase/functions/api/index.ts, orchestrator.ts |
-| C02 Registry | supabase/functions/api/registry.ts; הנתונים ב-supabase/migrations/20260928000002_reference.sql, ותוספות גרסאות המפה ב-20260928000003, 20260928000004, 20260928000008 (גרסאות 4 עד 6) ו-20260928000011 (גרסאות 4 ו-8), ו-20260928000012 (גרסה 9). תוספת Registry בשלב הבא נכנסת ל-migration חדשה משלה |
+| C02 Registry | supabase/functions/api/registry.ts; הנתונים ב-supabase/migrations/20260928000002_reference.sql, ותוספות גרסאות המפה ב-20260928000003, 20260928000004, 20260928000008 (גרסאות 4 עד 6) ו-20260928000011 (גרסאות 4 ו-8). תוספת Registry בשלב הבא נכנסת ל-migration חדשה משלה |
 | C03 Audit | supabase/functions/api/audit.ts |
 | C04 Repository | supabase/functions/api/repository.ts |
 | C05 Error Codes | supabase/functions/api/errors.ts; הנתונים ב-20260928000002_reference.sql ו-20260928000003_module_map_v2.sql, והנוסח של CANCEL_TOO_LATE ב-20260928000011_module_map_v8.sql |
@@ -76,7 +73,7 @@
 | I02 Payment Gateway | supabase/functions/api/interfaces/payment_gateway.ts (מימוש מדומה) |
 | I03 Invite Channel | supabase/functions/api/interfaces/invite_channel.ts |
 | I01 Identity Connector | app/src/identity/auth.ts (בדפדפן), ואימות האסימון ב-index.ts |
-| I04 File Storage | בתוך repository.ts; הדלי videos ב-20260928000012 |
+| I04 File Storage | בתוך repository.ts |
 | הטבלאות | supabase/migrations/20260928000001_schema.sql, מה-ERD הלוגי כלשונו. שמות ה-migrations פותחים בחותמת זמן, כפי שה-Supabase CLI יוצר אותם |
 | נתוני הדגמה | supabase/migrations/20260928000005_demo_data.sql, מסומנים, ויוסרו בשלב 7 |
 | D01 מודול העיצוב | app/src/design/tokens.css, app/src/design/components.tsx |
@@ -132,5 +129,3 @@
 | 2 | 28.09.2026 | מפערי דוח שלב 3 ושלב 1: סעיף 3, Deno ברשימת הכלים; סעיף 5, שמות ה-migrations כפי שהם במאגר; סעיף 7, שלושה מתאמנים והזמנה פתוחה, ופירוט התוכניות כפי שהוא באב הטיפוס. מה לא השתנה: המקורות, הערימה, חוקי הברזל, מיפוי המודולים, סדר הבנייה, מבחני הקבלה וגבולות הפעולה | הצוות |
 | 3 | 28.09.2026 | מפער 6 בדוח שלב 4ב: סעיף 5, שורת C02, קובץ ה-Registry 20260928000008 (מפה גרסאות 4 עד 6). מה לא השתנה: כל השאר | הצוות |
 | 4 | 28.09.2026 | מפער 1 בדוח שלב 4ד: סעיף 5, שורות C02 ו-C05, הקובץ 20260928000011 (שורות Registry ממפה גרסאות 4 ו-8, והנוסח של CANCEL_TOO_LATE). מה לא השתנה: כל השאר | הצוות |
-| 5 | 29.09.2026 | מתוכנית שלב 5, הכרעות 2, 4 ו-11: סעיף 3, משתני הסביבה SITE_URL ו-PAYMENT_GATEWAY_MODE, ומפתח השירות גם ב-I03; סעיף 5, שורת C02 עם 20260928000012 ושורת I04 עם הדלי. מה לא השתנה: כל השאר | הצוות |
-| 6 | 29.09.2026 | מפער שנמצא בשלב 5, משימה 5: סעיף 3, משתנה הסביבה המקומי PUBLIC_API_URL, כי במחשב הפונקציה רואה את Supabase בכתובת פנימית של Docker. מה לא השתנה: כל השאר | הצוות |

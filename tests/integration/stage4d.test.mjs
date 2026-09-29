@@ -1,7 +1,7 @@
 // Stage 4d Integration (doc-module-map section 6; stage 4d plan, task 9): the payments, invoices and settings actions and the
 // trainee card through the envelope, the Registry and the Audit Log, against the LOCAL stack. Writes go only to a fresh
 // coach and trainees "(test)" (stage 4d plan, decision 10), so the file passes on a used database too.
-// The payment gateway (I02) is built in stage 5 (decision 1): pay_demo reaches it and gets ACTION_NOT_ALLOWED until then.
+// Stage 5: the payment gateway (I02) is built, and pay_demo goes through to the invoice (report 4d, gap 3).
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import { ANON, API, call, demoTokens, freshWorld, ID, lastAudit, paymentRequest, psql } from "../system/demo-users.mjs";
@@ -32,7 +32,8 @@ test("every payments, invoices and settings screen action goes through the envel
     [a.token, "S19", "payments", "list_payments", {}, true],
     [a.token, "S19", "invoices", "list_invoices", {}, true],
     [a.token, "S19", "payments", "pay_demo", { paymentRequestID: paid }, "PAYMENT_ALREADY_PAID"],
-    [a.token, "S19", "payments", "pay_demo", { paymentRequestID: open }, "PAYMENT_GATEWAY_UNAVAILABLE"],
+    // Stage 5: I02 is built, so the demo payment goes through (or declines when the function is served in decline mode).
+    [a.token, "S19", "payments", "pay_demo", { paymentRequestID: open }, process.env.PAYMENT_GATEWAY_MODE === "decline" ? "PAYMENT_GATEWAY_UNAVAILABLE" : true],
     [w.coachToken, "S12", "settings", "get_settings", {}, true],
     [w.coachToken, "S12", "settings", "update_settings", { values: { pricePack10: "650" } }, true],
     [w.coachToken, "S12", "settings", "update_settings", { values: { pricePack10: "0" } }, "VALUE_NOT_SET"],
@@ -51,15 +52,20 @@ test("every payments, invoices and settings screen action goes through the envel
   assert.equal(psql(`select "settingValue" from settings where "CoachID"='${w.coachID}' and "settingKey"='pricePack10'`), "650");
 });
 
-test("S19: pay_demo asks payment_gateway.charge as M09 under one requestID; the request stays open with no invoice (UC2 c)", async () => {
+test("S19: pay_demo asks payment_gateway.charge and invoices.create_invoice as M09 under one requestID; paid, with its invoice", {
+  skip: process.env.PAYMENT_GATEWAY_MODE === "decline" && "the function is served in decline mode",
+}, async () => {
   const [, b] = w.trainees;
   const open = paymentRequest(w.coachID, b.traineeID);
   const r = await call(b.token, "S19", "payments", "pay_demo", { paymentRequestID: open });
-  assert.equal(r.error?.code, "PAYMENT_GATEWAY_UNAVAILABLE");
-  assert.ok(trail("S19", "pay_demo").includes("M09>payment_gateway.charge:false:ACTION_NOT_ALLOWED"), trail("S19", "pay_demo").join("\n"));
+  assert.equal(r.ok, true, JSON.stringify(r.error));
+  const trailRows = trail("S19", "pay_demo");
+  for (const row of ["M09>payment_gateway.charge:true:-", "M09>invoices.create_invoice:true:-", "S19>payments.pay_demo:true:-"]) {
+    assert.ok(trailRows.includes(row), trailRows.join("\n"));
+  }
   assert.equal(requestIDs("S19", "pay_demo"), "1");
-  assert.equal(psql(`select "status" from payment_requests where "PaymentRequestID"='${open}'`), "open");
-  assert.equal(psql(`select count(*) from invoices where "PaymentRequestID"='${open}'`), "0");
+  assert.equal(psql(`select "status" from payment_requests where "PaymentRequestID"='${open}'`), "paid");
+  assert.equal(psql(`select "invoiceNumber" from invoices where "PaymentRequestID"='${open}'`), String(r.data.invoiceNumber));
 });
 
 test("S03: get_trainee_card asks programs, coins, payments and progress as M01, all under one requestID", async () => {

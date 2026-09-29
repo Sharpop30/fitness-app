@@ -54,18 +54,50 @@ test("edge e: a new video replaces the old one, in every program", async () => {
   assert.deepEqual([await hasVideo(t.noa), await hasVideo(t.itai)], [true, true]);
 });
 
+// ---- norm, the upload (stage 5, I04; module map v9: prepare_upload, the file to the address, then attach_video) ----
+const prepare = (file) =>
+  call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: exercise.ExerciseID, contentType: "video/mp4", seconds: 45, megabytes: 1, ...file });
+// What client.ts does with the address: the file itself, straight to the store.
+const sendFile = (uploadUrl, bytes = new Uint8Array(2048).fill(7), type = "video/mp4") =>
+  fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": type }, body: bytes });
+
+test("norm, steps 3-6: an uploaded file replaces the link, and both trainees reach it from the workout", async () => {
+  const r = await prepare({});
+  assert.equal(r.ok, true, JSON.stringify(r.error));
+  assert.match(r.data.uploadUrl, /^http:\/\/127\.0\.0\.1:54321\/storage\/v1\//); // an address the browser reaches (CLAUDE.md v6)
+  assert.equal((await sendFile(r.data.uploadUrl)).ok, true);
+  const a = await attach({ kind: "upload", path: r.data.path });
+  assert.equal(a.ok, true, JSON.stringify(a.error));
+  assert.equal(a.data.videoType, "upload");
+  const seen = await call(t.itai, "S14", "exercises", "get_exercise", { exerciseID: exercise.ExerciseID });
+  assert.equal(seen.data.videoUrl, a.data.videoUrl);
+  const view = await fetch(seen.data.videoUrl);
+  assert.equal(view.status, 200);
+  assert.equal((await view.arrayBuffer()).byteLength, 2048);
+  assert.deepEqual([await hasVideo(t.noa), await hasVideo(t.itai)], [true, true]);
+});
+
 // ---- failure ----
-test("failure a: a video longer than videoMaxSeconds is blocked (VIDEO_TOO_LONG), and the exercise is unchanged", async () => {
+test("failure a: a video longer than videoMaxSeconds, or larger than videoMaxMegabytes, is blocked (VIDEO_TOO_LONG), and nothing changes", async () => {
   const before = stored();
-  assert.equal((await attach({ kind: "upload", seconds: 120 })).error.code, "VIDEO_TOO_LONG");
+  assert.equal((await prepare({ seconds: 120 })).error.code, "VIDEO_TOO_LONG");
+  assert.equal((await prepare({ megabytes: 80 })).error.code, "VIDEO_TOO_LONG");
   assert.equal(stored(), before);
 });
 
 test("failure b: something that is not a video, or not a YouTube link, is blocked (VIDEO_INVALID), and nothing changes", async () => {
   const before = stored();
-  assert.equal((await attach({ kind: "upload" })).error.code, "VIDEO_INVALID");
+  assert.equal((await prepare({ contentType: "image/png" })).error.code, "VIDEO_INVALID");
   assert.equal((await attach({ kind: "link", url: "https://example.com/clip.mp4" })).error.code, "VIDEO_INVALID");
-  // Decision 7: a valid length does not upload until stage 5.
-  assert.equal((await attach({ kind: "upload", seconds: 45 })).error.code, "UPLOAD_FAILED");
+  // The store itself refuses a file that is not a video, even at a valid address (the bucket takes video/* only).
+  const r = await prepare({});
+  assert.equal((await sendFile(r.data.uploadUrl, new Uint8Array(10), "image/png")).ok, false);
+  assert.equal(stored(), before);
+});
+
+test("failure c: an upload that did not finish is UPLOAD_FAILED, and the exercise is unchanged", async () => {
+  const before = stored();
+  const r = await prepare({});
+  assert.equal((await attach({ kind: "upload", path: r.data.path })).error.code, "UPLOAD_FAILED");
   assert.equal(stored(), before);
 });

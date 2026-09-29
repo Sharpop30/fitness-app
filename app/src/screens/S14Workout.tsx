@@ -1,9 +1,9 @@
 // S14 workout and result entry (UC3, story 12): results prefilled from the target, change only what differed,
 // one tap to save; the demo video next to each exercise (UC10). The reply opens S15, the feedback.
 import { useEffect, useState } from "react";
-import { call } from "../api/client";
+import { call, isLive } from "../api/client";
 import { useCall } from "../api/useCall";
-import { Button, Empty, Item, Screen } from "../design/components";
+import { Button, Empty, Item, Screen, VideoPlayer } from "../design/components";
 import { useNav } from "../nav";
 
 type SetT = { ExerciseID: string; setNumber: number; reps: number; weight: number; isDone: boolean; isCorrected: boolean };
@@ -67,7 +67,10 @@ export default function S14Workout({ workoutID, videoOf }: { workoutID?: string;
 }
 
 // The demo video of one exercise. The exercise is asked for only when there is one to show (stage 4b plan, decision 12).
+// On the Endpoint the video plays (stage 5 plan, decision 9); on demo data the placeholder stays.
 function DemoVideo({ exerciseID }: { exerciseID: string }) {
   const { data: e } = useCall("S14", "exercises", "get_exercise", { exerciseID });
-  return <Screen eyebrow="סרטון הדגמה" title={e?.exerciseName ?? ""}>{e && <div className="video">▶︎ {e.videoType === "youtube" ? "סרטון הדגמה מיוטיוב (קישור לדוגמה)" : "סרטון שהמאמן העלה (דוגמה)"}</div>}</Screen>;
+  return <Screen eyebrow="סרטון הדגמה" title={e?.exerciseName ?? ""}>{e && (isLive("S14") && e.videoUrl
+    ? <VideoPlayer videoType={e.videoType} videoUrl={e.videoUrl} />
+    : <div className="video">▶︎ {e.videoType === "youtube" ? "סרטון הדגמה מיוטיוב (קישור לדוגמה)" : "סרטון שהמאמן העלה (דוגמה)"}</div>)}</Screen>;
 }

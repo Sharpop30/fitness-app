@@ -25,6 +25,9 @@ export const stage4dNotUsed = {
   createInvoice: notUsed, listInvoices: notUsed, updateCoachSettings: notUsed,
 };
 
+// The stage 5 operations (joining and file storage), in the same way.
+export const stage5NotUsed = { listErrorTexts: notUsed, acceptInvite: notUsed, createVideoUploadAddress: notUsed, uploadedVideoAddress: notUsed };
+
 export function fakeRepo(over: Partial<Repository> = {}): { repo: Repository; audits: AuditRecord[] } {
   const audits: AuditRecord[] = [];
   const repo: Repository = {
@@ -36,6 +39,7 @@ export function fakeRepo(over: Partial<Repository> = {}): { repo: Repository; au
     ...stage4bNotUsed,
     ...stage4cNotUsed,
     ...stage4dNotUsed,
+    ...stage5NotUsed,
     // Every row is registered: the Registry itself is tested in orchestrator.test.ts and in the integration tests.
     isRegistered: () => Promise.resolve(true),
     writeAudit: (e) => (audits.push(e), Promise.resolve()),

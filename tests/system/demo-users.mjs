@@ -58,10 +58,41 @@ export async function demoTokens() {
   const password = `local-only-${randomBytes(12).toString("hex")}`;
   for (const email of Object.values(EMAIL)) await ensureUser(email, password);
   if (psql("select demo.load()") !== "t") throw new Error("demo.load() did not load the demo data");
+  // Locally the demo coach is loaded after the migrations, so the value 0012 adds to every coach is added here too.
+  psql(`insert into settings ("CoachID","settingKey","settingValue")
+        select "CoachID", 'videoMaxMegabytes', '50' from settings where "settingKey" = 'videoMaxSeconds'
+        on conflict ("CoachID","settingKey") do nothing`);
   const tokens = {};
   for (const [who, email] of Object.entries(EMAIL)) tokens[who] = await signIn(email, password);
   return tokens;
 }
+
+// Stage 5, I01: a newcomer signs up with the identity service, as S22 does (email confirmation is off locally).
+export async function signUp(email, password) {
+  const res = await fetch(`${API}/auth/v1/signup`, {
+    method: "POST",
+    headers: { apikey: ANON, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  return (await res.json()).access_token;
+}
+
+export const freshPassword = () => `local-only-${randomBytes(12).toString("hex")}`;
+export const freshEmail = (who) => `${who}.${randomBytes(4).toString("hex")}@fitness-app.test`;
+
+// Stage 5, I03: the local mailbox of the identity service (Mailpit), LOCAL only. The newest message to an address, as HTML.
+const MAILBOX = "http://127.0.0.1:54324/api/v1";
+export async function lastMailTo(address, tries = 20) {
+  for (let i = 0; i < tries; i++) {
+    const found = await (await fetch(`${MAILBOX}/search?query=${encodeURIComponent(`to:"${address}"`)}`)).json();
+    if (found.messages?.length) return (await (await fetch(`${MAILBOX}/message/${found.messages[0].ID}`)).json()).HTML;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  return null;
+}
+
+// The invite token in a link to the site (SITE_URL?join=token; stage 5 plan, decision 2).
+export const tokenOf = (link) => new URL(link).searchParams.get("join");
 
 export const call = async (token, caller, module, action, payload = {}) => {
   const res = await fetch(ENDPOINT, {

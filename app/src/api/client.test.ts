@@ -3,7 +3,7 @@
 // on the demo adapter.
 // Synthetic values, no network.
 import { accessToken } from "../identity/auth";
-import { call, LIVE_SCREENS, now, setAdapter, setErrorTexts, setSession, type Envelope } from "./client";
+import { call, LIVE_SCREENS, now, setAdapter, setErrorTexts, setSession, uploadFile, type Envelope } from "./client";
 
 vi.mock("../identity/auth", () => ({ accessToken: vi.fn(() => "test-token"), signOutIdentity: vi.fn() }));
 
@@ -23,10 +23,8 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-test("stage 4d puts exactly the screens whose actions are all built on the Endpoint", () => {
-  expect([...LIVE_SCREENS].sort()).toEqual(
-    ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18",
-      "S19", "S20", "S21"]);
+test("stage 5 puts all 23 screens on the Endpoint", () => {
+  expect([...LIVE_SCREENS].sort()).toEqual(Array.from({ length: 23 }, (_, i) => `S${String(i + 1).padStart(2, "0")}`));
 });
 
 test("stage 4d: S01, S03, S08, S12 and S19, signed in, go to the Endpoint and declare themselves", async () => {
@@ -90,11 +88,36 @@ test("S04, signed in, goes to the Endpoint with the full envelope and the identi
   expect(demoSeen).toEqual([]);
 });
 
-test("every other screen stays on the demo adapter", async () => {
-  for (const caller of ["S22", "S23"]) {
-    expect((await call(caller, "programs", "get_active_program")).data.from).toBe("demo");
-  }
+test("stage 5: S22 and S23, signed in, go to the Endpoint and declare themselves; S22 may ask before a session", async () => {
+  const me = await call("S23", "trainees", "get_me");
+  setSession(null);
+  vi.mocked(accessToken).mockReturnValue("newcomer-token"); // signed up, not joined yet
+  const join = await call("S22", "trainees", "accept_invite", { token: "t" });
+  const texts = await call("S22", "settings", "get_error_texts");
+  expect([me, join, texts].map((r) => r.data.envelope.caller)).toEqual(["S23", "S22", "S22"]);
+  // With no session, every other screen is refused before the network.
+  expect((await call("S04", "programs", "get_active_program")).error?.code).toBe("NOT_ALLOWED");
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+  expect(demoSeen).toEqual([]);
+});
+
+test("without the identity service, S22 and S23 stay on the demo adapter", async () => {
+  vi.mocked(accessToken).mockReturnValue(null);
+  for (const caller of ["S22", "S23"]) expect((await call(caller, "settings", "get_error_texts")).data.from).toBe("demo");
   expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("I04: a file goes straight to the upload address; a refusal or no network is UPLOAD_FAILED with its text", async () => {
+  setErrorTexts({ UPLOAD_FAILED: "הסרטון לא עלה. נסה שוב" });
+  const file = new Blob([new Uint8Array(4)], { type: "video/mp4" });
+  fetchMock.mockResolvedValueOnce({ ok: true } as never);
+  expect(await uploadFile("http://store.test/upload?token=t", file)).toEqual({ ok: true, data: null, error: null });
+  expect(fetchMock.mock.calls[0][0]).toBe("http://store.test/upload?token=t");
+  expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: "PUT", headers: { "Content-Type": "video/mp4" }, body: file });
+  fetchMock.mockResolvedValueOnce({ ok: false } as never);
+  expect((await uploadFile("http://store.test/upload", file)).error).toEqual({ code: "UPLOAD_FAILED", message: "הסרטון לא עלה. נסה שוב" });
+  fetchMock.mockRejectedValueOnce(new TypeError("network down"));
+  expect((await uploadFile("http://store.test/upload", file)).error?.code).toBe("UPLOAD_FAILED");
 });
 
 test("S04 stays on the demo adapter with a demo sign-in, or with no Endpoint configured", async () => {
