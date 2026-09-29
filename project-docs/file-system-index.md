@@ -88,7 +88,7 @@
 | story-30-class-registration.md | project-docs | 28.09.2026 |
 | usecase-01-training-programs.md | project-docs | 28.09.2026 (גרסה 2) |
 | gap-note-library.md | project-docs | 27.09.2026 |
-| session-state.md | project-docs | 28.09.2026 |
+| session-state.md | project-docs | 29.09.2026 |
 | doc-erd-conceptual.html | project-docs | 28.09.2026 |
 | diagram-07-erd-conceptual.mmd | project-docs/mermaid | 28.09.2026 |
 | doc-erd-logical.html | project-docs | 28.09.2026 |
@@ -102,7 +102,8 @@
 | doc-stage-4b-plan.md, findings-stage-4b.md | project-docs | 28.09.2026. שלב 4ב נסגר |
 | doc-stage-4c-plan.md, findings-stage-4c.md | project-docs | 28.09.2026. שלב 4ג נסגר |
 | doc-stage-4d-plan.md, findings-stage-4d.md | project-docs | 28.09.2026. שלב 4ד נסגר |
-| doc-stage-5-plan.md | project-docs | 29.09.2026. תוכנית שלב 5 ומשימה 0 אושרו |
+| doc-stage-5-plan.md, findings-stage-5.md | project-docs | 29.09.2026. שלב 5 נסגר |
+| doc-invite-email-template.md | project-docs | 29.09.2026. נוסח מייל ההזמנה בעברית, אושר |
 | diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 28.09.2026 |
 | prototype-fitness-app.html | project-docs | 28.09.2026 (גרסה 1). פורסם: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
