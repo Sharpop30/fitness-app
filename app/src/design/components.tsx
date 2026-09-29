@@ -1,5 +1,5 @@
 // D01 design module: the base components. Screens compose these and add no styling of their own.
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useNav } from "../nav";
 
 const COACH_TABS: [string, string][] = [["S01", "בית"], ["S02", "מתאמנים"], ["S11", "שיעורים"], ["more", "עוד"]];
@@ -44,6 +44,11 @@ export function Button({ children, onClick, secondary, small, disabled }: { chil
   return <button className={`btn${secondary ? " sec" : ""}${small ? " small" : ""}`} onClick={onClick} disabled={disabled}>{children}</button>;
 }
 
+// A button that opens the phone's file picker (UC10 step 1, the upload).
+export function FileButton({ children, id, accept, onFile }: { children: ReactNode; id: string; accept: string; onFile: (f: File | undefined) => void }) {
+  return <label className="btn sec">{children}<input id={id} type="file" accept={accept} hidden onChange={(e) => onFile(e.target.files?.[0])} /></label>;
+}
+
 export function Item({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return onClick ? <button className="item" onClick={onClick}>{children}</button> : <div className="item">{children}</div>;
 }
@@ -58,6 +63,30 @@ export function Segmented<T extends string>({ value, options, onChange }: { valu
 
 export const Pill = ({ on, children, onClick }: { on?: boolean; children: ReactNode; onClick: () => void }) =>
   <button className={`pill${on ? " on" : ""}`} onClick={onClick}>{children}</button>;
+
+// The demo video of an exercise (UC10 steps 6, 7, alternative d; stage 5 plan, decision 9): YouTube in its own player, an
+// uploaded file in the browser's. A video that does not load says so, and the workout goes on.
+const youTubeID = (url: string) => {
+  try {
+    const u = new URL(url);
+    const id = u.hostname === "youtu.be" ? u.pathname.slice(1) : u.pathname.startsWith("/embed/") ? u.pathname.slice(7) : u.searchParams.get("v");
+    return id && /^[\w-]{6,}$/.test(id) ? id : null;
+  } catch {
+    return null;
+  }
+};
+export function VideoPlayer({ videoType, videoUrl }: { videoType: string; videoUrl: string }) {
+  const [broken, setBroken] = useState(false);
+  const id = videoType === "youtube" ? youTubeID(videoUrl) : null;
+  if (broken || (videoType === "youtube" && !id)) return <div className="video">הסרטון אינו זמין כרגע</div>;
+  return (
+    <div className="video player">
+      {id
+        ? <iframe src={`https://www.youtube-nocookie.com/embed/${id}`} title="סרטון הדגמה" allow="encrypted-media; picture-in-picture" allowFullScreen />
+        : <video src={videoUrl} controls playsInline preload="metadata" onError={() => setBroken(true)} />}
+    </div>
+  );
+}
 
 export const fmtDate = (d: string | Date) => new Date(d).toLocaleDateString("he-IL", { day: "numeric", month: "numeric" });
 export const fmtTime = (d: string | Date) => new Date(d).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });

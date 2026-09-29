@@ -93,6 +93,8 @@ const actions: Record<string, H> = {
     t.joined = true;
     return ok({ TraineeID: t.TraineeID });
   },
+  "trainees.get_me": (_p, s) => ok({ role: s.role, traineeID: s.traineeID,
+    fullName: s.role === "trainee" ? D.trainees.find((t) => t.TraineeID === s.traineeID)?.fullName ?? "" : "מאמן (דוגמה)" }),
   "trainees.get_trainee_card": (p) => {
     const tid = String(p.traineeID);
     const t = D.trainees.find((x) => x.TraineeID === tid);
@@ -113,6 +115,8 @@ const actions: Record<string, H> = {
     D.exercises.push(e);
     return ok(e);
   },
+  // Stage 5 (map v9): on demo data there is no store; the demo upload goes through.
+  "exercises.prepare_upload": (p) => (Number(p.seconds) > num("videoMaxSeconds") ? fail("VIDEO_TOO_LONG") : ok({ uploadUrl: "demo", path: "demo" })),
   "exercises.attach_video": (p) => {
     const e = ex(String(p.exerciseID));
     if (p.kind === "upload") {

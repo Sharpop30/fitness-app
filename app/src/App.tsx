@@ -68,7 +68,11 @@ export const SCREENS: Record<string, ComponentType<any>> = {
 export default function App() {
   const [role, setRole] = useState<Role>(null);
   const [tab, setTabState] = useState<string | null>(null);
-  const [stack, setStack] = useState<Route[]>([{ screen: "S23", params: {} }]);
+  // An invite link (SITE_URL?join=token) opens joining, over the sign-in (stage 5 plan, decision 2).
+  const [stack, setStack] = useState<Route[]>(() => {
+    const inviteToken = new URLSearchParams(window.location.search).get("join");
+    return [{ screen: "S23", params: {} }, ...(inviteToken ? [{ screen: "S22", params: { inviteToken } }] : [])];
+  });
   const [toastText, setToastText] = useState("");
   const [toastOn, setToastOn] = useState(false);
   const timer = useRef<number>();

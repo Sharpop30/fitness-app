@@ -209,7 +209,28 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     const [name, , id] = list.find(([, type]) => type === "youtube")!;
     open("S05", { exerciseID: id });
     expect(await screen.findByRole("heading", { level: 1, name }, { timeout: 8000 })).toBeTruthy();
-    expect(screen.getByText(/סרטון הדגמה מיוטיוב/)).toBeTruthy();
+    // Stage 5: on the Endpoint the video plays. The demo links hold no video ("https://www.youtube.com/ (דוגמה)"),
+    // so the screen says it is not available (UC10 d); the real links come in stage 7.
+    expect(await screen.findByText("הסרטון אינו זמין כרגע", {}, { timeout: 8000 })).toBeTruthy();
+  }, 30000);
+
+  // ---- Stage 5: an uploaded video plays on S05 and on S14 (stage 5 plan, task 7) ----
+  test("S05 and S14: an exercise with an uploaded file plays it from the store, for the coach and for Noa", async () => {
+    // The file the UC10 system test uploaded (its exercise leaves use at the end), lent to the demo squat for this test.
+    const [url] = rows(`select "videoUrl" from exercises where "videoType"='upload' order by "ExerciseID" limit 1`)[0] ?? [];
+    expect(url, "no uploaded video yet: run tests/system/uc10-demo-videos.test.mjs on this database first").toBeTruthy();
+    const SQUAT = "d0000000-0000-4000-8000-000000002001";
+    const before = psql(`select "videoType" || '|' || "videoUrl" from exercises where "ExerciseID"='${SQUAT}'`).split("|");
+    psql(`update exercises set "videoType"='upload', "videoUrl"='${url}' where "ExerciseID"='${SQUAT}'`);
+    try {
+      open("S05", { exerciseID: SQUAT });
+      await waitFor(() => expect(document.querySelector(`video[src="${url}"]`)).toBeTruthy(), { timeout: 8000 });
+      cleanup();
+      open("S14", { videoOf: SQUAT }, "trainee");
+      await waitFor(() => expect(document.querySelector(`video[src="${url}"]`)).toBeTruthy(), { timeout: 8000 });
+    } finally {
+      psql(`update exercises set "videoType"='${before[0]}', "videoUrl"='${before[1]}' where "ExerciseID"='${SQUAT}'`);
+    }
   }, 30000);
 
   // ---- Stage 4c: S11, S13 and S17 (stage 4c plan, task 10) ----
