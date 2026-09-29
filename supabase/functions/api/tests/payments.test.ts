@@ -1,5 +1,5 @@
 // Unit tests for M09 payments and M10 invoices, against an in-memory Repository (synthetic data), behind the Orchestrator,
-// with the real settings module and a stand-in for the payment gateway (I02 is built in stage 5; stage 4d plan, decision 1).
+// with the real settings module and a stand-in for the payment gateway, and at the end with the real I02 demo (stage 5).
 // Sources: usecase-02 sections 4, 6, 7, 13; doc-module-map v8 section 4 (the demo payment with no in-between state,
 // the reading along the request-invoice link, the contracts); stage 4d plan, execution decisions 1-3, 6; CLAUDE.md rule 12.
 import { assert, assertEquals } from "jsr:@std/assert@1";
@@ -8,6 +8,7 @@ import { fail, ok, type Reply } from "../errors.ts";
 import { invoices } from "../modules/invoices.ts";
 import { payments } from "../modules/payments.ts";
 import { settings } from "../modules/settings.ts";
+import { paymentGateway } from "../interfaces/payment_gateway.ts";
 import { type Actor, type Invoice, type PaymentRequest, StorageUnavailable } from "../repository.ts";
 import { fakeRepo, U } from "./fake-repo.ts";
 
@@ -29,7 +30,7 @@ const ROWS = new Set([
 const gateway = (reply: Reply, seen: unknown[]): ModuleDef =>
   ({ id: "I02", actions: { charge: async (_ctx, payload) => (seen.push(payload), reply) } });
 
-function world(opts: { values?: Record<string, string>; storageDown?: boolean; gateway?: Reply | "missing"; invoiceDown?: boolean } = {}) {
+function world(opts: { values?: Record<string, string>; storageDown?: boolean; gateway?: Reply | "missing" | ModuleDef; invoiceDown?: boolean } = {}) {
   const values = opts.values ?? { priceMonthly: "350", pricePack10: "600" };
   const requests: Omit<PaymentRequest, "fullName" | "invoiceNumber">[] = [];
   const invs: { invoiceNumber: number; PaymentRequestID: string; amount: number; issuedAt: string }[] = [];
@@ -78,7 +79,8 @@ function world(opts: { values?: Record<string, string>; storageDown?: boolean; g
   });
 
   const modules: Modules = { payments, invoices, settings };
-  if (opts.gateway !== "missing") modules.payment_gateway = gateway(opts.gateway ?? ok(null), charges);
+  if (typeof opts.gateway === "object" && "actions" in opts.gateway) modules.payment_gateway = opts.gateway;
+  else if (opts.gateway !== "missing") modules.payment_gateway = gateway(opts.gateway ?? ok(null), charges);
   const ask = (actor: Actor, caller: string, module: string, action: string, payload: Record<string, unknown> = {}) =>
     handle({ caller, module, action, payload }, actor, w.repo, modules);
   const request = (traineeID = NOA, paymentType = "monthly") =>
@@ -242,4 +244,24 @@ Deno.test("a database that falls returns STORAGE_UNAVAILABLE, and never throws",
   assertEquals(await w.ask(coach, "S08", "payments", "list_payments"), fail("STORAGE_UNAVAILABLE"));
   assertEquals(await w.ask(noa, "S19", "invoices", "list_invoices"), fail("STORAGE_UNAVAILABLE"));
   assertEquals(await w.pay(noa, U(900)), fail("STORAGE_UNAVAILABLE"));
+});
+
+// ---- with the real I02 demo gateway (stage 5 plan, task 2; report 4d, gap 3) ----
+
+Deno.test("stage 5: with the demo gateway, the payment goes through: paid, with an invoice", async () => {
+  const w = world({ gateway: paymentGateway(() => Promise.resolve("approved")) });
+  await w.request(NOA);
+  assertEquals(await w.pay(noa, w.requests[0].PaymentRequestID), ok({ invoiceNumber: 1001 }));
+  assertEquals(w.requests[0].status, "paid");
+});
+
+Deno.test("stage 5, UC2 c: the demo gateway declining leaves the request open with no invoice; the next try pays", async () => {
+  let answer: "approved" | "declined" = "declined";
+  const w = world({ gateway: paymentGateway(() => Promise.resolve(answer)) });
+  await w.request(NOA);
+  const id = w.requests[0].PaymentRequestID;
+  assertEquals(await w.pay(noa, id), fail("PAYMENT_GATEWAY_UNAVAILABLE"));
+  assertEquals([w.requests[0].status, w.invs.length], ["open", 0]);
+  answer = "approved";
+  assertEquals(await w.pay(noa, id), ok({ invoiceNumber: 1001 }));
 });

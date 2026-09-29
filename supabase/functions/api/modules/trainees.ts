@@ -1,7 +1,7 @@
 // M01 trainees: inviting a trainee and the coach's trainee list.
 // Requirement 19, unified operations (story-19, usecase-04 steps 1-3, 6; alternatives b, c, e).
-// Stage 4a builds list_trainees and invite_trainee; stage 4d builds get_trainee_card (UC4 step 7). accept_invite comes
-// with the identity service, in stage 5 (stage 4a plan, decisions 3, 6).
+// Stage 4a builds list_trainees and invite_trainee; stage 4d builds get_trainee_card (UC4 step 7); stage 5 builds
+// accept_invite and get_me, with the identity service (UC4 steps 4, 5; module map v9).
 // Acceptance (UC4 section 13): an invite appears in the list as "invited"; a bad contact detail creates nothing;
 // a channel that fails leaves the invite open; the trainee card shows program, coins, streak and payments in one screen.
 import { type ErrorCode, fail, ok, type Reply } from "../errors.ts";
@@ -46,6 +46,10 @@ export const trainees: ModuleDef = {
 
       const days = await inviteValidDays(ctx);
       if (typeof days === "string") return fail(days);
+      // The full link to the site (stage 5 plan, decision 2). A query, not a #, because the identity service adds the
+      // sign-in after a # when the email's button returns here.
+      const site = Deno.env.get("SITE_URL");
+      if (!site) return fail("VALUE_NOT_SET");
 
       const token = newToken();
       await ctx.repo.createInvite(ctx.actor.coachID, {
@@ -54,8 +58,9 @@ export const trainees: ModuleDef = {
         token,
         expiresAt: new Date(Date.now() + days * DAY_MS).toISOString(),
       });
-      // Relative until the site address is decided in stage 5 (stage 4a plan, decision 9).
-      const link = `#join-${token}`;
+      const url = new URL(site);
+      url.searchParams.set("join", token);
+      const link = url.toString();
 
       if (channel === "email") {
         const sent = await ctx.call({ module: "invite_channel", action: "send_invite", payload: { name, email, link } });
@@ -63,6 +68,25 @@ export const trainees: ModuleDef = {
         if (!sent.ok) return fail("INVITE_DELIVERY_FAILED");
       }
       return ok({ link });
+    },
+
+    // UC4 steps 4, 5, alternatives a, d (stage 5 plan, decision 3). Only a newcomer: signed in with the identity service,
+    // not yet a coach or a trainee. The email is the identity service's; the name from the form, or the invite's.
+    async accept_invite(ctx, payload) {
+      const { authUserID, email } = ctx.actor;
+      if (ctx.actor.role !== "trainee" || ctx.actor.traineeID || !authUserID || !email) return fail("NOT_ALLOWED"); // UC4 d
+      if (typeof payload.token !== "string" || !payload.token) return fail("INVITE_EXPIRED");
+      const fullName = typeof payload.fullName === "string" ? payload.fullName.trim() : "";
+      const joined = await ctx.repo.acceptInvite(payload.token, authUserID, fullName, email);
+      if (joined.status === "taken") return fail("NOT_ALLOWED");
+      if (joined.status === "expired") return fail("INVITE_EXPIRED"); // UC4 a; used is the same (execution decision 2)
+      return ok({ TraineeID: joined.traineeID });
+    },
+
+    // S23 after signing in: who this is (stage 5 plan, decision 1).
+    async get_me(ctx) {
+      if (!ctx.actor.coachID) return fail("NOT_ALLOWED");
+      return ok({ role: ctx.actor.role, traineeID: ctx.actor.traineeID, fullName: ctx.actor.fullName ?? "" });
     },
 
     // UC4 step 7, made of existing actions through the Orchestrator (module map v8, its contract).

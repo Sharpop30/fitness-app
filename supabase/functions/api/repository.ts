@@ -8,7 +8,14 @@ export interface Actor {
   role: Role;
   coachID: string;          // the coach this actor belongs to (self for a coach)
   traineeID: string | null; // set for a trainee
+  fullName?: string;
+  // I01: the identity user. A newcomer (signed up, not yet a trainee) has no coachID and may only join (map v9).
+  authUserID?: string;
+  email?: string;
 }
+
+// UC4 step 5, one action in the database (0012): joined, or why not.
+export type JoinResult = { status: "joined"; traineeID: string } | { status: "expired" } | { status: "taken" };
 
 export interface AuditRecord {
   requestID: string;
@@ -264,6 +271,12 @@ export interface Repository {
   // Trainees and invites (UC4 steps 2, 6). hasProgram is read from the core "program" entity (stage 4a plan, decision 4).
   listTraineesForCoach(coachID: string): Promise<TraineeListRow[]>;
   createInvite(coachID: string, invite: NewInvite): Promise<string>;
+  // UC4 step 5 (stage 5 plan, decision 3): the trainee is created and the invite closed together.
+  acceptInvite(token: string, authUserID: string, fullName: string, email: string): Promise<JoinResult>;
+  // I04 File Storage (UC10 steps 4, 5; map v9). The addresses are the ones the browser reaches. null: the store refused.
+  createVideoUploadAddress(path: string): Promise<string | null>;
+  // The viewing address of an uploaded file, or null when it is not in the bucket (the upload did not finish).
+  uploadedVideoAddress(path: string): Promise<string | null>;
   // Exercises (UC1, UC10 step 5). In reach: active, and ready-made or the coach's own; the same for the coach's trainees.
   createExercise(coachID: string, exerciseName: string, isBodyweight: boolean): Promise<Exercise>;
   getExerciseInReach(exerciseID: string, coachID: string): Promise<Exercise | null>;
@@ -333,6 +346,13 @@ export function createRepository(): Repository {
     { auth: { persistSession: false } },
   );
 
+  // I04: the bucket of uploaded videos (0012). Locally SUPABASE_URL is inside Docker, so the addresses given to the
+  // browser use PUBLIC_API_URL when it is set (CLAUDE.md v6, section 3).
+  const videos = db.storage.from("videos");
+  const internalURL = Deno.env.get("SUPABASE_URL")!;
+  const publicURL = Deno.env.get("PUBLIC_API_URL") || internalURL;
+  const forBrowser = (url: string) => url.startsWith(internalURL) ? publicURL + url.slice(internalURL.length) : url;
+
   const must = <T>(res: { data: T; error: unknown }): T => {
     if (res.error) throw new StorageUnavailable(String((res.error as { message?: string }).message ?? res.error));
     return res.data;
@@ -346,10 +366,10 @@ export function createRepository(): Repository {
 
   return {
     async findActorByAuthUser(authUserID) {
-      const coach = must(await db.from("coaches").select('"CoachID"').eq("authUserID", authUserID).eq("isActive", true).maybeSingle());
-      if (coach) return { role: "coach", coachID: coach.CoachID, traineeID: null };
-      const trainee = must(await db.from("trainees").select('"TraineeID","CoachID"').eq("authUserID", authUserID).eq("isActive", true).maybeSingle());
-      if (trainee) return { role: "trainee", coachID: trainee.CoachID, traineeID: trainee.TraineeID };
+      const coach = must(await db.from("coaches").select('"CoachID","fullName"').eq("authUserID", authUserID).eq("isActive", true).maybeSingle());
+      if (coach) return { role: "coach", coachID: coach.CoachID, traineeID: null, fullName: coach.fullName };
+      const trainee = must(await db.from("trainees").select('"TraineeID","CoachID","fullName"').eq("authUserID", authUserID).eq("isActive", true).maybeSingle());
+      if (trainee) return { role: "trainee", coachID: trainee.CoachID, traineeID: trainee.TraineeID, fullName: trainee.fullName };
       return null;
     },
 
@@ -441,6 +461,23 @@ export function createRepository(): Repository {
     async createInvite(coachID, invite) {
       const row = must(await db.from("invites").insert({ CoachID: coachID, ...invite }).select('"InviteID"').single()) as { InviteID: string };
       return row.InviteID;
+    },
+
+    async acceptInvite(token, authUserID, fullName, email) {
+      return must(await db.rpc("trainees_accept_invite", { p_token: token, p_auth: authUserID, p_name: fullName, p_email: email })) as JoinResult;
+    },
+
+    async createVideoUploadAddress(path) {
+      const res = await videos.createSignedUploadUrl(path);
+      return res.error ? null : forBrowser(res.data.signedUrl);
+    },
+
+    async uploadedVideoAddress(path) {
+      const slash = path.lastIndexOf("/");
+      const res = await videos.list(path.slice(0, slash), { search: path.slice(slash + 1) });
+      if (res.error) return null;
+      if (!res.data.some((f) => f.name === path.slice(slash + 1))) return null;
+      return forBrowser(videos.getPublicUrl(path).data.publicUrl);
     },
 
     async createExercise(coachID, exerciseName, isBodyweight) {
