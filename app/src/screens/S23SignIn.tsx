@@ -22,14 +22,15 @@ export default function S23SignIn() {
     await loadTexts();
   };
   // Who signed in, from the Endpoint. Someone signed up but not joined is not a coach or a trainee: signed out again.
-  const enterLive = async () => {
+  // On opening the site this is silent: a kept sign-in that no longer works just leaves the form.
+  const enterLive = async (silent = false) => {
     const me = await call<{ role: "coach" | "trainee"; traineeID: string | null }>("S23", "trainees", "get_me");
-    if (!me.ok) { signOutIdentity(); return nav.toast(me.error!.message); }
+    if (!me.ok) { signOutIdentity(); return silent ? undefined : nav.toast(me.error!.message); }
     await enter(me.data!.role, me.data!.traineeID ?? undefined);
   };
 
   useEffect(() => {
-    if (live) void restoreSession().then((o) => { if (o === "ok") void enterLive(); });
+    if (live) void restoreSession().then((o) => { if (o === "ok") void enterLive(true); });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const signIn = async () => {
