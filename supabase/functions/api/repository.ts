@@ -260,6 +260,8 @@ export interface Repository {
   isRegistered(caller: string, moduleName: string, actionName: string, role: string): Promise<boolean>;
   writeAudit(entry: AuditRecord): Promise<void>;
   getCoachSettings(coachID: string): Promise<Record<string, string>>;
+  // ERROR_CODES (C05): for each code, the text for people.
+  listErrorTexts(): Promise<Record<string, string>>;
   // Training (UC1): trainees, exercises, programs.
   isActiveTraineeOfCoach(traineeID: string, coachID: string): Promise<boolean>;
   listExercisesForCoach(coachID: string): Promise<Exercise[]>;
@@ -371,6 +373,11 @@ export function createRepository(): Repository {
       const trainee = must(await db.from("trainees").select('"TraineeID","CoachID","fullName"').eq("authUserID", authUserID).eq("isActive", true).maybeSingle());
       if (trainee) return { role: "trainee", coachID: trainee.CoachID, traineeID: trainee.TraineeID, fullName: trainee.fullName };
       return null;
+    },
+
+    async listErrorTexts() {
+      const rows = must(await db.from("error_codes").select('"errorCode","humanText"')) as { errorCode: string; humanText: string }[];
+      return Object.fromEntries(rows.map((r) => [r.errorCode, r.humanText]));
     },
 
     async isRegistered(caller, moduleName, actionName, role) {

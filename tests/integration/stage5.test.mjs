@@ -75,3 +75,12 @@ test("rule 10 and I04: the browser key cannot write to the bucket, run the join 
   const rows = await (await fetch(`${API}/rest/v1/invites?select=token`, { headers: { apikey: ANON } })).json();
   assert.deepEqual(rows, []);
 });
+
+test("get_error_texts: from S23 after signing in, and from S22 for a newcomer, the 28 texts of ERROR_CODES", async () => {
+  const coach = await call(t.coach, "S23", "settings", "get_error_texts");
+  assert.equal(Object.keys(coach.data).length, 28);
+  assert.equal(coach.data.INVITE_EXPIRED, psql(`select "humanText" from error_codes where "errorCode"='INVITE_EXPIRED'`));
+  const newcomer = await signUp(freshEmail("texts"), freshPassword());
+  assert.deepEqual((await call(newcomer, "S22", "settings", "get_error_texts")).data, coach.data);
+  assert.equal((await call(newcomer, "S22", "settings", "get_settings")).error?.code, "NOT_ALLOWED");
+});

@@ -26,7 +26,7 @@ export const stage4dNotUsed = {
 };
 
 // The stage 5 operations (joining and file storage), in the same way.
-export const stage5NotUsed = { acceptInvite: notUsed, createVideoUploadAddress: notUsed, uploadedVideoAddress: notUsed };
+export const stage5NotUsed = { listErrorTexts: notUsed, acceptInvite: notUsed, createVideoUploadAddress: notUsed, uploadedVideoAddress: notUsed };
 
 export function fakeRepo(over: Partial<Repository> = {}): { repo: Repository; audits: AuditRecord[] } {
   const audits: AuditRecord[] = [];

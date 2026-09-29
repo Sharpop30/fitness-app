@@ -48,8 +48,10 @@ async function authUser(req: Request): Promise<{ id: string; email: string } | n
   return typeof user?.id === "string" ? { id: user.id, email: typeof user.email === "string" ? user.email : "" } : null;
 }
 
-// A newcomer: signed in, not yet a coach or a trainee. Only S22 joining by invite (module map v9; stage 5 plan, decision 3).
-const isJoining = (e: Envelope) => e.caller === "S22" && e.module === "trainees" && e.action === "accept_invite";
+// A newcomer: signed in, not yet a coach or a trainee. Only S22: joining by invite (module map v9; stage 5 plan,
+// decision 3), and the error texts, so a failed join reads as it should (module map v10).
+const isJoining = (e: Envelope) => e.caller === "S22" &&
+  ((e.module === "trainees" && e.action === "accept_invite") || (e.module === "settings" && e.action === "get_error_texts"));
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });

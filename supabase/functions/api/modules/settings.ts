@@ -1,6 +1,7 @@
 // M14 settings: the reference values the coach changes without code.
 // Requirement: doc-mlp-scope, values kept in a reference table (stories 2, 5, 6, 21, 25, 30).
-// Stage 1 builds get_settings; stage 4d builds update_settings (module map v8, its contract).
+// Stage 1 builds get_settings; stage 4d builds update_settings (module map v8, its contract); stage 5 builds
+// get_error_texts, for S23 after signing in and S22 before joining (module map v3 and v10).
 import { fail, ok } from "../errors.ts";
 import type { ModuleDef } from "../orchestrator.ts";
 
@@ -8,6 +9,7 @@ import type { ModuleDef } from "../orchestrator.ts";
 const WHOLE_OR_ZERO = new Set(["coinsWorkout", "coinsGoal", "coinsChallenge", "coinsAttendance"]);
 const POSITIVE = new Set([
   "priceMonthly", "pricePack10", "cancelHours", "streakGapDays", "videoMaxSeconds", "spotOfferHours", "inviteValidDays", "noteMaxLength",
+  "videoMaxMegabytes",
 ]);
 
 function isValid(key: string, value: string): boolean {
@@ -27,6 +29,11 @@ export const settings: ModuleDef = {
       if (key === null) return ok(values);
       // "Not yet" is its own code: a missing value is never invented (CLAUDE.md rule 8).
       return key in values ? ok({ [key]: values[key] }) : fail("VALUE_NOT_SET");
+    },
+
+    // The human text of every error code, from ERROR_CODES (map section 4: the texts live there, never in code).
+    async get_error_texts(ctx) {
+      return ok(await ctx.repo.listErrorTexts());
     },
 
     // Only the coach's existing keys; one bad value saves nothing, and a key not sent stays as it is (execution decision 5).

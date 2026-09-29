@@ -1,10 +1,12 @@
 -- 0012: the interfaces of stage 5 (stage 5 plan, task 1; module map v9). No table changes.
 
 -- Module map v9 (stage 5 plan, decisions 1 and 5): S23 learns who signed in; S05 asks for an upload address.
+-- Module map v10 (a gap in stage 5, task 7): S22 reads the error texts, so a newcomer sees why a join failed (UC4 a).
 insert into registry_entries ("caller","moduleName","actionName","allowedRole") values
   ('S23','trainees','get_me','coach'),
   ('S23','trainees','get_me','trainee'),
-  ('S05','exercises','prepare_upload','coach');
+  ('S05','exercises','prepare_upload','coach'),
+  ('S22','settings','get_error_texts','trainee');
 
 -- UC10 section 7 v2 (stage 5 plan, decision 7): the largest upload, for every coach that has the other video value.
 insert into settings ("CoachID","settingKey","settingValue")

@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: מאושר, 29.09.2026, גרסה 10. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 29.09.2026, גרסה 9. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -10,7 +10,7 @@
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
 | המקורות | PRD גרסה 1.19; doc-mlp-scope; 11 סיפורי משתמש ו-11 מקרי שימוש (usecase-01 עד 11); doc-erd-conceptual ו-doc-erd-logical; prototype-fitness-app גרסה 1 |
-| גרסה ותאריך | 10, 29.09.2026 |
+| גרסה ותאריך | 9, 29.09.2026 |
 
 ## 2. הליבה
 
@@ -110,7 +110,7 @@
 | classes | publish_class, cancel_class, list_upcoming_classes, register, cancel_registration, list_registrations, mark_attendance, respond_to_spot_offer, request_late_cancel, decide_late_cancel | UC11 | לפי מקרה שימוש 11 |
 | notifications | notify_in_app, list_notifications, mark_read | UC6, UC9, UC11 | notify: classes, feedback בלבד |
 | home | get_coach_home, get_trainee_home | UC4, UC9 | מאמן; מתאמן. get_coach_home מרכיב את המסך דרך ה-Orchestrator מ-trainees.list_trainees, payments.list_payments, classes.list_upcoming_classes, coins.manage_rewards (op: list), challenges.get_current_challenge ו-challenges.list_completions |
-| settings | get_settings, update_settings, get_error_texts | כל מקרה שימוש עם טבלת ייחוס; get_error_texts: כלל החוזה 8 | מאמן; get_settings: גם המודולים; get_error_texts: מאמן ומתאמן, מ-S23, ומצטרף מ-S22 |
+| settings | get_settings, update_settings, get_error_texts | כל מקרה שימוש עם טבלת ייחוס; get_error_texts: כלל החוזה 8 | מאמן; get_settings: גם המודולים; get_error_texts: מאמן ומתאמן, מ-S23 |
 
 **רשימת המותר (Registry)** היא טבלה: שורה לכל צירוף של פונה, מודול ופעולה מהטבלה שלמעלה. בקשה בלי שורה נדחית ונרשמת. הקובץ המלא נוצר בשלב 1 מהטבלה הזו.
 
@@ -126,7 +126,7 @@
 
 **החוזים שנוספו בגרסה 9** (תוכנית שלב 5, הכרעות 1 עד 5 ו-7), ושלוש שורות Registry, נכנסות ב-0012: S23 מול trainees.get_me, למאמן ולמתאמן; S05 מול exercises.prepare_upload, למאמן.
 
-**הצטרפות בהזמנה** (תוכנית שלב 5, הכרעה 3): משתמש שזוהה בשירות הזהות ואין לו שורה ב-COACHES או ב-TRAINEES מקבל תפקיד trainee בלי מזהה מתאמן, ורק לבקשות S22 מול trainees.accept_invite ומול settings.get_error_texts (גרסה 10, כדי שהצטרפות שנכשלה תוצג בנוסח שלה, UC4 א). כל בקשה אחרת שלו נדחית ב-NOT_ALLOWED ונרשמת, כמו היום. ההצטרפות אטומית: המתאמן נוצר וההזמנה נסגרת יחד, בתנאי שהיא פתוחה ובתוקף, כך שאסימון אחד יוצר מתאמן אחד.
+**הצטרפות בהזמנה** (תוכנית שלב 5, הכרעה 3): משתמש שזוהה בשירות הזהות ואין לו שורה ב-COACHES או ב-TRAINEES מקבל תפקיד trainee בלי מזהה מתאמן, ורק לבקשה S22 מול trainees.accept_invite. כל בקשה אחרת שלו נדחית ב-NOT_ALLOWED ונרשמת, כמו היום. ההצטרפות אטומית: המתאמן נוצר וההזמנה נסגרת יחד, בתנאי שהיא פתוחה ובתוקף, כך שאסימון אחד יוצר מתאמן אחד.
 
 **הסרטון שהועלה** (תוכנית שלב 5, הכרעה 5): בשני צעדים, דרך ה-Endpoint. exercises.prepare_upload בודק את האורך מול videoMaxSeconds ואת הגודל מול videoMaxMegabytes, ומחזיר כתובת העלאה חתומה לנתיב אחד של התרגיל. client.ts מעלה את הקובץ לכתובת הזו. exercises.attach_video בסוג upload מקבל את הנתיב, ושומר אותו רק אחרי שה-Repository מצא את הקובץ בדלי. העלאה שלא הושלמה מחזירה UPLOAD_FAILED, והתרגיל נשאר בלי שינוי.
 
@@ -163,7 +163,7 @@
 | S19 | payments.list_payments, pay_demo; invoices.list_invoices |
 | S20 | challenges.get_current_challenge |
 | S21 | progress.get_progress_chart |
-| S22 | trainees.accept_invite; settings.get_error_texts, לפני ההצטרפות |
+| S22 | trainees.accept_invite |
 | S23 | שירות הזהות; trainees.get_me ו-settings.get_error_texts, פעם אחת אחרי הכניסה, והלקוח שומר את ההסברים |
 
 ### מבנה התשובה של כל פעולה
@@ -325,4 +325,3 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 7 | 28.09.2026 | מתוכנית שלב 4ג, הכרעות 2, 3 ו-4: החוזה של notifications.notify_in_app (traineeID, messageText; data null); הטווח של classes.list_upcoming_classes (למאמן משלושה ימים אחורה, למתאמן שיעורים שעוד לא התחילו); המתאמן מקבל את הנרשמים והממתינים בלי שמות ומזהים; ומבנה lateRequests. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, ה-Registry, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
 | 8 | 28.09.2026 | מתוכנית שלב 4ד, הכרעות 2 עד 6, ומדוח 4ג, פער 5: שורת Registry אחת, S06 מול settings.get_settings (noteMaxLength); הסדר ב-pay_demo בלי מצב ביניים; הקריאה לאורך הקשר בין בקשה לחשבונית; החוזים של create_payment_request, charge, create_invoice, update_settings ו-get_trainee_card, והסינון של list_payments ו-list_invoices; ההסבר לבני אדם של CANCEL_TOO_LATE בלי מספר קבוע; NOT_ALLOWED על שיעור שבוטל או התחיל ועל קלט לא תקין ב-notify_in_app. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
 | 9 | 29.09.2026 | מתוכנית שלב 5, הכרעות 1 עד 5, 7 ו-8: הפעולות trainees.get_me ו-exercises.prepare_upload, ושלוש שורות Registry (S23 מול get_me למאמן ולמתאמן, S05 מול prepare_upload); מי רשאי ל-accept_invite והקלט שלו; קישור ההזמנה מ-SITE_URL; החוזים של send_invite, charge ו-attach_video בהעלאה; הדלי videos; videoMaxMegabytes; השער של שלב 5 הוכרע. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, רשימת קודי השגיאה (28), הטבלאות וסדר הבנייה |
-| 10 | 29.09.2026 | מפער שנמצא בשלב 5, משימה 7: שורת Registry אחת, S22 מול settings.get_error_texts לתפקיד trainee, והמצטרף רשאי לה, כדי שהזמנה שפגה תוצג בנוסח שלה (UC4 א). נכנסת ב-0012. מה לא השתנה: כל השאר |
