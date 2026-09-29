@@ -94,7 +94,7 @@
 | doc-erd-logical.html | project-docs | 28.09.2026 |
 | diagram-07a עד 07f (ERD לוגי, שישה תחומים) | project-docs/mermaid | 28.09.2026 |
 | doc-module-map.md | project-docs | 29.09.2026 (גרסה 10) |
-| CLAUDE.md (מסמך הבנייה) | שורש המאגר | 29.09.2026 (גרסה 6) |
+| CLAUDE.md (מסמך הבנייה) | שורש המאגר | 30.09.2026 (גרסה 7) |
 | doc-stage-1-plan.md, findings-stage-1.md | project-docs | 28.09.2026. שלב 1 נסגר |
 | doc-stage-2-plan.md, findings-stage-2.md | project-docs | 28.09.2026. שלב 2 נסגר |
 | doc-stage-3-plan.md, findings-stage-3.md | project-docs | 28.09.2026. שלב 3 נסגר |
@@ -108,7 +108,7 @@
 | doc-security-review-1.md | project-docs | 29.09.2026. סקירת אבטחה ראשונה; ממצא 1 תוקן |
 | doc-invite-email-template.md | project-docs | 29.09.2026. נוסח מייל ההזמנה בעברית, אושר |
 | diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 28.09.2026 |
-| prototype-fitness-app.html | project-docs | 28.09.2026 (גרסה 1). פורסם: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
+| prototype-fitness-app.html | project-docs | 30.09.2026 (גרסה 2, סגנון FORM ונוסח ניטרלי). גרסה 1 פורסמה: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
 | usecase-02-payments-invoices.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc02-payments-invoices.mmd | project-docs/mermaid | 28.09.2026 |
