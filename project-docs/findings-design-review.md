@@ -2,7 +2,7 @@
 
 | שדה | ערך |
 | :-- | :-- |
-| מעמד | טיוטה, ממתינה להכרעת הצוות. יעדה: project-docs/findings-design-review.md |
+| מעמד | סופי. הצוות הכריע בשאלות בתוכנית שלב העיצוב (doc-design-stage-plan.md). מה תוקן בכל ממצא: project-docs/findings-design-stage.md |
 | תאריך | 29.09.2026 |
 | לפי | doc-design-review-brief.md. קריאה ובדיקה בלבד: לא שונו קוד, מסמכים או ענן |
 | המקור להשוואה | project-docs/prototype-fitness-app.html (CLAUDE.md סעיף 1) |

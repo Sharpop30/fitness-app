@@ -3,7 +3,7 @@
 | שדה | ערך |
 | :-- | :-- |
 | מעמד | מאושר בידי הצוות, 30.09.2026 |
-| המקור | בקשת הצוות לטפל בעיצוב לפני שלב 7; דוח סקירת העיצוב (drafts/findings-design-review.md); דוגמת FORM (https://claude.ai/artifact/5EZTqwJCsaPrQAPUfyrHnb) |
+| המקור | בקשת הצוות לטפל בעיצוב לפני שלב 7; דוח סקירת העיצוב (project-docs/findings-design-review.md); דוגמת FORM (https://claude.ai/artifact/5EZTqwJCsaPrQAPUfyrHnb) |
 | הענף | design-refresh, ממוזג ל-main רק אחרי אישור הצוות |
 | הדרישות | אין דרישה חדשה. השלב משנה מראה ונוסח של מסכים קיימים, ומתקן את חמשת החוסמים מהסקירה. הדרישות הממוספרות של כל מסך נשארות כפי שהן |
 
