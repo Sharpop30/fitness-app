@@ -1,4 +1,4 @@
-// The five deployment blockers of the design review (design stage, task 2; drafts/findings-design-review.md, 1 to 5).
+// The five deployment blockers of the design review (design stage, task 2; project-docs/findings-design-review.md, 1 to 5).
 // Each is shown on demo data, with the adapter made to fail where the blocker is about a failure. Synthetic data only.
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { setAdapter, setSession, type Adapter } from "../api/client";
