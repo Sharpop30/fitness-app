@@ -192,6 +192,7 @@ nav.tabs button.on{color:var(--accent);font-weight:500}
      כפתור "שולח" (16); קישור ההזמנה מוצג במסך עם שיתוף והעתקה (5).
    - ממצאי הנוסח והמבנה: 7 עד 14, 17 עד 21, 26 עד 35, 37, 38 (הפירוט בדוח השלב).
    עדכון בסקירת המסכים (הכרעת הצוות, 30.09.2026): כשיש אתגר השבוע, S09 מציג את יום הפרסום הבא במקום כפתור ההוספה.
+   והכרעת הצוות על פערים 4 עד 6 בדוח השלב: "אני" בלי שם, יתרה ותגית; הזמנה שלא מומשה אינה לחיצה; תוכנית קודמת "מ-" תאריך היצירה.
    ============================================================ */
 const TODAY = new Date(2026, 8, 28, 12, 0); // יום שני, 28.09.2026 [נתוני דוגמה]
 const DAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
@@ -262,7 +263,7 @@ const programs = {
   t2:{active:true,workouts:[{id:'w3',name:'אימון מלא',items:[{ex:'e4',sets:3,reps:10,weight:12},{ex:'e2',sets:4,reps:6,weight:55}]}]},
   t3:null
 };
-const inactivePrograms = {t1:[{name:'תוכנית קודמת',until:addDays(TODAY,-40)}]};
+const inactivePrograms = {t1:[{name:'תוכנית קודמת',from:addDays(TODAY,-70)}]};
 
 const results = []; // {tid,date,wid,ex,sets:[{reps,weight,done}],corrected}
 (function seed(){
@@ -434,9 +435,9 @@ screens.coachHome=()=>{
 
 /* ----- S02 מתאמנים והזמנה ----- */
 screens.trainees=()=>shell('המתאמנים שלי','מתאמנים',`
-  <div class="list">${trainees.map(t=>`<button class="item" data-a="go" data-v="${t.joined?'traineeCard':'inviteDone'}" data-p="${t.id}">
-    <span class="av">${ini(t.name)}</span><div class="grow"><div class="t">${nm(t.name)}</div><div class="s">${t.joined?(programs[t.id]?'יש תוכנית':'אין תוכנית'):`ההזמנה בתוקף עד ${fmt(t.invite.until)}`}</div></div>
-    ${t.joined?chev:'<span class="badge warn">הוזמן, טרם הצטרף</span>'}</button>`).join('')}</div>
+  <div class="list">${trainees.map(t=>`<${t.joined?'button':'div'} class="item" ${t.joined?`data-a="go" data-v="traineeCard" data-p="${t.id}"`:''}>
+    <span class="av">${ini(t.name)}</span><div class="grow"><div class="t">${nm(t.name)}</div><div class="s">${t.joined?(programs[t.id]?'יש תוכנית':'אין תוכנית'):'ההזמנה נשלחה'}</div></div>
+    ${t.joined?chev:'<span class="badge warn">הוזמן, טרם הצטרף</span>'}</${t.joined?'button':'div'}>`).join('')}</div>
   <button class="btn" data-a="go" data-v="invite">הזמנת מתאמן</button>`,{backBtn:false});
 
 screens.invite=()=>shell('מתאמן חדש','הזמנת מתאמן',`
@@ -451,7 +452,7 @@ screens.inviteDone=({id})=>{const t=trainees.find(x=>x.id===id);return shell('ה
   <div class="notice">הקישור מוכן. אפשר לשלוח אותו בוואטסאפ או בכל דרך אחרת.</div>
   <div class="linkbox" id="invLink">${t.invite.link}</div>
   <div class="grid2"><button class="btn" data-a="shareInvite" data-p="${id}">שיתוף</button><button class="btn sec" data-a="copyInvite" data-p="${id}">העתקה</button></div>
-  <div class="muted small">ההזמנה בתוקף עד ${fmtY(t.invite.until)}.</div>`)};
+  <div class="muted small">ההזמנה בתוקף ${ref.inviteValidDays} ימים, לפי ההגדרות.</div>`)}; // נפתח רק אחרי יצירת קישור (פער 5, הכרעת הצוות)
 
 /* ----- S03 כרטיס מתאמן ----- */
 screens.traineeCard=({id})=>{
@@ -492,7 +493,7 @@ screens.programEdit=({id})=>{
   ${S.params.confirmNew===id?`<div class="confirm col" role="alertdialog" aria-label="אישור תוכנית חדשה"><b>התוכנית הנוכחית תישמר כלא פעילה. להמשיך?</b>
     <div class="row"><button class="btn small" data-a="newProgram" data-p="${id}">כן, תוכנית חדשה</button><button class="btn sec small" data-a="cancelNew">ביטול</button></div></div>`
    :`<button class="btn sec" data-a="askNew" data-p="${id}">בניית תוכנית חדשה במקום הזו</button>`}
-  ${inactive.length?`<div class="muted small">תוכניות קודמות (לא פעילות): ${inactive.map(x=>x.name+' עד '+fmtY(x.until)).join(', ')}</div>`:''}`);
+  ${inactive.length?`<div class="muted small">תוכניות קודמות (לא פעילות): ${inactive.map(x=>x.name+' מ-'+fmtY(x.from)).join(', ')}</div>`:''}`);
 };
 
 screens.swap=({id})=>{
@@ -765,14 +766,14 @@ screens.lateCancel=({id})=>{const c=classes.find(x=>x.id===id);return shell('ב�
   <button class="btn" data-a="sendLate" data-p="${id}">שליחת בקשה חריגה למאמן</button>
   <button class="btn sec" data-a="back">חזרה בלי לבקש</button>`)};
 
-/* ----- אני: התקדמות, מטבעות, תשלומים, אתגר (ממצא 35: שם המתאמן, יתרה ותגית "לתשלום") ----- */
-screens.me=()=>{const openPay=payments.some(p=>p.tid===S.me&&p.status==='פתוחה');return shell('החשבון שלי',nm(tname(S.me)),`
+/* ----- אני: תפריט ניווט בלבד, בלי נתונים משלו (פער 4, הכרעת הצוות) ----- */
+screens.me=()=>{return shell('החשבון שלי','אני',`
   <div class="list">
    <button class="item" data-a="go" data-v="progress"><span class="t grow">גרף ההתקדמות שלי</span>${chev}</button>
    <button class="item" data-a="go" data-v="myWorkouts"><span class="t grow">האימונים שלי והערות המאמן</span>${chev}</button>
-   <button class="item" data-a="go" data-v="coins"><span class="t grow">מטבעות ותגמולים</span><span class="mono">${num(balance(S.me))}</span></button>
+   <button class="item" data-a="go" data-v="coins"><span class="t grow">מטבעות ותגמולים</span>${chev}</button>
    <button class="item" data-a="go" data-v="challengeTrainee"><span class="t grow">האתגר השבועי</span>${chev}</button>
-   <button class="item" data-a="go" data-v="paymentsTrainee"><span class="t grow">תשלומים וחשבוניות</span>${openPay?'<span class="badge warn">לתשלום</span>':chev}</button>
+   <button class="item" data-a="go" data-v="paymentsTrainee"><span class="t grow">תשלומים וחשבוניות</span>${chev}</button>
    <button class="item" data-a="logout"><span class="t grow">יציאה</span>${chev}</button>
   </div>`,{backBtn:false})};
 
@@ -819,7 +820,7 @@ const actions={
     (navigator.clipboard?navigator.clipboard.writeText(t.invite.link):Promise.reject()).then(()=>toast('הקישור הועתק'),()=>toast('ההעתקה לא הצליחה. אפשר לסמן את הקישור ולהעתיק ידנית'))}, // "הועתק" רק כשהצליח (ממצא 5)
   askNew:(p)=>{S.params.confirmNew=p;render()},
   cancelNew:()=>{S.params.confirmNew=null;render()},
-  newProgram:(p)=>{S.params.confirmNew=null;if(programs[p]){(inactivePrograms[p]=inactivePrograms[p]||[]).push({name:'תוכנית קודמת',until:TODAY})}
+  newProgram:(p)=>{S.params.confirmNew=null;if(programs[p]){(inactivePrograms[p]=inactivePrograms[p]||[]).push({name:'תוכנית קודמת',from:addDays(TODAY,-30)})}
     programs[p]={active:true,workouts:[{id:'w'+uid(),name:'אימון A',items:[]}]};render();toast('נפתחה תוכנית חדשה. הקודמת נשמרה כלא פעילה')},
   addWorkout:(p)=>{const w=programs[p].workouts;w.push({id:'w'+uid(),name:'אימון '+'ABCDEFG'[w.length],items:[]});render()},
   addItem:(p)=>{const [tid,wi]=p.split('|');programs[tid].workouts[wi].items.push({ex:'e7',sets:3,reps:10,weight:20});
