@@ -1,0 +1,16 @@
+---
+title: תרשים 7 - ERD רעיוני, הישויות המרכזיות
+---
+erDiagram
+    BUSINESSES ||--|{ OWNERS : owned_by
+    BUSINESSES ||--|{ COACHES : employs
+    COACHES ||--o{ TRAINEES : coaches
+    COACHES ||--o{ INVITES : sends
+    TRAINEES ||--o{ PROGRAMS : follows
+    PROGRAMS ||--|{ WORKOUTS : contains
+    WORKOUTS }o--o{ EXERCISES : includes
+    TRAINEES ||--o{ WORKOUT_LOGS : performs
+    TRAINEES ||--o{ COIN_TRANSACTIONS : earns
+    COACHES ||--o{ CHALLENGES : creates
+    TRAINEES ||--o{ PAYMENT_REQUESTS : pays
+    COACHES ||--o{ CLASSES : publishes

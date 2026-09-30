@@ -1,0 +1,46 @@
+---
+title: תרשים 6 - ארכיטקטורת המערכת, תרשים אב
+---
+flowchart TB
+    subgraph Channels[ערוצים]
+        U1[מאמן]
+        U2[מתאמן]
+        U3[בעל העסק]
+        APP[האפליקציה - 27 מסכים ומודול העיצוב]
+    end
+    subgraph Core[הליבה]
+        EP[Endpoint ו-Orchestrator - בדיקת פונה, Registry, Audit]
+    end
+    subgraph Modules[מודולים מתחלפים]
+        MOD[15 מודולים עסקיים - תרשים בן 06a]
+    end
+    subgraph Interfaces[ממשקים]
+        IDN[Identity Connector - Supabase Auth]
+        PAY[Payment Gateway - מימוש מדומה]
+        INV[Invite Channel - קישור ומייל]
+    end
+    REPO[Repository - הקובץ היחיד שנוגע במסד]
+    DB[(Supabase - מסד ואחסון קבצים)]
+
+    U1 --> APP
+    U2 --> APP
+    U3 --> APP
+    APP -->|caller, module, action, payload, lang| EP
+    EP --> MOD
+    EP --> IDN
+    EP --> PAY
+    EP --> INV
+    MOD -.->|דרך ה-Orchestrator בלבד| EP
+    EP --> REPO
+    REPO --> DB
+
+    class U1,U2,U3 person
+    class APP,EP,MOD,REPO system
+    class DB data
+    class IDN,PAY,INV external
+
+classDef person fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+classDef agent fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
+classDef system fill:#F5F5F5,stroke:#424242,stroke-width:2px
+classDef data fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+classDef external fill:#FFF3E0,stroke:#E65100,stroke-width:2px

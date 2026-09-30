@@ -1,0 +1,35 @@
+---
+title: תרשים 07f - ERD לוגי, תפעול
+---
+erDiagram
+    BUSINESSES ||--o{ SETTINGS : configures
+    AUDIT_ENTRIES {
+        uuid AuditEntryID PK
+        uuid requestID "משותף לבקשה ולתשובה"
+        text caller
+        text moduleName
+        text actionName
+        boolean isOk
+        text errorCode "רשות"
+        timestamptz createdAt
+    }
+    SETTINGS {
+        uuid SettingID PK
+        uuid BusinessID FK
+        text settingKey "ייחודי לעסק"
+        text settingValue
+    }
+    ERROR_CODES {
+        uuid ErrorCodeID PK
+        text errorCode UK
+        text developerText
+        text humanText
+    }
+    REGISTRY_ENTRIES {
+        uuid RegistryEntryID PK
+        text caller
+        text moduleName
+        text actionName
+        text allowedRole "owner, coach, trainee, module"
+        boolean isActive
+    }

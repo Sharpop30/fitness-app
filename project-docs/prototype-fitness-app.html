@@ -193,9 +193,12 @@ nav.tabs button.on{color:var(--accent);font-weight:500}
    - ממצאי הנוסח והמבנה: 7 עד 14, 17 עד 21, 26 עד 35, 37, 38 (הפירוט בדוח השלב).
    עדכון בסקירת המסכים (הכרעת הצוות, 30.09.2026): כשיש אתגר השבוע, S09 מציג את יום הפרסום הבא במקום כפתור ההוספה.
    והכרעת הצוות על פערים 4 עד 6 בדוח השלב: "אני" בלי שם, יתרה ותגית; הזמנה שלא מומשה אינה לחיצה; תוכנית קודמת "מ-" תאריך היצירה.
-   תוספת 30.09.2026, בבקשת הצוות: תפקיד שלישי, בעל העסק, עם לשוניות סקירה, מאמנים, מדדים ועוד (B01 עד B04).
-   אין לתפקיד הזה מקור ב-PRD, במפת בעלי העניין, במפת המודולים, במקרי השימוש או ב-ERD. הוא טיוטה לדיון,
-   ואינו נכנס לבנייה עד שהמסמכים יעודכנו ויאושרו. המדדים ב-B03 לקוחים מ-doc-okr-kpi.md.
+   גרסה 3 (30.09.2026, טיוטה לאישור הצוות): תפקיד שלישי, בעל העסק (usecase-12, מפה גרסה 11, draft-owner-role).
+   - S24 סקירה עסקית, S25 מאמנים והזמנה, S26 מדדים (מ-doc-okr-kpi), S27 כרטיס מאמן; "עוד" של בעל העסק.
+   - בעל העסק בנתוני הדוגמה הוא גם המאמן (הכרעות 4 ו-7): בחירת תפקיד אחרי הכניסה, ומעבר בין התפקידים ב"עוד".
+   - ההגדרות (S12) של העסק: בעל העסק משנה, והמאמן רואה בלבד (הכרעה 3).
+   - בכרטיס המאמן: שם, תוכנית ורצף לכל מתאמן, בלי תוצאות והערות (הכרעה 5). לכל שיעור יש מאמן.
+   - S22 משמש גם להצטרפות מאמן, באותו מבנה; באב הטיפוס מוצג רק המסלול של המתאמן.
    ============================================================ */
 const TODAY = new Date(2026, 8, 28, 12, 0); // יום שני, 28.09.2026 [נתוני דוגמה]
 const DAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
@@ -306,22 +309,22 @@ const weekStart = addDays(TODAY,-TODAY.getDay());
 const challenge={id:'ch1',name:'שלושה אימונים השבוע',type:'count',target:3,ex:null,prize:'בקבוק מים ממותג',start:weekStart,end:addDays(weekStart,6),completions:[{tid:'t2',delivered:false}]};
 
 const classes=[
-  {id:'c1',date:addDays(TODAY,0),time:'18:30',place:'פארק הירקון',cap:8,reg:['t1','t2','t3'],wait:[],attended:null,cancelled:false},
-  {id:'c2',date:addDays(TODAY,2),time:'07:00',place:'סטודיו',cap:3,reg:['t2','t3','t4'],wait:['t1'],attended:null,cancelled:false},
-  {id:'c3',date:addDays(TODAY,4),time:'19:00',place:'סטודיו',cap:10,reg:['t2'],wait:[],attended:null,cancelled:false},
-  {id:'c0',date:addDays(TODAY,-2),time:'18:30',place:'פארק הירקון',cap:8,reg:['t1','t2','t3'],wait:[],attended:null,cancelled:false},
+  {id:'c1',date:addDays(TODAY,0),time:'18:30',place:'פארק הירקון',cap:8,reg:['t1','t2','t3'],wait:[],attended:null,cancelled:false,coach:'k1'},
+  {id:'c2',date:addDays(TODAY,2),time:'07:00',place:'סטודיו',cap:3,reg:['t2','t3','t4'],wait:['t1'],attended:null,cancelled:false,coach:'k1'},
+  {id:'c3',date:addDays(TODAY,4),time:'19:00',place:'סטודיו',cap:10,reg:['t2'],wait:[],attended:null,cancelled:false,coach:'k1'},
+  {id:'c0',date:addDays(TODAY,-2),time:'18:30',place:'פארק הירקון',cap:8,reg:['t1','t2','t3'],wait:[],attended:null,cancelled:false,coach:'k1'},
 ];
 const lateRequests=[];
-// בעל העסק (B02): המאמנים בעסק. [טיוטה, בלי מקור במסמכים]
+// בעל העסק (S25): המאמנים בעסק. בעל העסק הוא גם המאמן k1 (הכרעות 4 ו-7)
 const coaches=[
-  {id:'k1',name:'דני (דוגמה)',joined:true,trainees:['t1','t2','t3']},
+  {id:'k1',name:'המאמן (דוגמה)',joined:true,trainees:['t1','t2','t3']},
   {id:'k2',name:'שירה (דוגמה)',joined:false,trainees:[],invite:{link:'https://example.com/fitness-app/?coach=shira-demo-2c9d',until:addDays(TODAY,5)}},
 ];
 const notes={};
 const inbox={t1:[{id:'n1',text:'המאמן הוסיף הערה לאימון האחרון שלך',date:addDays(TODAY,-1)}]};
 
 /* ---- מצב ה-UI ---- */
-const S={role:null, me:'t1', stack:[], tab:null, params:{}, loading:false, offline:false, sid:true};
+const S={role:null, roles:[], me:'t1', stack:[], tab:null, params:{}, loading:false, offline:false, sid:true};
 const app=document.getElementById('app');
 const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 (function initTheme(){const t=store.get('fitness-theme');if(t)document.documentElement.dataset.theme=t})();
@@ -380,9 +383,9 @@ const errorState=()=>`<div class="state err" role="alert"><span class="muted">${
 const tile=(lbl,n,cap='',a='',v='',p='')=>`<${a?'button':'div'} class="tile" ${a?`data-a="${a}" data-v="${v}" data-p="${p}"`:''}><div class="lbl">${lbl}</div><div class="num">${n}</div>${cap?`<div class="cap">${cap}</div>`:''}</${a?'button':'div'}>`;
 const classRow=(c,side,a='',p='')=>`<${a?'button':'div'} class="item" ${a?`data-a="${a}" data-v="classCoach" data-p="${p}"`:''}><div class="when"><div class="h">${c.time}</div><div class="d">${DAYS[c.date.getDay()]} ${fmt(c.date)}</div></div><div class="grow"><div class="t">${c.place}</div><div class="s">${c.cancelled?'בוטל':`${c.reg.length}/${c.cap} רשומים${c.wait.length?' · '+c.wait.length+' בהמתנה':''}`}</div></div>${side}</${a?'button':'div'}>`;
 
-const SCREEN_ID={signIn:'S23',joinInvite:'S22',coachHome:'S01',trainees:'S02',invite:'S02',inviteDone:'S02',traineeCard:'S03',programEdit:'S04',swap:'S04',itemTarget:'S04',exercises:'S05',exerciseNew:'S05',exercise:'S05',resultsCoach:'S06',noteAdd:'S06',goalEdit:'S07',paymentsCoach:'S08',payRequest:'S08',invoice:'S08',challengeCoach:'S09',challengeNew:'S09',rewardsCoach:'S10',classesCoach:'S11',classNew:'S11',classCoach:'S11',settings:'S12',more:'עוד',traineeHome:'S13',workoutPick:'S14',workout:'S14',exerciseView:'S14',feedback:'S15',myWorkouts:'S16',correct:'S16',classesTrainee:'S17',lateCancel:'S17',coins:'S18',paymentsTrainee:'S19',challengeTrainee:'S20',progress:'S21',me:'אני',ownerHome:'B01',coaches:'B02',coachInvite:'B02',coachCard:'B02',kpis:'B03',ownerMore:'B04'};
+const SCREEN_ID={signIn:'S23',joinInvite:'S22',coachHome:'S01',trainees:'S02',invite:'S02',inviteDone:'S02',traineeCard:'S03',programEdit:'S04',swap:'S04',itemTarget:'S04',exercises:'S05',exerciseNew:'S05',exercise:'S05',resultsCoach:'S06',noteAdd:'S06',goalEdit:'S07',paymentsCoach:'S08',payRequest:'S08',invoice:'S08',challengeCoach:'S09',challengeNew:'S09',rewardsCoach:'S10',classesCoach:'S11',classNew:'S11',classCoach:'S11',settings:'S12',more:'עוד',traineeHome:'S13',workoutPick:'S14',workout:'S14',exerciseView:'S14',feedback:'S15',myWorkouts:'S16',correct:'S16',classesTrainee:'S17',lateCancel:'S17',coins:'S18',paymentsTrainee:'S19',challengeTrainee:'S20',progress:'S21',me:'אני',ownerHome:'S24',coaches:'S25',coachInvite:'S25',coachCard:'S27',kpis:'S26',ownerMore:'עוד',roleChoice:'S23'};
 // מסכים שטוענים נתונים מהשרת: מציגים טעינה ושגיאה (ממצאים 2, 6)
-const NO_DATA=new Set(['signIn','joinInvite','invite','inviteDone','exerciseNew','noteAdd','classNew','challengeNew','feedback','more','lateCancel','coachInvite','ownerMore']);
+const NO_DATA=new Set(['signIn','joinInvite','invite','inviteDone','exerciseNew','noteAdd','classNew','challengeNew','feedback','more','lateCancel','coachInvite','ownerMore','roleChoice']);
 
 function shell(eyebrow,title,body,{backBtn=true}={}){
   const tabs = S.role==='coach'
@@ -412,7 +415,7 @@ screens.signIn=()=>shell('ביצועים, מעקב ותשלומים','כניסה
   <div class="proto-box"><div class="muted small">באב הטיפוס בלבד: בחירת תפקיד במקום מייל וסיסמה.</div>
    <button class="btn sec" data-a="role" data-v="coach">כניסה כמאמן (דוגמה)</button>
    <button class="btn sec" data-a="role" data-v="trainee">כניסה כמתאמן (דוגמה)</button>
-   <button class="btn sec" data-a="role" data-v="owner">כניסה כבעל העסק (דוגמה, טיוטה)</button>
+   <button class="btn sec" data-a="go" data-v="roleChoice">כניסה כבעל העסק, שהוא גם המאמן (דוגמה)</button>
    <button class="btn sec" data-a="go" data-v="joinInvite">פתיחת הזמנה כמתאמן חדש</button></div>`,{backBtn:false});
 
 /* ----- S22 הצטרפות בהזמנה (מקרה שימוש 4) ----- */
@@ -424,6 +427,12 @@ screens.joinInvite=()=>shell('הזמנה מהמאמן','הצטרפות',`
   ${field('סיסמה','<input type="password" autocomplete="new-password">')}
   <button class="btn" data-a="acceptInvite">הצטרפות</button>
   <button class="link" data-a="expiredInvite">מה רואים כשההזמנה פגה?</button>`);
+
+/* ----- S23, המשך: בחירת תפקיד, למשתמש שהוא בעל עסק וגם מאמן (הכרעה 7) ----- */
+screens.roleChoice=()=>shell('יש לך שני תפקידים','איך להמשיך?',`
+  <button class="item" data-a="role" data-v="owner"><div class="grow"><div class="t">בעל העסק</div><div class="s">סקירה, מאמנים, מדדים והגדרות העסק</div></div>${chev}</button>
+  <button class="item" data-a="role" data-v="coach"><div class="grow"><div class="t">מאמן</div><div class="s">המתאמנים, התוכניות והשיעורים שלך</div></div>${chev}</button>
+  <div class="muted small">אפשר לעבור בין התפקידים בכל רגע, מ"עוד".</div>`);
 
 /* ================= מאמן ================= */
 /* ----- S01 בית המאמן ----- */
@@ -642,28 +651,29 @@ screens.more=()=>shell('כלים','עוד',`
    <button class="item" data-a="go" data-v="challengeCoach"><span class="t grow">אתגר שבועי</span>${chev}</button>
    <button class="item" data-a="go" data-v="rewardsCoach"><span class="t grow">תגמולים ומימושים</span>${chev}</button>
    <button class="item" data-a="go" data-v="paymentsCoach"><span class="t grow">תשלומים וחשבוניות</span>${chev}</button>
-   <button class="item" data-a="go" data-v="settings"><span class="t grow">הגדרות: מטבעות, מחירים ונוסחים</span>${chev}</button>
+   <button class="item" data-a="go" data-v="settings"><span class="t grow">הגדרות העסק (לצפייה)</span>${chev}</button>
+   ${S.roles.includes('owner')?`<button class="item" data-a="role" data-v="owner"><span class="t grow">מעבר לבעל העסק</span>${chev}</button>`:''}
    <button class="item" data-a="logout"><span class="t grow">יציאה</span>${chev}</button>
   </div>`,{backBtn:false});
 // שדות מספר עם מקלדת מספרים, ונוסחים בשדה ארוך (ממצא 14)
-const numF=(l,k)=>field(l,`<input type="number" inputmode="numeric" data-ref="${k}" value="${k.split('.').reduce((o,x)=>o[x],ref)}">`);
-const txtF=(l,k)=>field(l,`<textarea rows="2" data-ref="${k}">${k.split('.').reduce((o,x)=>o[x],ref)}</textarea>`);
-screens.settings=()=>shell('בלי קוד','הגדרות',`
+const ro=()=>S.role==='owner'?'':' disabled';
+const numF=(l,k)=>field(l,`<input type="number" inputmode="numeric" data-ref="${k}" value="${k.split('.').reduce((o,x)=>o[x],ref)}"${ro()}>`);
+const txtF=(l,k)=>field(l,`<textarea rows="2" data-ref="${k}"${ro()}>${k.split('.').reduce((o,x)=>o[x],ref)}</textarea>`);
+screens.settings=()=>shell('בלי קוד','הגדרות העסק',`
+  ${S.role==='owner'?'<div class="muted small">הערכים חלים על כל המאמנים בעסק.</div>':'<div class="notice">ההגדרות נקבעות בידי בעל העסק. כאן אפשר לראות אותן.</div>'}
   <div class="card col"><b>מטבעות לכל פעולה</b><div class="grid2">${numF('אימון שנשמר','coins.workout')}${numF('יעד אישי','coins.goal')}${numF('אתגר שבועי','coins.challenge')}${numF('הגעה לשיעור','coins.attendance')}</div></div>
   <div class="card col"><b>מחירים (₪)</b><div class="grid2">${numF('מנוי חודשי','prices.monthly')}${numF('חבילת 10 אימונים','prices.pack10')}</div></div>
   <div class="card col"><b>כללים</b><div class="grid2">${numF('ביטול עד (שעות לפני שיעור)','cancelHours')}${numF('רצף: ימים מרביים בין אימונים','streakGapDays')}${numF('שמירת מקום שהתפנה (שעות)','spotOfferHours')}${numF('תוקף הזמנה (ימים)','inviteValidDays')}</div></div>
   <div class="card col"><b>מגבלות</b><div class="grid2">${numF('אורך סרטון (שניות)','videoMaxSec')}${numF('גודל סרטון (מגה-בייט)','videoMaxMb')}${numF('אורך הערה (תווים)','noteMax')}</div></div>
   <div class="card col"><b>נוסחי משוב</b>${txtF('השלמה מלאה','feedback.full')}${txtF('השלמה חלקית','feedback.partial')}${txtF('שיא אישי','feedback.pr')}</div>
   <div class="card col"><b>תזכורת יומית</b>${txtF('נוסח התזכורת בבית המתאמן','reminder')}</div>
-  <button class="btn" data-a="saveSettings">שמירה</button>`);
+  ${S.role==='owner'?'<button class="btn" data-a="saveSettings">שמירה</button>':''}`);
 
-/* ================= בעל העסק (טיוטה) =================
-   אין מקור במסמכים: תפקיד שלישי שנוסף בבקשת הצוות, 30.09.2026, לדיון בלבד. */
-const DRAFT_NOTE='<div class="muted small">טיוטה: לתפקיד בעל העסק אין עדיין מקור במסמכים המאושרים.</div>';
+/* ================= בעל העסק (מקרה שימוש 12) ================= */
 const paidIn=(from,to)=>payments.filter(p=>p.status==='שולמה'&&p.date>=from&&p.date<to).reduce((a,p)=>a+p.amount,0);
 const coachIncome=id=>{const k=coaches.find(x=>x.id===id);return payments.filter(p=>p.status==='שולמה'&&k.trainees.includes(p.tid)).reduce((a,p)=>a+p.amount,0)};
 
-/* ----- B01 סקירה עסקית ----- */
+/* ----- S24 סקירה עסקית ----- */
 screens.ownerHome=()=>{
   const mStart=new Date(TODAY.getFullYear(),TODAY.getMonth(),1), mNext=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,1);
   const income=paidIn(mStart,mNext), paidN=payments.filter(p=>p.status==='שולמה'&&p.date>=mStart&&p.date<mNext).length;
@@ -674,35 +684,32 @@ screens.ownerHome=()=>{
   <div class="hero row between"><div><div class="sub">הכנסות החודש (הדגמה)</div><div class="num" style="margin-top:3px">₪${num(income)}</div><div class="sub" style="margin-top:3px">${paidN} תשלומים ששולמו</div></div>
    <div style="text-align:center"><div class="num">${trainees.filter(t=>t.joined).length}</div><div class="cap">מתאמנים פעילים</div></div></div>
   <div class="grid2">
-   ${tile('תשלומים פתוחים',open.length,open.length?`₪${num(openSum)} לגבייה`:'הכול שולם','go','paymentsCoach')}
+   ${tile('תשלומים פתוחים',open.length,open.length?`₪${num(openSum)} לגבייה`:'הכול שולם')}
    ${tile('מאמנים',coaches.filter(k=>k.joined).length,coaches.some(k=>!k.joined)?'יש הזמנה פתוחה':'לרשימה','tab','coaches')}
-   ${tile('תפוסת שיעורים השבוע',cap?`${Math.round(reg/cap*100)}%`:'—',`${reg}/${cap} מקומות`,'go','classesCoach')}
-   ${tile('תגמולים לאספקה',redemptions.filter(r=>r.status==='ממתין לאספקה').length,'בידי המאמנים','go','rewardsCoach')}
-  </div>
-  ${DRAFT_NOTE}`,{backBtn:false});
+   ${tile('תפוסת שיעורים השבוע',cap?`${Math.round(reg/cap*100)}%`:'אין',`${reg}/${cap} מקומות`)}
+   ${tile('תגמולים לאספקה',redemptions.filter(r=>r.status==='ממתין לאספקה').length,'בידי המאמנים')}
+  </div>`,{backBtn:false});
 };
 
-/* ----- B02 מאמנים ----- */
+/* ----- S25 מאמנים והזמנה, S27 כרטיס מאמן ----- */
 screens.coaches=()=>shell('המאמנים בעסק','מאמנים',`
   <div class="list">${coaches.map(k=>`<${k.joined?'button':'div'} class="item" ${k.joined?`data-a="go" data-v="coachCard" data-p="${k.id}"`:''}>
     <span class="av">${ini(k.name)}</span><div class="grow"><div class="t">${nm(k.name)}</div><div class="s">${k.joined?`${k.trainees.length} מתאמנים`:'ההזמנה נשלחה'}</div></div>
     ${k.joined?chev:'<span class="badge warn">הוזמן, טרם הצטרף</span>'}</${k.joined?'button':'div'}>`).join('')}</div>
-  <button class="btn" data-a="go" data-v="coachInvite">הזמנת מאמן</button>
-  ${DRAFT_NOTE}`,{backBtn:false});
+  <button class="btn" data-a="go" data-v="coachInvite">הזמנת מאמן</button>`,{backBtn:false});
 screens.coachInvite=()=>shell('מאמן חדש','הזמנת מאמן',`
   ${field('שם המאמן','<input id="kName" placeholder="לדוגמה: אורי" autocomplete="off">')}
   ${field('מייל (לשליחת ההזמנה)','<input id="kMail" type="email" placeholder="name@example.com">')}
   <button class="btn" data-a="sendCoachInvite">שליחת הזמנה במייל</button>
   <div class="muted small">ההזמנה בתוקף ${ref.inviteValidDays} ימים, לפי ההגדרות.</div>`);
 screens.coachCard=({id})=>{const k=coaches.find(x=>x.id===id);
-  const cls=classes.filter(c=>!c.cancelled&&c.date>=new Date(TODAY.toDateString())).length;
+  const cls=classes.filter(c=>c.coach===id&&!c.cancelled&&c.date>=new Date(TODAY.toDateString())).length;
   return shell('כרטיס מאמן',nm(k.name),`
   <div class="grid3">${tile('מתאמנים',k.trainees.length)}${tile('הכנסות',`₪${num(coachIncome(id))}`)}${tile('שיעורים קרובים',cls)}</div>
   <h2>המתאמנים</h2>
-  <div class="list">${k.trainees.map(t=>`<div class="item"><span class="av">${ini(tname(t))}</span><div class="grow"><div class="t">${nm(tname(t))}</div><div class="s">${programs[t]?'יש תוכנית':'אין תוכנית'} · רצף ${streak(t)}</div></div></div>`).join('')||empty('עוד אין מתאמנים')}</div>
-  ${DRAFT_NOTE}`)};
+  <div class="list">${k.trainees.map(t=>`<div class="item"><span class="av">${ini(tname(t))}</span><div class="grow"><div class="t">${nm(tname(t))}</div><div class="s">${programs[t]?'יש תוכנית':'אין תוכנית'} · רצף ${streak(t)}</div></div></div>`).join('')||empty('עוד אין מתאמנים')}</div>`)};
 
-/* ----- B03 מדדים (doc-okr-kpi.md). היעדים המספריים טרם נקבעו ----- */
+/* ----- S26 מדדים (doc-okr-kpi.md). היעדים המספריים טרם נקבעו ----- */
 screens.kpis=()=>{
   const act=trainees.filter(t=>t.joined).map(t=>t.id), n=act.length||1, pct=x=>`${Math.round(x/n*100)}%`;
   const withProg=act.filter(t=>programs[t]&&programs[t].active).length;
@@ -718,16 +725,14 @@ screens.kpis=()=>{
    ${row('השתתפות באתגר השבועי',pct(chal),`${chal} מתוך ${act.length}`,'KR2')}
    ${row('הזנת תוצאות השבוע',pct(weekRes),`${weekRes} מתוך ${act.length}`,'KR3')}
   </div>
-  <div class="muted small">מדדי הנטישה, הכניסות היומיות והמשוב דורשים נתוני כניסה שאינם באב הטיפוס.</div>
-  ${DRAFT_NOTE}`,{backBtn:false});
+  <div class="muted small">מדדי הנטישה, הכניסות היומיות והמשוב דורשים נתוני כניסה שאינם באב הטיפוס.</div>`,{backBtn:false});
 };
 
-/* ----- B04 עוד ----- */
+/* ----- עוד של בעל העסק ----- */
 screens.ownerMore=()=>shell('ניהול העסק','עוד',`
   <div class="list">
    <button class="item" data-a="go" data-v="settings"><span class="t grow">הגדרות העסק: מחירים, מטבעות וכללים</span>${chev}</button>
-   <button class="item" data-a="go" data-v="paymentsCoach"><span class="t grow">כל התשלומים והחשבוניות</span>${chev}</button>
-   <button class="item" data-a="go" data-v="classesCoach"><span class="t grow">כל השיעורים</span>${chev}</button>
+   <button class="item" data-a="role" data-v="coach"><span class="t grow">מעבר למאמן</span>${chev}</button>
    <button class="item" data-a="logout"><span class="t grow">יציאה</span>${chev}</button>
   </div>`,{backBtn:false});
 
@@ -892,12 +897,12 @@ const MUTATING=new Set(['sendInvite','newProgram','saveTarget','doSwap','savePro
 const actions={
   back, retry:()=>load(), tab:(v)=>setTab(v), go:(v,p)=>go(v,{id:p}), noop:()=>{},
   theme:()=>{const t=isDark()?'light':'dark';document.documentElement.dataset.theme=t;store.set('fitness-theme',t);render()},
-  role:(v)=>{S.role=v;setTab({coach:'coachHome',trainee:'traineeHome',owner:'ownerHome'}[v])},
+  role:(v)=>{S.role=v;S.roles=v==='trainee'?['trainee']:['owner','coach'];setTab({coach:'coachHome',trainee:'traineeHome',owner:'ownerHome'}[v])}, // המאמן בנתוני הדוגמה הוא גם בעל העסק
   sendCoachInvite:()=>{const n=kName.value.trim(),m=kMail.value.trim();
     if(!n||!/^\S+@\S+\.\S+$/.test(m))return toast('פרט הקשר לא תקין. כדאי לבדוק ולנסות שוב');
     coaches.push({id:'k'+uid(),name:n+' (דוגמה)',joined:false,trainees:[],invite:{link:'https://example.com/fitness-app/?coach='+uid(),until:addDays(TODAY,ref.inviteValidDays)}});back();toast('ההזמנה נשלחה במייל')},
   signInDemo:()=>toast('באב הטיפוס הכניסה היא בבחירת תפקיד, למטה'),
-  logout:()=>{S.role=null;S.tab=null;S.stack=[];render()},
+  logout:()=>{S.role=null;S.roles=[];S.tab=null;S.stack=[];render()},
   acceptInvite:()=>{const t=trainees.find(x=>x.id==='t4');t.joined=true;S.role='trainee';S.me='t4';setTab('traineeHome');toast('הצטרפת! המאמן יבנה לך תוכנית')},
   expiredInvite:()=>toast('ההזמנה כבר לא בתוקף. אפשר לבקש מהמאמן הזמנה חדשה'),
   sendInvite:(v)=>{const n=invName.value.trim(),m=invMail.value.trim();
@@ -934,7 +939,7 @@ const actions={
   addReward:()=>{const n=rwName.value.trim(),pr=+rwPrice.value;if(!n||!(pr>0))return toast('חסר שם או מחיר');rewards.push({id:'rw'+uid(),name:n,price:pr});render();toast('התגמול נוסף לקטלוג')},
   delivered:(p)=>{redemptions.find(r=>r.id===p).status='סופק';render();toast('סומן: התגמול סופק')},
   publishClass:()=>{const cap=+clCap.value;if(!(cap>0)||!clPlace.value.trim())return toast('חסרים פרטים בשיעור. צריך להשלים ולנסות שוב');
-    classes.push({id:'c'+uid(),date:new Date(clDate.value+'T00:00'),time:clTime.value,place:clPlace.value,cap,reg:[],wait:[],attended:null,cancelled:false});back();toast('השיעור פורסם')},
+    classes.push({id:'c'+uid(),date:new Date(clDate.value+'T00:00'),time:clTime.value,place:clPlace.value,cap,reg:[],wait:[],attended:null,cancelled:false,coach:'k1'});back();toast('השיעור פורסם')},
   toggleAtt:(p)=>{const [cid,t]=p.split('|');const c=classes.find(x=>x.id===cid);c.attended=c.attended||[];c.attended=c.attended.includes(t)?c.attended.filter(x=>x!==t):[...c.attended,t];render()},
   saveAttendance:(p)=>{const c=classes.find(x=>x.id===p);let n=0;(c.attended||[]).forEach(t=>{if(award(t,'attendance','att-'+p+t))n++});toast(n?`הנוכחות נשמרה. ${n} מתאמנים קיבלו מטבעות`:'הנוכחות נשמרה')},
   cancelClass:(p)=>{const c=classes.find(x=>x.id===p);c.cancelled=true;[...c.reg,...c.wait].forEach(t=>(inbox[t]=inbox[t]||[]).unshift({id:'n'+uid(),text:`השיעור ב${fmtDay(c.date)} בוטל בידי המאמן`,date:TODAY}));render();toast('השיעור בוטל, והנרשמים קיבלו הודעה')},

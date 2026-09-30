@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ERD רעיוני</title>
+<style>
+body{font-family:Heebo,Arial,sans-serif;max-width:960px;margin:24px auto;padding:0 16px;background:#fff;color:#161916;line-height:1.5}
+h1{font-size:26px;margin-bottom:4px} h2{font-size:19px;margin-top:28px}
+.box{border:1px solid #ddd;border-radius:12px;padding:16px;margin:16px 0;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid #ddd;padding:6px 8px;text-align:right;vertical-align:top} th{background:#f4f4f1}
+.muted{color:#555a53;font-size:13px} code{font-family:monospace;direction:ltr;unicode-bidi:embed}
+</style></head><body>
+<h1>מודל הנתונים: הרמה הרעיונית</h1>
+<p class="muted">טיוטה לגרסה 2, 30.09.2026: העסק ובעל העסק (usecase-12). גרסה 1 מאושרת, 28.09.2026. הכרעת הצוות: אין מחיקה, רק סימון לא פעיל. תרשים 7 לפי מדריך התרשימים (פריט 24), חלק ג: הרמה הרעיונית, ישויות וקשרים בלי שדות. המקורות: 12 מקרי השימוש המאושרים ושורות הנתונים שבהם. אחרי אישור: הרמה הלוגית, תרשים בן לכל תחום עם כל השדות.</p>
+
+<div class="box"><h2 style="margin-top:0">תרשים האב: הישויות המרכזיות</h2>
+<pre class="mermaid">
+erDiagram
+    BUSINESSES ||--|{ OWNERS : owned_by
+    BUSINESSES ||--|{ COACHES : employs
+    COACHES ||--o{ TRAINEES : coaches
+    COACHES ||--o{ INVITES : sends
+    TRAINEES ||--o{ PROGRAMS : follows
+    PROGRAMS ||--|{ WORKOUTS : contains
+    WORKOUTS }o--o{ EXERCISES : includes
+    TRAINEES ||--o{ WORKOUT_LOGS : performs
+    TRAINEES ||--o{ COIN_TRANSACTIONS : earns
+    COACHES ||--o{ CHALLENGES : creates
+    TRAINEES ||--o{ PAYMENT_REQUESTS : pays
+    COACHES ||--o{ CLASSES : publishes
+</pre>
+<p class="muted">הקשר בין אימונים לתרגילים הוא רבים לרבים. ברמה הלוגית הוא יפורק לטבלת קישור, WORKOUT_ITEMS, שמחזיקה גם את היעד: סטים, חזרות ומשקל.</p></div>
+
+<h2>כל הישויות, לפי תחום</h2>
+<p class="muted">כל תחום יקבל תרשים בן ברמה הלוגית. העמודות עונות על בדיקת הבהירות של המדריך: מי יוצר, מי מעדכן ומי קורא.</p>
+<table>
+<tr><th>התחום</th><th>הישות</th><th>מה היא מחזיקה</th><th>יוצר</th><th>מעדכן</th><th>קורא</th><th>מקרה שימוש</th></tr>
+<tr><td rowspan="6">אנשים וגישה</td><td><code>BUSINESSES</code></td><td>העסק. מאמן עצמאי הוא עסק של אדם אחד. נוצר מראש בהקמה</td><td>הקמת המערכת</td><td>בעל העסק</td><td>כולם</td><td>12</td></tr>
+<tr><td><code>OWNERS</code></td><td>בעל העסק. יכול להיות גם מאמן באותו עסק</td><td>הקמת המערכת</td><td>בעל העסק</td><td>בעל העסק</td><td>12</td></tr>
+<tr><td><code>COACH_INVITES</code></td><td>הזמנת מאמן לעסק, ותוקף</td><td>בעל העסק</td><td>המערכת (סגירה)</td><td>בעל העסק</td><td>12</td></tr>
+<tr><td><code>COACHES</code></td><td>המאמן, שייך לעסק אחד. הראשון נוצר בהקמה, והשאר בהזמנה</td><td>הקמת המערכת, הצטרפות בהזמנה</td><td>המאמן</td><td>כולם</td><td>4, 12</td></tr>
+<tr><td><code>TRAINEES</code></td><td>מתאמן, מחובר למאמן אחד</td><td>הצטרפות בהזמנה</td><td>המתאמן</td><td>המאמן, המתאמן עצמו</td><td>4</td></tr>
+<tr><td><code>INVITES</code></td><td>הזמנה, ערוץ ותוקף</td><td>המאמן</td><td>המערכת (סגירה)</td><td>המאמן</td><td>4</td></tr>
+<tr><td rowspan="7">אימון</td><td><code>EXERCISES</code></td><td>רשימה מוכנה ותרגילי המאמן, עם קישור או קובץ סרטון</td><td>הקמה, המאמן</td><td>המאמן</td><td>כולם</td><td>1, 10</td></tr>
+<tr><td><code>PROGRAMS</code></td><td>תוכנית, פעילה או לא פעילה. אחת פעילה למתאמן</td><td>המאמן</td><td>המאמן</td><td>המאמן, המתאמן</td><td>1</td></tr>
+<tr><td><code>WORKOUTS</code></td><td>אימון בתוכנית, לפי סדר</td><td>המאמן</td><td>המאמן</td><td>המאמן, המתאמן</td><td>1</td></tr>
+<tr><td><code>WORKOUT_ITEMS</code></td><td>תרגיל באימון, המקום בסדר, והיעד</td><td>המאמן</td><td>המאמן (החלפה)</td><td>המאמן, המתאמן</td><td>1</td></tr>
+<tr><td><code>WORKOUT_LOGS</code></td><td>אימון שבוצע, בתאריך</td><td>המתאמן</td><td>המתאמן</td><td>המאמן, המתאמן</td><td>3</td></tr>
+<tr><td><code>SET_RESULTS</code></td><td>תוצאה לכל סט, וסימון שתוקן</td><td>המתאמן</td><td>המתאמן (תיקון)</td><td>המאמן, המתאמן</td><td>3, 5</td></tr>
+<tr><td><code>COACH_NOTES</code></td><td>הערה אישית לאימון שבוצע</td><td>המאמן</td><td>המאמן</td><td>המתאמן</td><td>6</td></tr>
+<tr><td rowspan="6">מוטיבציה</td><td><code>PERSONAL_GOALS</code></td><td>יעד בתרגיל, פעיל או הושג</td><td>המאמן</td><td>המערכת (סגירה)</td><td>המאמן, המתאמן</td><td>7</td></tr>
+<tr><td><code>COIN_TRANSACTIONS</code></td><td>יומן מטבעות. היתרה מחושבת ממנו. זיכוי אחד לכל אירוע</td><td>המערכת</td><td>אף אחד (יומן)</td><td>המאמן, המתאמן</td><td>7</td></tr>
+<tr><td><code>REWARDS</code></td><td>קטלוג תגמולים ומחיר</td><td>המאמן</td><td>המאמן</td><td>כולם</td><td>7</td></tr>
+<tr><td><code>REDEMPTIONS</code></td><td>מימוש, ממתין או סופק</td><td>המתאמן</td><td>המאמן</td><td>המאמן, המתאמן</td><td>7</td></tr>
+<tr><td><code>CHALLENGES</code></td><td>אתגר שבועי, אחד לשבוע</td><td>המאמן</td><td>אף אחד</td><td>כולם</td><td>8</td></tr>
+<tr><td><code>CHALLENGE_COMPLETIONS</code></td><td>מי השלים, ומסירת הפרס</td><td>המערכת</td><td>המאמן (מסירה)</td><td>המאמן, המתאמן</td><td>8</td></tr>
+<tr><td rowspan="2">כסף (הדגמה)</td><td><code>PAYMENT_REQUESTS</code></td><td>בקשת תשלום, פתוחה או שולמה</td><td>המאמן</td><td>המערכת (תשלום)</td><td>המאמן, המתאמן</td><td>2</td></tr>
+<tr><td><code>INVOICES</code></td><td>חשבונית ממוספרת, מסומנת הדגמה</td><td>המערכת</td><td>אף אחד</td><td>המאמן, המתאמן</td><td>2</td></tr>
+<tr><td rowspan="4">שיעורים והודעות</td><td><code>CLASSES</code></td><td>שיעור קבוצתי, מקומות, פעיל או בוטל</td><td>המאמן</td><td>המאמן</td><td>כולם</td><td>11</td></tr>
+<tr><td><code>CLASS_REGISTRATIONS</code></td><td>רשום, ממתין (ומקומו), הוצע מקום, בוטל, ונוכחות</td><td>המתאמן</td><td>המתאמן, המאמן, המערכת</td><td>המאמן, המתאמן</td><td>11</td></tr>
+<tr><td><code>LATE_CANCEL_REQUESTS</code></td><td>בקשה חריגה לביטול מאוחר</td><td>המתאמן</td><td>המאמן</td><td>המאמן, המתאמן</td><td>11</td></tr>
+<tr><td><code>NOTIFICATIONS</code></td><td>הודעה בתוך האפליקציה</td><td>המערכת</td><td>המתאמן (נקרא)</td><td>המתאמן</td><td>6, 9, 11</td></tr>
+<tr><td rowspan="4">תפעול (אינו מוצג במסכים)</td><td><code>AUDIT_LOG</code></td><td>כל בקשה ותשובה, עם מזהה משותף והפונה</td><td>ה-Orchestrator</td><td>אף אחד</td><td>הצוות</td><td>כולם</td></tr>
+<tr><td><code>SETTINGS</code></td><td>טבלת הייחוס של העסק: מטבעות, מחירים, חלון ביטול, רצף, נוסחים</td><td>הקמה</td><td>בעל העסק</td><td>המערכת, המאמן, בעל העסק</td><td>כולם</td></tr>
+<tr><td><code>ERROR_CODES</code></td><td>קודי השגיאה וההסבר לבני אדם</td><td>הקמה</td><td>הצוות</td><td>המערכת</td><td>כולם</td></tr>
+<tr><td><code>REGISTRY</code></td><td>רשימת המותר: מי רשאי לבקש מה ממי</td><td>הקמה</td><td>הצוות</td><td>ה-Orchestrator</td><td>כולם</td></tr>
+</table>
+
+<h2>ההחלטות שבמודל</h2>
+<ul>
+<li><b>היתרה, השיא והרצף אינם נשמרים.</b> הם מחושבים בכל פעם מיומן המטבעות ומהתוצאות, כפי שאושר במקרי השימוש 5, 7 ו-9.</li>
+<li><b>אין פרטי כרטיס אשראי בשום טבלה.</b></li>
+<li><b>פרטי הכניסה</b> (מייל וסיסמה) נשמרים בשירות הזהות של Supabase, ו-OWNERS, COACHES ו-TRAINEES מפנים אליו.</li>
+<li><b>ארבע הטבלאות התפעוליות</b> משתנות בלי שום שינוי במסך. זה המצב התקין, לפי מתודולוגיית הכוכב, פרק ג.</li>
+</ul>
+
+<h2>הכרעות</h2>
+<ul>
+<li>מחיקה: אין מחיקה פיזית בשום ישות. מתאמן שעוזב, תרגיל ותגמול מסומנים כלא פעילים, וההיסטוריה נשמרת (הכרעת הצוות מ-28.09.2026).</li>
+</ul>
+<script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({startOnLoad:true});</script>
+</body></html>

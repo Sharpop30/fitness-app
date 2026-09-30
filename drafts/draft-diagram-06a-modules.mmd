@@ -1,0 +1,40 @@
+---
+title: תרשים 6a - המודולים העסקיים סביב ה-Orchestrator
+---
+flowchart TB
+    EP[Orchestrator]
+    subgraph Training[אימון]
+        M02[exercises]
+        M03[programs]
+        M04[results]
+        M05[progress]
+    end
+    subgraph Motivation[מוטיבציה]
+        M06[feedback]
+        M07[coins]
+        M08[challenges]
+    end
+    subgraph Business[עסק ושיעורים]
+        M01[trainees]
+        M09[payments]
+        M10[invoices]
+        M11[classes]
+        M15[business]
+    end
+    subgraph Shared[משותף]
+        M12[notifications]
+        M13[home]
+        M14[settings]
+    end
+    EP --- Training
+    EP --- Motivation
+    EP --- Business
+    EP --- Shared
+
+    class EP,M01,M02,M03,M04,M05,M06,M07,M08,M09,M10,M11,M12,M13,M14,M15 system
+
+classDef person fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+classDef agent fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
+classDef system fill:#F5F5F5,stroke:#424242,stroke-width:2px
+classDef data fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+classDef external fill:#FFF3E0,stroke:#E65100,stroke-width:2px

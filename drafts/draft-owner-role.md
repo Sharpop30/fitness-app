@@ -3,7 +3,7 @@
 | שדה | ערך |
 | :-- | :-- |
 | השם | draft-owner-role.md |
-| מעמד | טיוטה לאישור הצוות. אינה משנה אף מסמך מאושר עד האישור |
+| מעמד | טיוטה לאישור הצוות. הצוות בחר במסלול ב והכריע בכל ההכרעות (פרק 4), 30.09.2026. הטיוטות של המסמכים מוכנות (פרק 6). אף מסמך מאושר לא השתנה עד האישור |
 | תאריך | 30.09.2026 |
 | מה הפעיל אותה | בקשת הצוות, 30.09.2026: לשונית נוספת לבעל העסק באב הטיפוס. נבנתה בענף prototype-owner-role, commit 01a11aa, כמסכים B01 עד B04 המסומנים "טיוטה" |
 | הכלל | CLAUDE.md סעיף 8: דרישה בלי מקור במסמכים ושינוי Schema עוצרים את הבנייה. סעיף 10: שינוי במפת המודולים, ב-ERD וב-CLAUDE.md דורש אישור הצוות |
@@ -116,19 +116,39 @@ COACH_INVITES { CoachInviteID PK, BusinessID FK, CoachID FK "רשות, עד הה
 
 ## 4. ההכרעות שנשארות לצוות
 
-| # | ההכרעה | מסלול |
+| # | ההכרעה | ההכרעה של הצוות, 30.09.2026 |
 | :-: | :-- | :-- |
-| 1 | מסלול א או מסלול ב | שניהם |
-| 2 | התוכן של בעל העניין השלישי במפת בעלי העניין: מה חשוב לו, מה הצלחה ומה כישלון | שניהם |
-| 3 | SETTINGS של העסק או של המאמן, ומי מעדכן | ב |
-| 4 | האם מאמן עצמאי הוא עסק של אדם אחד | ב |
-| 5 | מה בעל העסק רואה על מתאמנים: שמות, תשלומים, ביצועים | ב |
-| 6 | האם המדדים מוצגים באפליקציה, ולמי | ב |
-| 7 | האם בעל העסק יכול להיות גם מאמן באותו חשבון | ב |
+| 1 | מסלול א או מסלול ב | **מסלול ב**: בעל העסק בגרסה הראשונה |
+| 2 | התוכן של בעל העניין השלישי | הנוסח המוצע: משתמש משני (מנהל); הכנסות, גבייה, שימור ומחיר אחיד; השפעה גבוהה, עניין בינוני |
+| 3 | SETTINGS של העסק או של המאמן, ומי מעדכן | של העסק. בעל העסק מעדכן, והמאמן רואה |
+| 4 | מאמן עצמאי | עסק של אדם אחד |
+| 5 | מה בעל העסק רואה על מתאמנים | שמות וסיכומים: תוכנית, רצף, סכומי תשלומים. בלי תוצאות אימון והערות |
+| 6 | המדדים | מוצגים לבעל העסק בלבד |
+| 7 | בעל עסק שהוא גם מאמן | חשבון אחד, עם מעבר תפקיד |
 
-## 5. אחרי האישור
+## 5. אחרי האישור (הסדר)
 
 1. הטיוטה עוברת ל-project-docs בשמה הקנוני, ונרשמת ב-doc-approvals-log.
 2. כל מסמך שמשתנה מתעדכן בגרסה חדשה, והקודם עובר לארכיון (file-system-index, כללים 4 ו-5).
 3. עותק של כל תוצר מאושר נכנס ל-prd-update-inbox, ועדכון ה-PRD רץ בצ'ט.
 4. במסלול ב: תוכנית שלב 4ה לאישור, בענף נפרד, לפי מחזור השלב ב-CLAUDE.md.
+
+## 6. הטיוטות שהוכנו (מסלול ב)
+
+| הטיוטה | היעד אחרי האישור | הגרסה |
+| :-- | :-- | :-- |
+| drafts/draft-doc-stakeholder-map-v2.docx | project-docs/doc-stakeholder-map.docx | 2: בעל העניין השלישי, ומטריצת ההשפעה |
+| drafts/draft-doc-mlp-scope-v2.md | project-docs/doc-mlp-scope.md | 2: דרישה 15 בחלקה נכנסת; פרק 5, ההכרעות |
+| drafts/draft-story-15-business-owner.md | project-docs/story-15-business-owner.md | 1 |
+| drafts/draft-usecase-12-business-owner.md | project-docs/usecase-12-business-owner.md | 1 |
+| drafts/draft-diagram-uc12-business-owner.mmd | project-docs/mermaid/diagram-uc12-business-owner.mmd | 1 |
+| drafts/draft-doc-erd-conceptual-v2.html, draft-diagram-07-erd-conceptual.mmd | project-docs/doc-erd-conceptual.html, mermaid/diagram-07-erd-conceptual.mmd | 2 |
+| drafts/draft-doc-erd-logical-v2.html, draft-diagram-07a-people.mmd, draft-diagram-07f-operations.mmd | project-docs/doc-erd-logical.html, mermaid/diagram-07a, 07f | 2: BUSINESSES, OWNERS, COACH_INVITES; BusinessID ב-COACHES וב-SETTINGS; owner ב-REGISTRY_ENTRIES. 29 טבלאות |
+| drafts/draft-doc-module-map-v11.md, draft-diagram-06-architecture.mmd, draft-diagram-06a-modules.mmd | project-docs/doc-module-map.md, mermaid/diagram-06, 06a | 11 |
+| drafts/draft-doc-okr-kpi-v2.md | project-docs/doc-okr-kpi.md | 2: המדדים מוצגים לבעל העסק ב-S26 |
+| drafts/draft-claude-md-v8.md | CLAUDE.md | 8 |
+| project-docs/prototype-fitness-app.html (בענף) | במקומו | 3: S24 עד S27, בחירת תפקיד, S12 לקריאה בלבד למאמן, מאמן לכל שיעור |
+
+**ה-PRD** אינו נערך ידנית. אחרי האישור, עותקי התוצרים נכנסים ל-prd-update-inbox, ועדכון ה-PRD רץ בצ'ט: סעיפים 7, 9, 10, 11, 12, 13, 14, 15, 16, 25 ו-36.
+
+**מה לא בטיוטות**: הקוד. הבנייה היא שלב 4ה, בתוכנית שלב נפרדת לאישור, אחרי אישור המסמכים. usecase-04 אינו משתנה: חשבון המאמן הראשון נוצר בהקמה, והוא בעל העסק (usecase-12, תנאי פתיחה).
