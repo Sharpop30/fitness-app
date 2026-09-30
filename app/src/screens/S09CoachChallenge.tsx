@@ -1,10 +1,11 @@
 // S09 weekly challenge, coach (UC8, story 5): one challenge a week, automatic completion, prize handover.
 // Design stage: marking a prize checks the reply (finding 3), loading and an error with a retry (2, 6), avatars and
-// names isolated (8).
+// names isolated (8). With a challenge this week, no "add" button but the day the next one can go out (team decision,
+// 30.09.2026, in the screen review; changing a challenge is gap 9, for stage 7).
 import { useState } from "react";
 import { call } from "../api/client";
 import { both, useCall } from "../api/useCall";
-import { Avatar, Badge, Button, Empty, Field, Hero, Item, Load, Name, Screen, Segmented, fmtDate } from "../design/components";
+import { Avatar, Badge, Button, Empty, Field, Hero, Item, Load, Name, Notice, Screen, Segmented, fmtDate } from "../design/components";
 import { useNav } from "../nav";
 
 export default function S09CoachChallenge({ create }: { create?: boolean }) {
@@ -22,6 +23,8 @@ function NewChallenge() {
   const [prize, setPrize] = useState("");
   const [picked, setExerciseID] = useState("");
   const exerciseID = picked || exs.data?.[0]?.ExerciseID || "";
+  // One challenge a week (UC8): with one already this week, the form says when the next can go out, and cannot be sent.
+  const ch = useCall("S09", "challenges", "get_current_challenge");
 
   const publish = async () => {
     const r = await call("S09", "challenges", "create_challenge", { challengeName: name, challengeType: type, targetValue: Number(target), extraPrize: prize, exerciseID: type === "exercise" ? exerciseID : null });
@@ -29,7 +32,8 @@ function NewChallenge() {
     nav.back(); nav.toast("האתגר פורסם");
   };
   return (
-    <Screen eyebrow="אתגר אחד בשבוע" title="אתגר חדש">
+    <Screen eyebrow="אתגר אחד בשבוע" title="הוספת אתגר">
+      {ch.data && <Notice>כבר יש אתגר השבוע. {nextFrom(ch.data.end)}</Notice>}
       <Field label="שם"><input id="challengeName" value={name} onChange={(e) => setName(e.target.value)} /></Field>
       <Segmented value={type} options={[["count", "מספר אימונים"], ["exercise", "יעד בתרגיל"]]} onChange={setType} />
       {type === "exercise" && (
@@ -44,9 +48,16 @@ function NewChallenge() {
       <Field label="ערך היעד"><input id="challengeTarget" type="number" inputMode="numeric" value={target} onChange={(e) => setTarget(e.target.value)} /></Field>
       <Field label="פרס נוסף (לא חובה)"><input id="challengePrize" value={prize} onChange={(e) => setPrize(e.target.value)} placeholder="לדוגמה: חולצה" /></Field>
       <div className="muted small">כל המתאמנים משתתפים. באתגר על תרגיל, מי שהתרגיל אינו בתוכנית שלו פטור. השבוע מתחיל ביום ראשון.</div>
-      <Button onClick={publish}>פרסום האתגר</Button>
+      <Button onClick={publish} disabled={!!ch.data}>פרסום האתגר</Button>
     </Screen>
   );
+}
+
+// The next challenge can go out on the Sunday after this week's Saturday (UC8; the week starts on Sunday).
+function nextFrom(end: string | Date) {
+  const sunday = new Date(end);
+  sunday.setDate(sunday.getDate() + 1);
+  return `האתגר הבא אפשר לפרסם מיום ראשון, ${fmtDate(sunday)}.`;
 }
 
 function CurrentChallenge() {
@@ -66,7 +77,7 @@ function CurrentChallenge() {
       <Load state={state}>{([{ c: cur }, list]: [{ c: any }, any[]]) => <>
         {cur
           ? <Hero><div className="sub">האתגר של השבוע</div><div className="lead">{cur.challengeName}</div><div className="sub">פרס: {cur.coins} מטבעות{cur.extraPrize ? ` + ${cur.extraPrize}` : ""}</div></Hero>
-          : <Empty title="אין אתגר השבוע" sub="אתגר חדש מתחיל ביום ראשון, וכל המתאמנים משתתפים." />}
+          : <Empty title="אין אתגר השבוע" sub="אפשר לפרסם אתגר לשבוע הזה, וכל המתאמנים משתתפים." />}
         <h2>השלימו</h2>
         {list.length
           ? <div className="list">{list.map((x: any) => (
@@ -74,8 +85,10 @@ function CurrentChallenge() {
               {x.prizeDeliveredAt ? <Badge tone="ok">הפרס נמסר</Badge> : <Button secondary small onClick={() => deliver(x.TraineeID)}>סימון מסירת פרס</Button>}</Item>
           ))}</div>
           : <Empty title="עוד אף אחד לא השלים" />}
+        {cur
+          ? <div className="muted small">{nextFrom(cur.end)}</div>
+          : <Button onClick={() => nav.go("S09", { create: true })}>הוספת אתגר</Button>}
       </>}</Load>
-      <Button secondary onClick={() => nav.go("S09", { create: true })}>אתגר חדש</Button>
     </Screen>
   );
 }

@@ -191,6 +191,7 @@ nav.tabs button.on{color:var(--accent);font-weight:500}
    - מצבי טעינה, שגיאה עם "לנסות שוב" וריק (ממצאים 2, 6, 30); פעולה שנכשלה אינה מדווחת הצלחה (3);
      כפתור "שולח" (16); קישור ההזמנה מוצג במסך עם שיתוף והעתקה (5).
    - ממצאי הנוסח והמבנה: 7 עד 14, 17 עד 21, 26 עד 35, 37, 38 (הפירוט בדוח השלב).
+   עדכון בסקירת המסכים (הכרעת הצוות, 30.09.2026): כשיש אתגר השבוע, S09 מציג את יום הפרסום הבא במקום כפתור ההוספה.
    ============================================================ */
 const TODAY = new Date(2026, 8, 28, 12, 0); // יום שני, 28.09.2026 [נתוני דוגמה]
 const DAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
@@ -579,8 +580,8 @@ screens.challengeCoach=()=>shell(`שבוע ${fmt(challenge.start)} עד ${fmt(ch
   <div class="hero"><div class="sub">האתגר של השבוע</div><div class="lead" style="margin-top:4px">${challenge.name}</div><div class="sub" style="margin-top:4px">פרס: ${ref.coins.challenge} מטבעות + ${challenge.prize}</div></div>
   <h2>השלימו</h2>
   <div class="list">${challenge.completions.map(c=>`<div class="item"><span class="av">${ini(tname(c.tid))}</span><div class="grow t">${nm(tname(c.tid))}</div>${c.delivered?'<span class="badge ok">הפרס נמסר</span>':`<button class="btn sec small" data-a="prizeDelivered" data-p="${c.tid}">סימון מסירת פרס</button>`}</div>`).join('')||empty('עוד אף אחד לא השלים')}</div>
-  <button class="btn sec" data-a="go" data-v="challengeNew">אתגר חדש</button>`);
-screens.challengeNew=()=>shell('אתגר אחד בשבוע','אתגר חדש',`
+  <div class="muted small">האתגר הבא אפשר לפרסם מיום ראשון, ${fmt(addDays(challenge.end,1))}.</div>`); // אתגר אחד בשבוע: בלי "הוספה" כשיש אתגר (הכרעת הצוות, 30.09.2026)
+screens.challengeNew=()=>shell('אתגר אחד בשבוע','הוספת אתגר',`
   ${field('שם','<input id="chName" value="חמישה אימונים השבוע">')}
   <div class="seg" id="chType" role="group" aria-label="סוג האתגר"><button class="on" data-a="chType" data-v="count" aria-pressed="true">מספר אימונים</button><button data-a="chType" data-v="exercise" aria-pressed="false">יעד בתרגיל</button></div>
   ${field('ערך היעד','<input id="chTarget" type="number" inputmode="numeric" value="5">')}

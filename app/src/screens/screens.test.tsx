@@ -58,6 +58,20 @@ test("S11 asks list_registrations only when it opens one class", async () => {
   }
 });
 
+// The screen review (30.09.2026): one challenge a week, so with one this week S09 offers no "add" but says when the next
+// can go out, and the form cannot be sent. The demo data has this week's challenge.
+test("S09 with a challenge this week: no add button, the next Sunday instead, and the form cannot publish", async () => {
+  setSession({ role: "coach", traineeID: null });
+  const S = SCREENS.S09;
+  render(<NavContext.Provider value={nav("coach")}><S /></NavContext.Provider>);
+  expect(await screen.findByText(/^האתגר הבא אפשר לפרסם מיום ראשון, \d+\.\d+\.$/)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "הוספת אתגר" })).toBeNull();
+  cleanup();
+  render(<NavContext.Provider value={nav("coach")}><S create /></NavContext.Provider>);
+  expect(await screen.findByText(/כבר יש אתגר השבוע/)).toBeTruthy();
+  await waitFor(() => expect((screen.getByRole("button", { name: "פרסום האתגר" }) as HTMLButtonElement).disabled).toBe(true));
+});
+
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
 // Stage 4a: S02 and S05. Stage 4b: S04 (the stage 3 debt), and every screen that moved in stage 4b (plan, task 12).
 // Stage 4c: S11, S13 and S17. Stage 4d: S01, S03, S08, S12 and S19, and the note limit on S06.
