@@ -61,7 +61,7 @@
 | השם הקנוני | המיקום | תאריך הגרסה הפעילה |
 | :-- | :-- | :-- |
 | prd-fitness-app.docx | project-docs | 27.09.2026 (גרסה 1.20) |
-| doc-stakeholder-map.docx | project-docs | 18.07.2026 |
+| doc-stakeholder-map.docx | project-docs | 30.09.2026 (גרסה 2, בעל העסק) |
 | doc-requirements-prioritization.docx | project-docs | 18.07.2026 |
 | story-all-requirements.docx | project-docs | 18.07.2026 |
 | doc-need-vs-want.docx | project-docs | 18.07.2026 |
@@ -73,8 +73,9 @@
 | doc-process-mapping.html | project-docs | 27.09.2026 |
 | diagram-01-current-process.mmd | project-docs/mermaid | 27.09.2026 |
 | diagram-02-desired-process.mmd | project-docs/mermaid | 27.09.2026 |
-| doc-okr-kpi.md | project-docs | 27.09.2026 |
-| doc-mlp-scope.md | project-docs | 27.09.2026 |
+| doc-okr-kpi.md | project-docs | 30.09.2026 (גרסה 2) |
+| doc-mlp-scope.md | project-docs | 30.09.2026 (גרסה 2) |
+| doc-owner-role.md | project-docs | 30.09.2026. ההחלטה על בעל העסק (מסלול ב) והכרעות הצוות |
 | story-01-training-programs.md | project-docs | 27.09.2026 |
 | story-02-payments-invoices.md | project-docs | 27.09.2026 |
 | story-04-progress-tracking.md | project-docs | 28.09.2026 |
@@ -86,15 +87,16 @@
 | story-21-instant-feedback.md | project-docs | 27.09.2026 |
 | story-25-daily-trigger.md | project-docs | 28.09.2026 |
 | story-30-class-registration.md | project-docs | 28.09.2026 |
+| story-15-business-owner.md | project-docs | 30.09.2026 |
 | usecase-01-training-programs.md | project-docs | 28.09.2026 (גרסה 2) |
 | gap-note-library.md | project-docs | 27.09.2026 |
 | session-state.md | project-docs | 29.09.2026 |
-| doc-erd-conceptual.html | project-docs | 28.09.2026 |
-| diagram-07-erd-conceptual.mmd | project-docs/mermaid | 28.09.2026 |
-| doc-erd-logical.html | project-docs | 28.09.2026 |
-| diagram-07a עד 07f (ERD לוגי, שישה תחומים) | project-docs/mermaid | 28.09.2026 |
-| doc-module-map.md | project-docs | 29.09.2026 (גרסה 10) |
-| CLAUDE.md (מסמך הבנייה) | שורש המאגר | 30.09.2026 (גרסה 7) |
+| doc-erd-conceptual.html | project-docs | 30.09.2026 (גרסה 2) |
+| diagram-07-erd-conceptual.mmd | project-docs/mermaid | 30.09.2026 |
+| doc-erd-logical.html | project-docs | 30.09.2026 (גרסה 2, 29 טבלאות) |
+| diagram-07a עד 07f (ERD לוגי, שישה תחומים) | project-docs/mermaid | 28.09.2026; 07a ו-07f 30.09.2026 |
+| doc-module-map.md | project-docs | 30.09.2026 (גרסה 11) |
+| CLAUDE.md (מסמך הבנייה) | שורש המאגר | 30.09.2026 (גרסה 8) |
 | doc-stage-1-plan.md, findings-stage-1.md | project-docs | 28.09.2026. שלב 1 נסגר |
 | doc-stage-2-plan.md, findings-stage-2.md | project-docs | 28.09.2026. שלב 2 נסגר |
 | doc-stage-3-plan.md, findings-stage-3.md | project-docs | 28.09.2026. שלב 3 נסגר |
@@ -108,8 +110,8 @@
 | doc-design-review-brief.md | project-docs | 29.09.2026. הנחיות לסשן סקירת העיצוב |
 | doc-security-review-1.md | project-docs | 29.09.2026. סקירת אבטחה ראשונה; ממצא 1 תוקן |
 | doc-invite-email-template.md | project-docs | 29.09.2026. נוסח מייל ההזמנה בעברית, אושר |
-| diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 28.09.2026 |
-| prototype-fitness-app.html | project-docs | 30.09.2026 (גרסה 2, סגנון FORM ונוסח ניטרלי). גרסה 1 פורסמה: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
+| diagram-06-architecture.mmd, diagram-06a-modules.mmd | project-docs/mermaid | 30.09.2026 |
+| prototype-fitness-app.html | project-docs | 30.09.2026 (גרסה 3, בעל העסק; גרסה 2, סגנון FORM ונוסח ניטרלי). גרסה 1 פורסמה: https://claude.ai/artifact/KDJkGC7zMEFhtQiwNbsufL |
 | diagram-uc01-training-programs.mmd | project-docs/mermaid | 27.09.2026 |
 | usecase-02-payments-invoices.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc02-payments-invoices.mmd | project-docs/mermaid | 28.09.2026 |
@@ -131,6 +133,8 @@
 | diagram-uc10-demo-videos.mmd | project-docs/mermaid | 28.09.2026 |
 | usecase-11-class-registration.md | project-docs | 28.09.2026 (גרסה 2) |
 | diagram-uc11-class-registration.mmd | project-docs/mermaid | 28.09.2026 |
+| usecase-12-business-owner.md | project-docs | 30.09.2026 (גרסה 1) |
+| diagram-uc12-business-owner.mmd | project-docs/mermaid | 30.09.2026 |
 
 ## 6. כללי העבודה
 

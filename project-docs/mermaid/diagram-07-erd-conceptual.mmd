@@ -2,6 +2,8 @@
 title: תרשים 7 - ERD רעיוני, הישויות המרכזיות
 ---
 erDiagram
+    BUSINESSES ||--|{ OWNERS : owned_by
+    BUSINESSES ||--|{ COACHES : employs
     COACHES ||--o{ TRAINEES : coaches
     COACHES ||--o{ INVITES : sends
     TRAINEES ||--o{ PROGRAMS : follows

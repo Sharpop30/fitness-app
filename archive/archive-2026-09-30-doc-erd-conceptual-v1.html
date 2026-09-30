@@ -9,13 +9,11 @@ table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid
 .muted{color:#555a53;font-size:13px} code{font-family:monospace;direction:ltr;unicode-bidi:embed}
 </style></head><body>
 <h1>מודל הנתונים: הרמה הרעיונית</h1>
-<p class="muted">טיוטה לגרסה 2, 30.09.2026: העסק ובעל העסק (usecase-12). גרסה 1 מאושרת, 28.09.2026. הכרעת הצוות: אין מחיקה, רק סימון לא פעיל. תרשים 7 לפי מדריך התרשימים (פריט 24), חלק ג: הרמה הרעיונית, ישויות וקשרים בלי שדות. המקורות: 12 מקרי השימוש המאושרים ושורות הנתונים שבהם. אחרי אישור: הרמה הלוגית, תרשים בן לכל תחום עם כל השדות.</p>
+<p class="muted">מאושר, 28.09.2026. הכרעת הצוות: אין מחיקה, רק סימון לא פעיל. תרשים 7 לפי מדריך התרשימים (פריט 24), חלק ג: הרמה הרעיונית, ישויות וקשרים בלי שדות. המקורות: 11 מקרי השימוש המאושרים ושורות הנתונים שבהם. אחרי אישור: הרמה הלוגית, תרשים בן לכל תחום עם כל השדות.</p>
 
-<div class="box"><h2 style="margin-top:0">תרשים האב: הישויות המרכזיות</h2>
+<div class="box"><h2 style="margin-top:0">תרשים האב: עשר הישויות המרכזיות</h2>
 <pre class="mermaid">
 erDiagram
-    BUSINESSES ||--|{ OWNERS : owned_by
-    BUSINESSES ||--|{ COACHES : employs
     COACHES ||--o{ TRAINEES : coaches
     COACHES ||--o{ INVITES : sends
     TRAINEES ||--o{ PROGRAMS : follows
@@ -33,10 +31,7 @@ erDiagram
 <p class="muted">כל תחום יקבל תרשים בן ברמה הלוגית. העמודות עונות על בדיקת הבהירות של המדריך: מי יוצר, מי מעדכן ומי קורא.</p>
 <table>
 <tr><th>התחום</th><th>הישות</th><th>מה היא מחזיקה</th><th>יוצר</th><th>מעדכן</th><th>קורא</th><th>מקרה שימוש</th></tr>
-<tr><td rowspan="6">אנשים וגישה</td><td><code>BUSINESSES</code></td><td>העסק. מאמן עצמאי הוא עסק של אדם אחד. נוצר מראש בהקמה</td><td>הקמת המערכת</td><td>בעל העסק</td><td>כולם</td><td>12</td></tr>
-<tr><td><code>OWNERS</code></td><td>בעל העסק. יכול להיות גם מאמן באותו עסק</td><td>הקמת המערכת</td><td>בעל העסק</td><td>בעל העסק</td><td>12</td></tr>
-<tr><td><code>COACH_INVITES</code></td><td>הזמנת מאמן לעסק, ותוקף</td><td>בעל העסק</td><td>המערכת (סגירה)</td><td>בעל העסק</td><td>12</td></tr>
-<tr><td><code>COACHES</code></td><td>המאמן, שייך לעסק אחד. הראשון נוצר בהקמה, והשאר בהזמנה</td><td>הקמת המערכת, הצטרפות בהזמנה</td><td>המאמן</td><td>כולם</td><td>4, 12</td></tr>
+<tr><td rowspan="3">אנשים וגישה</td><td><code>COACHES</code></td><td>המאמן. נוצר מראש בהקמה</td><td>הקמת המערכת</td><td>המאמן</td><td>כולם</td><td>4</td></tr>
 <tr><td><code>TRAINEES</code></td><td>מתאמן, מחובר למאמן אחד</td><td>הצטרפות בהזמנה</td><td>המתאמן</td><td>המאמן, המתאמן עצמו</td><td>4</td></tr>
 <tr><td><code>INVITES</code></td><td>הזמנה, ערוץ ותוקף</td><td>המאמן</td><td>המערכת (סגירה)</td><td>המאמן</td><td>4</td></tr>
 <tr><td rowspan="7">אימון</td><td><code>EXERCISES</code></td><td>רשימה מוכנה ותרגילי המאמן, עם קישור או קובץ סרטון</td><td>הקמה, המאמן</td><td>המאמן</td><td>כולם</td><td>1, 10</td></tr>
@@ -59,7 +54,7 @@ erDiagram
 <tr><td><code>LATE_CANCEL_REQUESTS</code></td><td>בקשה חריגה לביטול מאוחר</td><td>המתאמן</td><td>המאמן</td><td>המאמן, המתאמן</td><td>11</td></tr>
 <tr><td><code>NOTIFICATIONS</code></td><td>הודעה בתוך האפליקציה</td><td>המערכת</td><td>המתאמן (נקרא)</td><td>המתאמן</td><td>6, 9, 11</td></tr>
 <tr><td rowspan="4">תפעול (אינו מוצג במסכים)</td><td><code>AUDIT_LOG</code></td><td>כל בקשה ותשובה, עם מזהה משותף והפונה</td><td>ה-Orchestrator</td><td>אף אחד</td><td>הצוות</td><td>כולם</td></tr>
-<tr><td><code>SETTINGS</code></td><td>טבלת הייחוס של העסק: מטבעות, מחירים, חלון ביטול, רצף, נוסחים</td><td>הקמה</td><td>בעל העסק</td><td>המערכת, המאמן, בעל העסק</td><td>כולם</td></tr>
+<tr><td><code>SETTINGS</code></td><td>טבלת הייחוס: מטבעות, מחירים, חלון ביטול, רצף, נוסחים</td><td>הקמה</td><td>המאמן</td><td>המערכת</td><td>כולם</td></tr>
 <tr><td><code>ERROR_CODES</code></td><td>קודי השגיאה וההסבר לבני אדם</td><td>הקמה</td><td>הצוות</td><td>המערכת</td><td>כולם</td></tr>
 <tr><td><code>REGISTRY</code></td><td>רשימת המותר: מי רשאי לבקש מה ממי</td><td>הקמה</td><td>הצוות</td><td>ה-Orchestrator</td><td>כולם</td></tr>
 </table>
@@ -68,7 +63,7 @@ erDiagram
 <ul>
 <li><b>היתרה, השיא והרצף אינם נשמרים.</b> הם מחושבים בכל פעם מיומן המטבעות ומהתוצאות, כפי שאושר במקרי השימוש 5, 7 ו-9.</li>
 <li><b>אין פרטי כרטיס אשראי בשום טבלה.</b></li>
-<li><b>פרטי הכניסה</b> (מייל וסיסמה) נשמרים בשירות הזהות של Supabase, ו-OWNERS, COACHES ו-TRAINEES מפנים אליו.</li>
+<li><b>פרטי הכניסה</b> (מייל וסיסמה) נשמרים בשירות הזהות של Supabase, ו-COACHES ו-TRAINEES מפנים אליו.</li>
 <li><b>ארבע הטבלאות התפעוליות</b> משתנות בלי שום שינוי במסך. זה המצב התקין, לפי מתודולוגיית הכוכב, פרק ג.</li>
 </ul>
 

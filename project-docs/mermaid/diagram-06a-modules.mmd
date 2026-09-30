@@ -19,6 +19,7 @@ flowchart TB
         M09[payments]
         M10[invoices]
         M11[classes]
+        M15[business]
     end
     subgraph Shared[משותף]
         M12[notifications]
@@ -30,7 +31,7 @@ flowchart TB
     EP --- Business
     EP --- Shared
 
-    class EP,M01,M02,M03,M04,M05,M06,M07,M08,M09,M10,M11,M12,M13,M14 system
+    class EP,M01,M02,M03,M04,M05,M06,M07,M08,M09,M10,M11,M12,M13,M14,M15 system
 
 classDef person fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
 classDef agent fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px

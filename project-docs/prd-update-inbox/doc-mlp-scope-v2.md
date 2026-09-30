@@ -3,7 +3,7 @@
 | שדה | ערך |
 | :-- | :-- |
 | השם | doc-mlp-scope.md |
-| מעמד | טיוטה לגרסה 2, 30.09.2026: דרישה 15 בחלקה עוברת לגרסה הראשונה (הכרעת הצוות, מסלול ב ב-draft-owner-role). גרסה 1 מאושרת, 27.09.2026, עם הכרעות הצוות בפרק 4 |
+| מעמד | מאושר, גרסה 2, 30.09.2026: דרישה 15 בחלקה עוברת לגרסה הראשונה (הכרעת הצוות, מסלול ב ב-doc-owner-role). גרסה 1 אושרה 27.09.2026, עם הכרעות הצוות בפרק 4 |
 | תאריך | 27.09.2026 |
 | הצעד במדריך | צעד 24, לפי פרומפט 4 שלב א במנגנון ה-PRD. ממלא את סעיף 12 ב-PRD |
 | המקורות | story-all-requirements (29 הסיפורים); doc-requirements-prioritization (MoSCoW); doc-need-vs-want; doc-stakeholder-map; doc-okr-kpi; doc-process-mapping; doc-work-plan-fitness-app |

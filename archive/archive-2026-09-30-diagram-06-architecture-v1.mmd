@@ -5,14 +5,13 @@ flowchart TB
     subgraph Channels[ערוצים]
         U1[מאמן]
         U2[מתאמן]
-        U3[בעל העסק]
-        APP[האפליקציה - 27 מסכים ומודול העיצוב]
+        APP[האפליקציה - 23 מסכים ומודול העיצוב]
     end
     subgraph Core[הליבה]
         EP[Endpoint ו-Orchestrator - בדיקת פונה, Registry, Audit]
     end
     subgraph Modules[מודולים מתחלפים]
-        MOD[15 מודולים עסקיים - תרשים בן 06a]
+        MOD[14 מודולים עסקיים - תרשים בן 06a]
     end
     subgraph Interfaces[ממשקים]
         IDN[Identity Connector - Supabase Auth]
@@ -24,7 +23,6 @@ flowchart TB
 
     U1 --> APP
     U2 --> APP
-    U3 --> APP
     APP -->|caller, module, action, payload, lang| EP
     EP --> MOD
     EP --> IDN
@@ -34,7 +32,7 @@ flowchart TB
     EP --> REPO
     REPO --> DB
 
-    class U1,U2,U3 person
+    class U1,U2 person
     class APP,EP,MOD,REPO system
     class DB data
     class IDN,PAY,INV external

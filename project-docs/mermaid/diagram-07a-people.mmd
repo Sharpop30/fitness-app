@@ -2,11 +2,42 @@
 title: תרשים 07a - ERD לוגי, אנשים וגישה
 ---
 erDiagram
+    BUSINESSES ||--|{ OWNERS : owned_by
+    BUSINESSES ||--|{ COACHES : employs
+    BUSINESSES ||--o{ COACH_INVITES : sends
+    COACHES |o--o| COACH_INVITES : accepts
     COACHES ||--o{ TRAINEES : coaches
     COACHES ||--o{ INVITES : sends
     TRAINEES |o--o| INVITES : accepts
+    BUSINESSES {
+        uuid BusinessID PK
+        text businessName
+        boolean isActive
+        timestamptz createdAt
+    }
+    OWNERS {
+        uuid OwnerID PK
+        uuid BusinessID FK
+        uuid authUserID UK "שירות הזהות; יכול להיות גם מאמן"
+        text fullName
+        text email
+        boolean isActive
+        timestamptz createdAt
+    }
+    COACH_INVITES {
+        uuid CoachInviteID PK
+        uuid BusinessID FK
+        uuid CoachID FK "רשות, עד ההצטרפות"
+        text inviteeName
+        text inviteeEmail "רשות"
+        text token UK
+        text status "open, accepted, expired"
+        timestamptz expiresAt
+        timestamptz createdAt
+    }
     COACHES {
         uuid CoachID PK
+        uuid BusinessID FK "עסק אחד למאמן"
         uuid authUserID UK "שירות הזהות"
         text fullName
         text email

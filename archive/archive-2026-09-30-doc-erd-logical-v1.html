@@ -7,52 +7,21 @@ h1{font-size:26px;margin-bottom:4px} h2{font-size:19px;margin:0 0 4px} h3{font-s
 table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid #ddd;padding:6px 8px;text-align:right;vertical-align:top} th{background:#f4f4f1}
 .muted{color:#555a53;font-size:13px}</style></head><body>
 <h1>מודל הנתונים: הרמה הלוגית</h1>
-<p class="muted">טיוטה לגרסה 2, 30.09.2026: העסק ובעל העסק (usecase-12, הכרעות הצוות ב-draft-owner-role). גרסה 1 מאושרת, 28.09.2026. תרשים 7, תרשימי בנים לפי תחום, לפי מדריך התרשימים (פריט 24), חלק ג. נגזר מהרמה הרעיונית המאושרת (doc-erd-conceptual) ומ-12 מקרי השימוש. ניטרלי לפלטפורמה, ויתורגם ל-Supabase ברמה הפיזית.</p>
+<p class="muted">מאושר, 28.09.2026. תרשים 7, תרשימי בנים לפי תחום, לפי מדריך התרשימים (פריט 24), חלק ג. נגזר מהרמה הרעיונית המאושרת (doc-erd-conceptual) ומ-11 מקרי השימוש. ניטרלי לפלטפורמה, ויתורגם ל-Supabase ברמה הפיזית.</p>
 <h3>איך קוראים</h3>
 <ul class="muted">
 <li>לכל טבלה מפתח ראשי בשם הישות ו-ID, וכל מפתח זר נושא את שם המקור שלו.</li>
 <li>כל שדה הוא חובה, אלא אם כתוב לידו "רשות".</li>
 <li>שדה סטטוס מחזיק רשימה סגורה שכתובה לידו. אלה מצבים של Business Logic, ולא ערכים שהמאמן משנה, ולכן הם באילוץ במסד ולא בטבלת ייחוס.</li>
-<li>ערכים שבעל העסק משנה (מטבעות, מחירים, חלון ביטול, רצף, נוסחים, תוקף הזמנה) יושבים ב-SETTINGS, לכל עסק. המאמן קורא אותם.</li>
+<li>ערכים שהמאמן משנה (מטבעות, מחירים, חלון ביטול, רצף, נוסחים, תוקף הזמנה) יושבים ב-SETTINGS.</li>
 <li>אין מחיקה פיזית. ישות שיוצאת משימוש מסומנת לא פעילה (isActive, או סטטוס).</li>
 </ul>
-<div class="box"><h2>תרשים 07a: אנשים וגישה</h2><p class="muted">העסק, בעל העסק, המאמנים, המתאמנים ושני סוגי ההזמנות. פרטי הכניסה בשירות הזהות, והטבלאות מפנות אליו. אותו משתמש זהות יכול להיות בעל עסק ומאמן באותו עסק. מאמן עצמאי הוא עסק של אדם אחד.</p><pre class="mermaid">erDiagram
-    BUSINESSES ||--|{ OWNERS : owned_by
-    BUSINESSES ||--|{ COACHES : employs
-    BUSINESSES ||--o{ COACH_INVITES : sends
-    COACHES |o--o| COACH_INVITES : accepts
+<div class="box"><h2>תרשים 07a: אנשים וגישה</h2><p class="muted">המאמן, המתאמנים וההזמנות. פרטי הכניסה בשירות הזהות, והטבלאות מפנות אליו.</p><pre class="mermaid">erDiagram
     COACHES ||--o{ TRAINEES : coaches
     COACHES ||--o{ INVITES : sends
     TRAINEES |o--o| INVITES : accepts
-    BUSINESSES {
-        uuid BusinessID PK
-        text businessName
-        boolean isActive
-        timestamptz createdAt
-    }
-    OWNERS {
-        uuid OwnerID PK
-        uuid BusinessID FK
-        uuid authUserID UK &quot;שירות הזהות; יכול להיות גם מאמן&quot;
-        text fullName
-        text email
-        boolean isActive
-        timestamptz createdAt
-    }
-    COACH_INVITES {
-        uuid CoachInviteID PK
-        uuid BusinessID FK
-        uuid CoachID FK &quot;רשות, עד ההצטרפות&quot;
-        text inviteeName
-        text inviteeEmail &quot;רשות&quot;
-        text token UK
-        text status &quot;open, accepted, expired&quot;
-        timestamptz expiresAt
-        timestamptz createdAt
-    }
     COACHES {
         uuid CoachID PK
-        uuid BusinessID FK &quot;עסק אחד למאמן&quot;
         uuid authUserID UK &quot;שירות הזהות&quot;
         text fullName
         text email
@@ -262,7 +231,7 @@ table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid
         timestamptz createdAt
         timestamptz readAt &quot;רשות&quot;
     }</pre></div><div class="box"><h2>תרשים 07f: תפעול</h2><p class="muted">ארבע הטבלאות התפעוליות. הן משתנות בלי שום שינוי במסכים.</p><pre class="mermaid">erDiagram
-    BUSINESSES ||--o{ SETTINGS : configures
+    COACHES ||--o{ SETTINGS : configures
     AUDIT_ENTRIES {
         uuid AuditEntryID PK
         uuid requestID &quot;משותף לבקשה ולתשובה&quot;
@@ -275,8 +244,8 @@ table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid
     }
     SETTINGS {
         uuid SettingID PK
-        uuid BusinessID FK
-        text settingKey &quot;ייחודי לעסק&quot;
+        uuid CoachID FK
+        text settingKey &quot;ייחודי למאמן&quot;
         text settingValue
     }
     ERROR_CODES {
@@ -290,19 +259,19 @@ table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid
         text caller
         text moduleName
         text actionName
-        text allowedRole &quot;owner, coach, trainee, module&quot;
+        text allowedRole &quot;coach, trainee, module&quot;
         boolean isActive
     }</pre></div>
 <h3>בדיקת הבהירות לפני הבנייה</h3>
 <table><tr><th>השאלה</th><th>התשובה</th></tr>
 <tr><td>מי יוצר, מעדכן וקורא כל ישות</td><td>בטבלה ב-doc-erd-conceptual</td></tr>
-<tr><td>מפתח ראשי ייחודי וזר בשם המקור</td><td>בכל 29 הטבלאות</td></tr>
+<tr><td>מפתח ראשי ייחודי וזר בשם המקור</td><td>בכל 26 הטבלאות</td></tr>
 <tr><td>סוג וחובה לכל שדה</td><td>בכל שדה</td></tr>
 <tr><td>קרדינליות, ומה קורה במחיקה</td><td>בכל קשר. אין מחיקה פיזית, ולכן אין מחיקה מדורגת</td></tr>
 <tr><td>איפה יושבת כל רשימת ערכים</td><td>מצבים סגורים באילוץ; ערכים משתנים ב-SETTINGS</td></tr>
-<tr><td>מה מותר לכל תפקיד לראות ולשנות</td><td>לפי שורות ה-Registry במקרי השימוש, ויתורגם להרשאות לפי שורה (RLS) ברמה הפיזית. בעל העסק אינו קורא SET_RESULTS, COACH_NOTES ו-PERSONAL_GOALS</td></tr>
+<tr><td>מה מותר לכל תפקיד לראות ולשנות</td><td>לפי שורות ה-Registry במקרי השימוש, ויתורגם להרשאות לפי שורה (RLS) ברמה הפיזית</td></tr>
 </table>
 <h3>מה נשאר פתוח</h3>
-<ul><li>המעבר: migration שיוצרת עסק ובעל עסק לכל מאמן קיים, ממלאת BusinessID ב-COACHES, ומעבירה את SETTINGS מ-CoachID ל-BusinessID.</li><li>אין שאלות פתוחות שעוצרות את הבנייה. הערכים המספריים הפתוחים (למשל משך שמירת מקום) יושבים ב-SETTINGS ומתמלאים בהקמה.</li></ul>
+<ul><li>אין שאלות פתוחות שעוצרות את הבנייה. הערכים המספריים הפתוחים (למשל משך שמירת מקום) יושבים ב-SETTINGS ומתמלאים בהקמה.</li></ul>
 <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({startOnLoad:true});</script>
 </body></html>
