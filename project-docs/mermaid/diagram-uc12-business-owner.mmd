@@ -1,0 +1,24 @@
+---
+title: מקרה שימוש 12 - בעל העסק
+---
+flowchart TD
+    S1["1. בעל העסק נכנס ובוחר תפקיד"] --> S2["2. סקירה עסקית"]
+    S2 --> S3["3. בעל העסק יוצר הזמנת מאמן"]
+    S3 --> S4["4. שמירת ההזמנה עם תוקף"]
+    S4 --> S5["5. שליחה בערוץ ההזמנה"]
+    S5 --> S6["6. המאמן נרשם בשירות הזהות"]
+    S6 --> S7["7. חיבור המאמן לעסק"]
+    S7 --> S8["8. כרטיס מאמן: מתאמנים, הכנסות, שיעורים"]
+    S8 --> S9["9. מדדים לכל העסק"]
+    S9 --> S10["10. הגדרות העסק"]
+
+    class S1,S2,S3,S8,S9,S10 code
+    class S4,S7 data
+    class S5,S6 iface
+
+classDef code fill:#E8F0FE,stroke:#1A73E8,color:#202124
+classDef auto fill:#E6F4EA,stroke:#188038,color:#202124
+classDef agent fill:#FEF7E0,stroke:#F29900,color:#202124
+classDef net fill:#FCE8E6,stroke:#D93025,color:#202124
+classDef iface fill:#F3E8FD,stroke:#8430CE,color:#202124
+classDef data fill:#E8EAED,stroke:#5F6368,color:#202124

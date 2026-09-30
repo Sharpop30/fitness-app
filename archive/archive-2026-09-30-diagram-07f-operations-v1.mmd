@@ -2,7 +2,7 @@
 title: תרשים 07f - ERD לוגי, תפעול
 ---
 erDiagram
-    BUSINESSES ||--o{ SETTINGS : configures
+    COACHES ||--o{ SETTINGS : configures
     AUDIT_ENTRIES {
         uuid AuditEntryID PK
         uuid requestID "משותף לבקשה ולתשובה"
@@ -15,8 +15,8 @@ erDiagram
     }
     SETTINGS {
         uuid SettingID PK
-        uuid BusinessID FK
-        text settingKey "ייחודי לעסק"
+        uuid CoachID FK
+        text settingKey "ייחודי למאמן"
         text settingValue
     }
     ERROR_CODES {
@@ -30,6 +30,6 @@ erDiagram
         text caller
         text moduleName
         text actionName
-        text allowedRole "owner, coach, trainee, module"
+        text allowedRole "coach, trainee, module"
         boolean isActive
     }

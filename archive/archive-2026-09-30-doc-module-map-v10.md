@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: מאושר, 30.09.2026, גרסה 11: בעל העסק (usecase-12, הכרעות הצוות ב-doc-owner-role). לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 29.09.2026, גרסה 10. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -9,8 +9,8 @@
 | הפרויקט | אפליקציית ניהול מאמן כושר (fitness-app) |
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
-| המקורות | PRD גרסה 1.19; doc-mlp-scope גרסה 2; 12 סיפורי משתמש ו-12 מקרי שימוש (usecase-01 עד 12); doc-erd-conceptual ו-doc-erd-logical, גרסה 2; prototype-fitness-app גרסה 3 |
-| גרסה ותאריך | 11, 30.09.2026 |
+| המקורות | PRD גרסה 1.19; doc-mlp-scope; 11 סיפורי משתמש ו-11 מקרי שימוש (usecase-01 עד 11); doc-erd-conceptual ו-doc-erd-logical; prototype-fitness-app גרסה 1 |
+| גרסה ותאריך | 10, 29.09.2026 |
 
 ## 2. הליבה
 
@@ -18,8 +18,7 @@
 
 | הישות | הטבלאות | המצבים והמעברים | מי מעביר |
 | :-- | :-- | :-- | :-- |
-| עסק ובעל עסק | BUSINESSES, OWNERS | פעיל ↔ לא פעיל | הקמה |
-| מאמן | COACHES | הוזמן → פעיל ↔ לא פעיל | הקמה (הראשון), business (בהזמנה) |
+| מאמן | COACHES | פעיל ↔ לא פעיל | הקמה |
 | מתאמן | TRAINEES | הוזמן → פעיל → לא פעיל | trainees |
 | תרגיל | EXERCISES | פעיל ↔ לא פעיל | exercises |
 | תוכנית | PROGRAMS, WORKOUTS, WORKOUT_ITEMS | פעילה → לא פעילה (כשנבנית חדשה) | programs |
@@ -31,12 +30,10 @@
 2. החלפת תרגיל שומרת את המקום בסדר (sortOrder), ואינה נוגעת בתוצאות קודמות.
 3. יעד לתרגיל: סטים וחזרות חיוביים, משקל לא שלילי (0 במשקל גוף).
 4. תוצאה: חזרות ומשקל לא שליליים. תיקון מסמן isCorrected ואינו מזכה שוב במטבעות.
-5. מאמן פועל רק על המתאמנים שלו; מתאמן פועל רק על הנתונים שלו; בעל העסק קורא את הנתונים של כל המאמנים בעסק שלו, בשמות ובסיכומים בלבד, בלי תוצאות אימון, הערות מאמן ויעדים אישיים, ואינו כותב לנתוני מתאמנים.
+5. מאמן פועל רק על המתאמנים שלו; מתאמן פועל רק על הנתונים שלו.
 6. אין מחיקה פיזית בשום ישות. יציאה משימוש היא סימון לא פעיל.
 7. השיא האישי, הרצף והיתרה מחושבים, ואינם נשמרים.
 8. רצף: אינו מתאפס כל עוד עברו עד N ימים בין אימונים (N ב-SETTINGS, 3).
-9. מאמן שייך לעסק אחד. מאמן עצמאי הוא עסק של אדם אחד, שהוא גם בעליו. ל-SETTINGS עסק, ולא מאמן: בעל העסק מעדכן, והמאמן קורא.
-10. משתמש זהות אחד יכול להיות בעל עסק ומאמן באותו עסק, ועובר בין התפקידים בלי כניסה חוזרת.
 
 ## 3. המודולים
 
@@ -58,9 +55,8 @@
 | M10 | invoices | חשבוניות הדגמה ממוספרות | 2 | מתאמן | | INVOICES | טרם נבנה |
 | M11 | classes | שיעורים, הרשמה, המתנה, ביטול ונוכחות | 30 | מתאמן | | CLASSES, CLASS_REGISTRATIONS, LATE_CANCEL_REQUESTS | טרם נבנה |
 | M12 | notifications | הודעות בתוך האפליקציה | 21, 25, 30 | מתאמן | | NOTIFICATIONS | טרם נבנה |
-| M13 | home | מסך הבית של המאמן, של המתאמן ושל בעל העסק, מפעולות קיימות בלבד | 15, 19, 25 | הכול, דרך פעולות | | | טרם נבנה |
-| M14 | settings | טבלת הייחוס של העסק, שבעל העסק משנה | 2, 5, 6, 15, 21, 25, 30 | עסק | | SETTINGS | טרם נבנה |
-| M15 | business | מאמנים בעסק: הזמנה, הצטרפות, רשימה, כרטיס מאמן, ומדדי העסק | 15 | עסק ובעל עסק, מאמן, מתאמן | מאמן | COACH_INVITES | טרם נבנה |
+| M13 | home | מסך הבית של המאמן ושל המתאמן, מפעולות קיימות בלבד | 19, 25 | הכול, דרך פעולות | | | טרם נבנה |
+| M14 | settings | טבלת הייחוס שהמאמן משנה | 2, 5, 6, 21, 25, 30 | מאמן | | SETTINGS | טרם נבנה |
 
 ### רכיבי הליבה והתשתית
 
@@ -78,46 +74,43 @@
 | :-- | :-- | :-- | :-- |
 | I01 | Identity Connector | מתאם (Connector) | Supabase Auth |
 | I02 | Payment Gateway | שער (Gateway) | מימוש מדומה בגרסה הראשונה, שמאשר; ספק אמיתי [טרם נקבע] |
-| I03 | Invite Channel | מתאם | קישור לשיתוף, מלא מכתובת האתר (SITE_URL), ומייל דרך שירות ההזמנות של Supabase Auth. משמש להזמנת מתאמן ולהזמנת מאמן |
+| I03 | Invite Channel | מתאם | קישור לשיתוף, מלא מכתובת האתר (SITE_URL), ומייל דרך שירות ההזמנות של Supabase Auth |
 | I04 | File Storage | דרייבר בתוך ה-Repository | Supabase Storage, דלי אחד (videos) לסרטונים שהועלו: פתוח לצפייה, וכתיבה רק בכתובת חתומה שה-Endpoint מנפיק |
 
 ### מודולי Frontend
 
 מודול העיצוב **D01**: אסימוני העיצוב של FORM ורכיבי הבסיס. כל המסכים משתמשים בו. כל מסך הוא מודול, ופונה ל-Endpoint היחיד בלבד:
 
-"עוד" אצל המאמן ואצל בעל העסק, ו"אני" אצל המתאמן, הם תפריטי ניווט בתוך מעטפת האפליקציה, בלי פעולות משלהם, ואינם מסכים נוספים. המעבר בין בעל העסק למאמן יושב ב"עוד" של שניהם, ומוצג רק למשתמש שיש לו שני התפקידים.
+"עוד" אצל המאמן ו"אני" אצל המתאמן הם תפריטי ניווט בתוך מעטפת האפליקציה, בלי פעולות משלהם, ואינם מסכים נוספים.
 
-| מאמן | מתאמן | בעל העסק | משותף |
-| :-- | :-- | :-- | :-- |
-| S01 בית מאמן · S02 מתאמנים והזמנה · S03 כרטיס מתאמן · S04 בניית תוכנית והחלפה · S05 תרגילים וסרטונים · S06 תוצאות והערות · S07 יעד אישי · S08 תשלומים וחשבוניות · S09 אתגר · S10 תגמולים · S11 שיעורים ונוכחות | S13 בית מתאמן · S14 אימון והזנה · S15 משוב · S16 האימונים שלי ותיקון · S17 שיעורים · S18 מטבעות · S19 תשלומים · S20 אתגר | S24 סקירה עסקית · S25 מאמנים והזמנה · S26 מדדים · S27 כרטיס מאמן | S12 הגדרות (בעל העסק משנה, המאמן רואה) · S21 גרף התקדמות · S22 הצטרפות בהזמנה, של מתאמן או של מאמן · S23 כניסה ובחירת תפקיד |
+| מאמן | מתאמן | משותף |
+| :-- | :-- | :-- |
+| S01 בית מאמן · S02 מתאמנים והזמנה · S03 כרטיס מתאמן · S04 בניית תוכנית והחלפה · S05 תרגילים וסרטונים · S06 תוצאות והערות · S07 יעד אישי · S08 תשלומים וחשבוניות · S09 אתגר · S10 תגמולים · S11 שיעורים ונוכחות · S12 הגדרות | S13 בית מתאמן · S14 אימון והזנה · S15 משוב · S16 האימונים שלי ותיקון · S17 שיעורים · S18 מטבעות · S19 תשלומים · S20 אתגר | S21 גרף התקדמות · S22 הצטרפות בהזמנה · S23 כניסה |
 
 ## 4. החוזה
 
-**מעטפת הבקשה**: `{ caller, module, action, payload, lang }`. **מעטפת התשובה**: `{ ok, data, error }`. הפונה (caller) חובה, מתוך רשימה סגורה: מזהי המסכים S01 עד S27, מזהי המודולים M01 עד M15, ו-system.
-
-**התפקיד** (גרסה 11): ה-Orchestrator מוצא את כל התפקידים של המשתמש (owner, coach, trainee, לפי OWNERS, COACHES ו-TRAINEES), ומקבל את הבקשה אם יש שורת Registry לפונה, למודול ולפעולה באחד מהם. התפקיד שבשורה עובר למודול. כשיותר מתפקיד אחד מתאים (S12 ו-S23), owner גובר על coach, כי הם באותו עסק ורואים אותם ערכים. מבנה המעטפה אינו משתנה.
+**מעטפת הבקשה**: `{ caller, module, action, payload, lang }`. **מעטפת התשובה**: `{ ok, data, error }`. הפונה (caller) חובה, מתוך רשימה סגורה: מזהי המסכים S01 עד S23, מזהי המודולים M01 עד M14, ו-system.
 
 ### הפעולות
 
 | המודול | הפעולה | המקור | מי רשאי |
 | :-- | :-- | :-- | :-- |
-| trainees | invite_trainee, accept_invite, list_trainees, get_trainee_card, get_me | UC4, UC12 | מאמן; accept: בעל ההזמנה, משתמש מזוהה שעוד אינו מאמן או מתאמן; get_me: בעל עסק, מאמן ומתאמן; list_trainees: גם business, בשם בעל העסק. get_trainee_card מרכיב את הכרטיס דרך ה-Orchestrator מ-programs.get_active_program, coins.get_balance, payments.list_payments ו-progress.get_streak |
+| trainees | invite_trainee, accept_invite, list_trainees, get_trainee_card, get_me | UC4 | מאמן; accept: בעל ההזמנה, משתמש מזוהה שעוד אינו מאמן או מתאמן; get_me: מאמן ומתאמן. get_trainee_card מרכיב את הכרטיס דרך ה-Orchestrator מ-programs.get_active_program, coins.get_balance, payments.list_payments ו-progress.get_streak |
 | exercises | list_exercises, create_exercise, prepare_upload, attach_video, get_exercise | UC1, UC10 | מאמן; get: גם מתאמן |
 | programs | get_active_program, save_program, swap_exercise, start_new_program | UC1 | מאמן; get: גם המתאמן שלו |
-| results | log_workout, correct_result, list_results | UC3 | מתאמן (שלו); list: גם המאמן; list מ-business: ספירת אימונים לפי מתאמן בלבד, בלי הסטים (כלל 5) |
-| progress | get_progress_chart, detect_personal_records, get_streak | UC5, UC6, UC9 | מאמן, מתאמן (שלו); detect: feedback בלבד; get_streak: trainees, home, business בלבד |
+| results | log_workout, correct_result, list_results | UC3 | מתאמן (שלו); list: גם המאמן |
+| progress | get_progress_chart, detect_personal_records, get_streak | UC5, UC6, UC9 | מאמן, מתאמן (שלו); detect: feedback בלבד; get_streak: trainees, home בלבד |
 | feedback | build_feedback, add_coach_note, get_workout_notes | UC6 | build: results בלבד; note: מאמן |
 | coins | award, get_balance, set_personal_goal, manage_rewards, redeem_reward, mark_reward_delivered | UC7 | award: results, challenges, classes בלבד |
-| challenges | create_challenge, get_current_challenge, check_progress, list_completions, mark_prize_delivered | UC8 | check: results בלבד; list_completions: גם business |
-| payments | create_payment_request, list_payments, pay_demo | UC2 | מאמן; pay_demo: מתאמן (שלו); list_payments: גם home ו-business, בשם בעל העסק |
+| challenges | create_challenge, get_current_challenge, check_progress, list_completions, mark_prize_delivered | UC8 | check: results בלבד |
+| payments | create_payment_request, list_payments, pay_demo | UC2 | מאמן; pay_demo: מתאמן (שלו) |
 | payment_gateway | charge | UC2 | payments בלבד |
-| invite_channel | send_invite | UC4, UC12 | trainees, business בלבד |
+| invite_channel | send_invite | UC4 | trainees בלבד |
 | invoices | create_invoice, list_invoices | UC2 | create: payments בלבד |
-| classes | publish_class, cancel_class, list_upcoming_classes, register, cancel_registration, list_registrations, mark_attendance, respond_to_spot_offer, request_late_cancel, decide_late_cancel | UC11 | לפי מקרה שימוש 11; list_upcoming_classes: גם home ו-business, בשם בעל העסק |
+| classes | publish_class, cancel_class, list_upcoming_classes, register, cancel_registration, list_registrations, mark_attendance, respond_to_spot_offer, request_late_cancel, decide_late_cancel | UC11 | לפי מקרה שימוש 11 |
 | notifications | notify_in_app, list_notifications, mark_read | UC6, UC9, UC11 | notify: classes, feedback בלבד |
-| home | get_coach_home, get_trainee_home, get_owner_home | UC4, UC9, UC12 | מאמן; מתאמן; בעל העסק. get_owner_home מרכיב את המסך דרך ה-Orchestrator מ-payments.list_payments, classes.list_upcoming_classes, coins.manage_rewards (op: list), trainees.list_trainees ו-business.list_coaches, לכל העסק. get_coach_home מרכיב את המסך דרך ה-Orchestrator מ-trainees.list_trainees, payments.list_payments, classes.list_upcoming_classes, coins.manage_rewards (op: list), challenges.get_current_challenge ו-challenges.list_completions |
-| settings | get_settings, update_settings, get_error_texts | כל מקרה שימוש עם טבלת ייחוס; get_error_texts: כלל החוזה 8 | get_settings: בעל העסק, מאמן והמודולים; update_settings: בעל העסק בלבד; get_error_texts: בעל עסק, מאמן ומתאמן, מ-S23, ומצטרף מ-S22 |
-| business | invite_coach, accept_coach_invite, list_coaches, get_coach_card, get_kpis | UC12 | בעל העסק; accept: בעל ההזמנה, משתמש מזוהה שעוד אינו מאמן או מתאמן, מ-S22; list_coaches: גם home. get_coach_card מרכיב דרך ה-Orchestrator מ-trainees.list_trainees, payments.list_payments, classes.list_upcoming_classes ו-progress.get_streak. get_kpis מרכיב מ-trainees.list_trainees, payments.list_payments, challenges.list_completions ו-results.list_results |
+| home | get_coach_home, get_trainee_home | UC4, UC9 | מאמן; מתאמן. get_coach_home מרכיב את המסך דרך ה-Orchestrator מ-trainees.list_trainees, payments.list_payments, classes.list_upcoming_classes, coins.manage_rewards (op: list), challenges.get_current_challenge ו-challenges.list_completions |
+| settings | get_settings, update_settings, get_error_texts | כל מקרה שימוש עם טבלת ייחוס; get_error_texts: כלל החוזה 8 | מאמן; get_settings: גם המודולים; get_error_texts: מאמן ומתאמן, מ-S23, ומצטרף מ-S22 |
 
 **רשימת המותר (Registry)** היא טבלה: שורה לכל צירוף של פונה, מודול ופעולה מהטבלה שלמעלה. בקשה בלי שורה נדחית ונרשמת. הקובץ המלא נוצר בשלב 1 מהטבלה הזו.
 
@@ -134,10 +127,6 @@
 **החוזים שנוספו בגרסה 9** (תוכנית שלב 5, הכרעות 1 עד 5 ו-7), ושלוש שורות Registry, נכנסות ב-0012: S23 מול trainees.get_me, למאמן ולמתאמן; S05 מול exercises.prepare_upload, למאמן.
 
 **הצטרפות בהזמנה** (תוכנית שלב 5, הכרעה 3): משתמש שזוהה בשירות הזהות ואין לו שורה ב-COACHES או ב-TRAINEES מקבל תפקיד trainee בלי מזהה מתאמן, ורק לבקשות S22 מול trainees.accept_invite ומול settings.get_error_texts (גרסה 10, כדי שהצטרפות שנכשלה תוצג בנוסח שלה, UC4 א). כל בקשה אחרת שלו נדחית ב-NOT_ALLOWED ונרשמת, כמו היום. ההצטרפות אטומית: המתאמן נוצר וההזמנה נסגרת יחד, בתנאי שהיא פתוחה ובתוקף, כך שאסימון אחד יוצר מתאמן אחד.
-
-**החוזים שנוספו בגרסה 11** (usecase-12; הכרעות הצוות 3 עד 7 ב-doc-owner-role): התפקיד owner, המודול business (M15), הפעולה home.get_owner_home, המסכים S24 עד S27, SETTINGS לפי עסק, והרשאת update_settings לבעל העסק בלבד. השורות נכנסות ב-migration חדשה משלה, בשלב 4ה. השורה S12 מול settings.update_settings לתפקיד coach יוצאת משימוש (isActive=false, כלל 9 בחוקי הברזל).
-
-**הצטרפות מאמן בהזמנה** (גרסה 11): כמו הצטרפות מתאמן. משתמש מזוהה בלי שורה ב-OWNERS, ב-COACHES או ב-TRAINEES רשאי מ-S22 גם ל-business.accept_coach_invite. הקישור נושא ?coach=אסימון, ו-S22 בוחר את הפעולה לפיו. ההצטרפות אטומית: המאמן נוצר עם ה-BusinessID של ההזמנה, וההזמנה נסגרת יחד.
 
 **הסרטון שהועלה** (תוכנית שלב 5, הכרעה 5): בשני צעדים, דרך ה-Endpoint. exercises.prepare_upload בודק את האורך מול videoMaxSeconds ואת הגודל מול videoMaxMegabytes, ומחזיר כתובת העלאה חתומה לנתיב אחד של התרגיל. client.ts מעלה את הקובץ לכתובת הזו. exercises.attach_video בסוג upload מקבל את הנתיב, ושומר אותו רק אחרי שה-Repository מצא את הקובץ בדלי. העלאה שלא הושלמה מחזירה UPLOAD_FAILED, והתרגיל נשאר בלי שינוי.
 
@@ -164,7 +153,7 @@
 | S09 | challenges.create_challenge, get_current_challenge, list_completions, mark_prize_delivered; exercises.list_exercises |
 | S10 | coins.manage_rewards, mark_reward_delivered |
 | S11 | classes.publish_class, cancel_class, list_upcoming_classes, list_registrations, mark_attendance, decide_late_cancel |
-| S12 | settings.get_settings; update_settings לבעל העסק בלבד |
+| S12 | settings.get_settings, update_settings |
 | S13 | home.get_trainee_home; classes.respond_to_spot_offer; notifications.list_notifications, mark_read |
 | S14 | programs.get_active_program; results.log_workout; exercises.get_exercise |
 | S15 | (מציג את תשובת log_workout, בלי פעולה נוספת) |
@@ -174,12 +163,8 @@
 | S19 | payments.list_payments, pay_demo; invoices.list_invoices |
 | S20 | challenges.get_current_challenge |
 | S21 | progress.get_progress_chart |
-| S22 | trainees.accept_invite או business.accept_coach_invite, לפי הקישור; settings.get_error_texts, לפני ההצטרפות |
-| S23 | שירות הזהות; trainees.get_me ו-settings.get_error_texts, פעם אחת אחרי הכניסה, והלקוח שומר את ההסברים. כש-get_me מחזיר יותר מתפקיד אחד, המסך מציע בחירה |
-| S24 | home.get_owner_home |
-| S25 | business.list_coaches, invite_coach |
-| S26 | business.get_kpis |
-| S27 | business.get_coach_card |
+| S22 | trainees.accept_invite; settings.get_error_texts, לפני ההצטרפות |
+| S23 | שירות הזהות; trainees.get_me ו-settings.get_error_texts, פעם אחת אחרי הכניסה, והלקוח שומר את ההסברים |
 
 ### מבנה התשובה של כל פעולה
 
@@ -190,7 +175,7 @@
 | trainees.list_trainees | רשימה: TraineeID או InviteID, fullName, isActive, joined, hasProgram. מתאמן שהצטרף מזוהה ב-TraineeID. הזמנה פתוחה שתוקפה לא פג חוזרת עם InviteID, TraineeID ריק ו-joined=false, כי המתאמן נוצר רק בהצטרפות |
 | trainees.invite_trainee | link, קישור ההזמנה לשיתוף: SITE_URL?join=אסימון. SITE_URL חסר מחזיר VALUE_NOT_SET |
 | trainees.accept_invite | TraineeID. הקלט: token (אסימון ההזמנה מהקישור), fullName (ריק: השם שבהזמנה). המייל משירות הזהות. הזמנה שפגה או שכבר נוצלה מחזירה INVITE_EXPIRED; משתמש שכבר מאמן או מתאמן מחזיר NOT_ALLOWED |
-| trainees.get_me | roles (רשימה: owner, coach, trainee), role (הראשון ברשימה, לתאימות), traineeID (ריק למי שאינו מתאמן), fullName |
+| trainees.get_me | role (coach או trainee), traineeID (ריק למאמן), fullName |
 | trainees.get_trainee_card | trainee, coins, streak, openPayments, workouts, payments, goal (עם exerciseName). הקלט: traineeID. workouts הוא מספר האימונים בתוכנית הפעילה (0 כשאין); openPayments מספר הבקשות הפתוחות; payments מספר הבקשות; goal היעד הפעיל, או ריק. פנייה שנכשלה מחזירה את השדה שלה ריק |
 | exercises.list_exercises, get_exercise, create_exercise, attach_video | תרגיל או רשימה: ExerciseID, exerciseName, isBodyweight, videoType, videoUrl. בסרטון שהועלה, videoUrl היא כתובת הצפייה בדלי. הקלט של attach_video: exerciseID, ו-kind: link עם url, או upload עם path מ-prepare_upload |
 | exercises.prepare_upload | uploadUrl, path. הקלט: exerciseID, seconds, megabytes, contentType. לא וידאו מחזיר VIDEO_INVALID; אורך מעל videoMaxSeconds או גודל מעל videoMaxMegabytes מחזירים VIDEO_TOO_LONG |
@@ -220,15 +205,9 @@
 | notifications.notify_in_app | null. הקלט: traineeID, messageText. המודול הפונה (classes או feedback) כותב את הנוסח, ו-notifications בודק שהמתאמן שייך למאמן של הבקשה |
 | notifications.list_notifications | רשימת הודעות שלא נקראו: NotificationID, messageText, createdAt |
 | home.get_coach_home | activeTrainees, openPayments, classesToday, lateRequests, rewardsToDeliver, challenge |
-| home.get_owner_home | incomeMonth, paidMonth, openPayments, openAmount, coaches, pendingCoaches, activeTrainees, classesWeek (registered, capacity), rewardsToDeliver. כל הסכומים לכל העסק. פנייה שנכשלה מחזירה את השדה שלה ריק |
-| business.list_coaches | רשימה: CoachID או CoachInviteID, fullName, joined, trainees (מספר). הזמנה פתוחה שתוקפה לא פג חוזרת עם CoachInviteID ו-joined=false |
-| business.invite_coach | link, SITE_URL?coach=אסימון. SITE_URL חסר מחזיר VALUE_NOT_SET. פרט קשר לא תקין: INVITE_INVALID |
-| business.accept_coach_invite | CoachID. הקלט: token, fullName. הזמנה שפגה או נוצלה: INVITE_EXPIRED; משתמש שכבר מאמן או מתאמן: NOT_ALLOWED |
-| business.get_coach_card | coach, trainees (TraineeID, fullName, hasProgram, streak), income (סכום הבקשות ששולמו), upcomingClasses. הקלט: coachID של העסק, אחרת NOT_ALLOWED. בלי תוצאות, הערות ויעדים (כלל 5) |
-| business.get_kpis | activeTrainees, withProgram, invoicedPayments, allPayments, challengeCompletions, loggedThisWeek. לכל העסק. היעדים אינם בתשובה: הם [טרם נקבע] ב-doc-okr-kpi |
 | home.get_trainee_home | reminder, streak, streakGapDays, coins, nextWorkout, nextClass, challenge, offers |
-| settings.get_settings | כל ערכי SETTINGS של העסק, מפתח וערך, ו-canEdit (אמת לבעל העסק) |
-| settings.update_settings | null. הקלט: values, מפתח וערך. רק מפתחות שכבר קיימים לעסק, אחרת NOT_ALLOWED. ערך ריק, או מספר לא תקין במפתח מספרי, מחזיר VALUE_NOT_SET, ושום ערך אינו נשמר. המטבעות שלמים ולא שליליים; המחירים, חלונות הזמן, הרצף, אורך הסרטון, תוקף ההזמנה ואורך ההערה שלמים וחיוביים. מפתח שלא נשלח נשאר כמו שהוא |
+| settings.get_settings | כל ערכי SETTINGS של המאמן, מפתח וערך |
+| settings.update_settings | null. הקלט: values, מפתח וערך. רק מפתחות שכבר קיימים למאמן, אחרת NOT_ALLOWED. ערך ריק, או מספר לא תקין במפתח מספרי, מחזיר VALUE_NOT_SET, ושום ערך אינו נשמר. המטבעות שלמים ולא שליליים; המחירים, חלונות הזמן, הרצף, אורך הסרטון, תוקף ההזמנה ואורך ההערה שלמים וחיוביים. מפתח שלא נשלח נשאר כמו שהוא |
 | settings.get_error_texts | לכל קוד שגיאה, ההסבר לבני אדם |
 
 ### הפניות מ-results.log_workout
@@ -284,7 +263,7 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 
 - **תרשים אב, הארכיטקטורה**: diagram-06-architecture.mmd. ערוצים, Endpoint ו-Orchestrator, המודולים, ה-Repository, המסד והממשקים. כל חיבור עובר דרך ה-Orchestrator.
 - **תרשים בן, המודולים העסקיים**: diagram-06a-modules.mmd.
-- **הנתונים**: diagram-07 עד 07f (07, 07a ו-07f בגרסה 2). **הזרימות**: diagram-uc01 עד uc12.
+- **הנתונים**: diagram-07 עד 07f (מאושרים). **הזרימות**: diagram-uc01 עד uc11 (מאושרים).
 
 ## 6. מערך הבדיקות
 
@@ -294,7 +273,7 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | :-- | :-- | :-- |
 | Unit | כל מודול מול קריטריוני הקבלה של הסיפור שלו. דוגמה, M07: קלט "אימון נשמר" פעמיים עם אותו eventRef; פלט צפוי: זיכוי אחד ו-COINS_ALREADY_AWARDED בשני | קריטריוני הקבלה במקרי השימוש |
 | Integration | המעטפה, פונה חסר, פונה לא תקין, פעולה בלי שורה ב-Registry, וקוד שגיאה שאינו ברשימה | טבלאות החוזה, ה-Registry וקודי השגיאה |
-| System | כל מקרה שימוש מקצה לקצה, בשלושה אשכולות: נורמה, קצה, כשל, לפי הזרימות החלופיות בכל מקרה שימוש. ובדיקת ההפרדה: בעל עסק אינו רואה עסק אחר, ומאמן אינו רואה מאמן אחר | usecase-01 עד 12 |
+| System | כל מקרה שימוש מקצה לקצה, בשלושה אשכולות: נורמה, קצה, כשל, לפי הזרימות החלופיות בכל מקרה שימוש | usecase-01 עד 11 |
 | UAT | אישור המסכים (שלב 2), ואישור הפריסה (שלב 7) | הצוות |
 
 **מבחני הקבלה המבניים**, בסוף כל שלב: חיבור למסד בקובץ אחד; כל מסך פונה ל-Endpoint אחד ומצהיר על עצמו; כל בקשה מותירה שורות Audit עם מזהה משותף; ערכים משתנים נקראים מ-SETTINGS; קודי השגיאה בקוד ובמפה זהים; כיוון תלות אחד בלי ייבוא בין מודולים; חיפוש מפתחות במאגר ובקוד המסכים מחזיר אפס.
@@ -307,10 +286,9 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 2. עיצוב ומסכים | D01 ו-S01 עד S23 על נתוני הדגמה, בלי פנייה לשרת | **אישור המסכים בידי הצוות** | |
 | 3. Slice ראשון | S04 מול programs ו-Repository מלא, על נתוני הדגמה במסד | שינוי בתוכנית במסד נראה במסך | |
 | 4. מודולי הליבה העסקית | 4א: trainees, exercises, programs, results. 4ב: progress, feedback, coins, challenges, home. 4ג: classes, notifications. 4ד: payments, invoices, settings | Unit, Integration ו-System ירוקים לכל תת שלב | |
-| 4ה. עסק ובעל עסק | ה-migration של BUSINESSES, OWNERS ו-COACH_INVITES, BusinessID ב-COACHES וב-SETTINGS; התפקיד owner ב-Orchestrator; M15 business; home.get_owner_home; S24 עד S27; S12 לפי התפקיד; S22 ו-S23 לשני התפקידים | Unit, Integration ו-System ירוקים, כולל Regression על כל מה שנבנה, ובדיקת ההפרדה | **אישור הצוות על אב הטיפוס גרסה 3** |
 | 5. ממשקי הקלט | Identity, Invite Channel, File Storage, Payment Gateway המדומה | כל ממשק מול החוזה שלו | ספק מייל: הוכרע בתוכנית שלב 5 (הכרעה 8). המייל המובנה של Supabase בגרסה הראשונה; מתאמנים אמיתיים בקישור |
 | 6. AI | לא בגרסה הראשונה | | |
-| 7. נתוני אמת ופריסה | הסרת נתוני ההדגמה, יצירת העסק וחשבון בעל העסק, שהוא גם המאמן הראשון, רשימת התרגילים וקישורי היוטיוב, פריסה | מבחני הקבלה המבניים כולם | **אישור הפריסה בידי הצוות** |
+| 7. נתוני אמת ופריסה | הסרת נתוני ההדגמה, יצירת חשבון המאמן, רשימת התרגילים וקישורי היוטיוב, פריסה | מבחני הקבלה המבניים כולם | **אישור הפריסה בידי הצוות** |
 
 ## 8. הכרעות פתוחות
 
@@ -333,7 +311,6 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | מסך, או ערכת העיצוב | שום דבר מחוץ למסך, או ל-D01 |
 | מודול עסקי, למשל משוב ב-AI בשלב הבא | שום דבר: אותן פעולות ב-Registry |
 | אחסון האתר | שום דבר: האתר סטטי ופונה ל-Endpoint אחד |
-| תפקיד בעל העסק | שום דבר במודולים של המאמן והמתאמן, מלבד SETTINGS לפי העסק |
 
 ## 10. יומן גרסאות
 
@@ -349,4 +326,3 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 8 | 28.09.2026 | מתוכנית שלב 4ד, הכרעות 2 עד 6, ומדוח 4ג, פער 5: שורת Registry אחת, S06 מול settings.get_settings (noteMaxLength); הסדר ב-pay_demo בלי מצב ביניים; הקריאה לאורך הקשר בין בקשה לחשבונית; החוזים של create_payment_request, charge, create_invoice, update_settings ו-get_trainee_card, והסינון של list_payments ו-list_invoices; ההסבר לבני אדם של CANCEL_TOO_LATE בלי מספר קבוע; NOT_ALLOWED על שיעור שבוטל או התחיל ועל קלט לא תקין ב-notify_in_app. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
 | 9 | 29.09.2026 | מתוכנית שלב 5, הכרעות 1 עד 5, 7 ו-8: הפעולות trainees.get_me ו-exercises.prepare_upload, ושלוש שורות Registry (S23 מול get_me למאמן ולמתאמן, S05 מול prepare_upload); מי רשאי ל-accept_invite והקלט שלו; קישור ההזמנה מ-SITE_URL; החוזים של send_invite, charge ו-attach_video בהעלאה; הדלי videos; videoMaxMegabytes; השער של שלב 5 הוכרע. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, רשימת קודי השגיאה (28), הטבלאות וסדר הבנייה |
 | 10 | 29.09.2026 | מפער שנמצא בשלב 5, משימה 7: שורת Registry אחת, S22 מול settings.get_error_texts לתפקיד trainee, והמצטרף רשאי לה, כדי שהזמנה שפגה תוצג בנוסח שלה (UC4 א). נכנסת ב-0012. מה לא השתנה: כל השאר |
-| 11 | 30.09.2026 | מ-usecase-12 ומהכרעות הצוות ב-doc-owner-role (מסלול ב, הכרעות 3 עד 7): ישות הליבה עסק ובעל עסק; כללים 5, 9 ו-10; M15 business; home.get_owner_home; התפקיד owner ב-Orchestrator; S24 עד S27, ו-S12 משותף; SETTINGS לפי עסק, ו-update_settings לבעל העסק בלבד; הצטרפות מאמן ב-S22; get_me מחזיר roles; שלב 4ה. מה לא השתנה: מבנה המעטפה, רשימת קודי השגיאה (28), ושאר המודולים והפעולות |
