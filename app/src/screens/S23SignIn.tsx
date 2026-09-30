@@ -41,7 +41,7 @@ export default function S23SignIn() {
 
   return (
     <Screen eyebrow="ביצועים, מעקב ותשלומים" title="כניסה לאפליקציה" noBack>
-      <Picture size="tall" />
+      <Picture size="tall" src={`${import.meta.env.BASE_URL}images/signin.jpg`} />
       <div className="lead-text">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו: תוכניות, תשלומים ומעקב במקום אחד.</div>
       {live ? <>
         <Field label="מייל"><input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>

@@ -42,7 +42,7 @@ export default function S22JoinInvite({ inviteToken }: { inviteToken?: string })
 
   return (
     <Screen eyebrow="הזמנה מהמאמן" title="הצטרפות">
-      <Picture size="short" />
+      <Picture size="short" src={`${import.meta.env.BASE_URL}images/join.jpg`} />
       <Notice>המאמן שלך הזמין אותך להצטרף. ההזמנה הגיעה בקישור או במייל.</Notice>
       <Field label="שם"><input id="joinName" value={name} onChange={(e) => setName(e.target.value)} /></Field>
       {!fromEmail && <Field label="מייל"><input id="joinEmail" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>}
