@@ -15,22 +15,24 @@ export const settings: Record<string, string> = {
   reminderText: "יום טוב! הנה מה שמחכה לך היום.",
 };
 
-// The human text of every error code, as in the error_codes table (doc-module-map v2).
+// The human text of every error code, as in the error_codes table (doc-module-map v13; prototype 3.2).
 export const errorTexts: Record<string, string> = {
-  CALLER_MISSING: "משהו השתבש. נסה שוב", CALLER_INVALID: "משהו השתבש. נסה שוב",
-  ACTION_NOT_ALLOWED: "הפעולה הזו אינה זמינה כאן", AUDIT_FAILED: "הפעולה לא בוצעה. נסה שוב בעוד רגע",
-  UNEXPECTED_ERROR: "משהו השתבש. נסה שוב", NOT_ALLOWED: "אין לך גישה לזה",
-  STORAGE_UNAVAILABLE: "השינוי לא נשמר כרגע. נסה שוב", VALUE_NOT_SET: "הערך עוד לא הוגדר בהגדרות",
-  PROGRAM_INVALID: "חסר מידע בתרגיל. השלם סטים, חזרות ומשקל", NO_ACTIVE_PROGRAM: "התוכנית שלך בהכנה אצל המאמן",
-  RESULT_INVALID: "יש ערך לא תקין באחד הסטים", NOTE_INVALID: "ההערה ריקה או ארוכה מדי",
-  INVITE_INVALID: "פרט הקשר לא תקין", INVITE_EXPIRED: "ההזמנה כבר לא בתוקף. בקש חדשה",
+  CALLER_MISSING: "משהו השתבש. אפשר לנסות שוב", CALLER_INVALID: "משהו השתבש. אפשר לנסות שוב",
+  ACTION_NOT_ALLOWED: "הפעולה הזו אינה זמינה כאן", AUDIT_FAILED: "הפעולה לא בוצעה. אפשר לנסות שוב בעוד רגע",
+  UNEXPECTED_ERROR: "משהו השתבש. אפשר לנסות שוב", NOT_ALLOWED: "אין לך גישה לזה",
+  STORAGE_UNAVAILABLE: "השינוי לא נשמר כרגע. אפשר לנסות שוב", VALUE_NOT_SET: "הערך עוד לא הוגדר בהגדרות",
+  PROGRAM_INVALID: "חסר מידע בתרגיל. צריך סטים, חזרות ומשקל", NO_ACTIVE_PROGRAM: "התוכנית שלך עוד בהכנה אצל המאמן",
+  RESULT_INVALID: "יש ערך לא תקין באחד הסטים. כדאי לבדוק ולנסות שוב", NOTE_INVALID: "ההערה ריקה או ארוכה מדי. אפשר לקצר ולנסות שוב",
+  INVITE_INVALID: "פרט הקשר לא תקין. כדאי לבדוק ולנסות שוב", INVITE_EXPIRED: "ההזמנה כבר לא בתוקף. אפשר לבקש הזמנה חדשה",
   INVITE_DELIVERY_FAILED: "ההזמנה לא נשלחה. אפשר לשלוח שוב או להעתיק קישור",
-  VIDEO_INVALID: "זה לא נראה כמו סרטון", VIDEO_TOO_LONG: "אפשר להעלות סרטון של עד דקה", UPLOAD_FAILED: "הסרטון לא עלה. נסה שוב",
-  PAYMENT_ALREADY_PAID: "הבקשה הזו כבר שולמה", PAYMENT_GATEWAY_UNAVAILABLE: "התשלום לא הושלם. לא בוצע חיוב",
+  VIDEO_INVALID: "זה לא נראה כמו סרטון. כדאי לנסות קישור אחר", VIDEO_TOO_LONG: "הסרטון ארוך או גדול מהמותר. המגבלה כתובה ליד כפתור ההעלאה",
+  UPLOAD_FAILED: "הסרטון לא עלה. אפשר לנסות שוב",
+  PAYMENT_ALREADY_PAID: "הבקשה הזו כבר שולמה", PAYMENT_GATEWAY_UNAVAILABLE: "התשלום לא הושלם. לא בוצע חיוב, ואפשר לנסות שוב",
   COINS_INSUFFICIENT: "אין מספיק מטבעות", COINS_ALREADY_AWARDED: "",
-  CHALLENGE_EXISTS: "כבר יש אתגר השבוע", CHALLENGE_INVALID: "חסר יעד לאתגר",
-  CLASS_INVALID: "חסרים פרטים בשיעור", ALREADY_REGISTERED: "אתה כבר רשום לשיעור הזה",
-  CANCEL_TOO_LATE: "אפשר לבטל עד 24 שעות לפני. אפשר לבקש חריגה", SPOT_OFFER_EXPIRED: "המקום כבר הוצע לבא בתור",
+  CHALLENGE_EXISTS: "כבר יש אתגר השבוע. אפשר ליצור את הבא בשבוע הבא",
+  CHALLENGE_INVALID: "חסר יעד לאתגר, או שמתאמן כבר השלים אותו. אחרי השלמה אפשר לשנות רק שם ופרס",
+  CLASS_INVALID: "חסרים פרטים בשיעור. צריך להשלים ולנסות שוב", ALREADY_REGISTERED: "כבר יש הרשמה לשיעור הזה",
+  CANCEL_TOO_LATE: "עבר מועד הביטול. אפשר לבקש חריגה", SPOT_OFFER_EXPIRED: "המקום כבר הוצע לבא בתור",
 };
 
 export const coach = { CoachID: "d0000000-0000-4000-8000-000000000001", fullName: "המאמן (דוגמה)" };
