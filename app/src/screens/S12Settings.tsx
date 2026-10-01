@@ -2,8 +2,8 @@
 // Stage 5 (plan, decision 12; report 4d, gap 4): the limits and the daily reminder, which were read at run time but not shown.
 // Design stage, finding 14: numbers open the number keypad and are checked here, naming the field that is wrong; the
 // texts are long fields. Loading and an error with a retry (2, 6).
-// Stage 4e (map v11, rule 9; usecase-12 step 10 and f; prototype version 3): the settings of the business. The owner
-// changes them; the coach sees them only. Fields open when the owner's view is on and the Endpoint says canEdit.
+// Stage 4e (map v12, rule 9; usecase-12 step 10 and f): the settings of the business, the owner's screen only (the team's
+// decision, 01.10.2026). Fields open when the owner's view is on and the Endpoint says canEdit; otherwise read only.
 import { useEffect, useState } from "react";
 import { call } from "../api/client";
 import { useCall } from "../api/useCall";

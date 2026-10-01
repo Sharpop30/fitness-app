@@ -18,6 +18,7 @@ test("0013 and 0014: 29 tables with RLS, a business for every coach, SETTINGS by
   assert.equal(psql(`select count(*) from coaches where "BusinessID" is null`), "0");
   assert.equal(psql(`select count(*) from information_schema.columns where table_name = 'settings' and column_name = 'CoachID'`), "0");
   assert.equal(psql(`select "isActive" from registry_entries where caller='S12' and "actionName"='update_settings' and "allowedRole"='coach'`), "f");
+  assert.equal(psql(`select "isActive" from registry_entries where caller='S12' and "actionName"='get_settings' and "allowedRole"='coach'`), "f"); // 0015
   assert.equal(psql(`select count(*) from registry_entries where "allowedRole" = 'owner' and "isActive"`), "9");
   assert.equal(psql(`select count(*) from error_codes`), "28");
 });
@@ -64,11 +65,13 @@ test("S22: a newcomer joins as a coach with two Audit rows, and is then a coach 
   assert.deepEqual([me.data.roles, me.data.role], [["coach"], "coach"]);
 });
 
-test("UC12 f: a coach's update_settings is refused by the Registry and logged; S12 still reads, without canEdit", async () => {
+test("UC12 f and map v12: a coach's S12 is refused by the Registry and logged, reading too; the owner reads with canEdit", async () => {
   const { token } = await coachJoins(w.coachToken);
   assert.equal((await call(token, "S12", "settings", "update_settings", { values: { priceMonthly: "1" } })).error?.code, "ACTION_NOT_ALLOWED");
   assert.deepEqual(trail("S12", "update_settings"), ["S12>settings.update_settings:true:-", "S12>settings.update_settings:false:ACTION_NOT_ALLOWED"]);
-  const read = await call(token, "S12", "settings", "get_settings");
-  assert.equal(read.data.canEdit, false);
+  assert.equal((await call(token, "S12", "settings", "get_settings")).error?.code, "ACTION_NOT_ALLOWED");
+  assert.deepEqual(trail("S12", "get_settings"), ["S12>settings.get_settings:true:-", "S12>settings.get_settings:false:ACTION_NOT_ALLOWED"]);
+  // SETTINGS still apply to the coach through the modules: S06 reads the note limit.
+  assert.equal((await call(token, "S06", "settings", "get_settings", { key: "noteMaxLength" })).ok, true);
   assert.equal((await call(w.coachToken, "S12", "settings", "get_settings")).data.canEdit, true);
 });

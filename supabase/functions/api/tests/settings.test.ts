@@ -14,7 +14,8 @@ const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, trainee
 const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: U(11) };
 const owner: Actor = { role: "owner", roles: ["owner", "coach"], businessID: COACH, coachID: COACH, traineeID: null };
 // The coach's update_settings row is out of use (0014); the owner has both rows.
-const ROWS = new Set(["S12/get_settings/coach", "S12/get_settings/owner", "S12/update_settings/owner", "S06/get_settings/coach",
+// Map v12: S12 is the owner's only; the coach's rows are out of use (0014, 0015).
+const ROWS = new Set(["S12/get_settings/owner", "S12/update_settings/owner", "S06/get_settings/coach",
   "S22/get_error_texts/trainee"]);
 
 function world(opts: { storageDown?: boolean } = {}) {
@@ -34,12 +35,12 @@ function world(opts: { storageDown?: boolean } = {}) {
   return { ...w, store, update, writes: () => writes };
 }
 
-Deno.test("update_settings: the owner changes values, the coach reads them back without canEdit, and a key not sent stays", async () => {
+Deno.test("update_settings: the owner changes values and reads them back with canEdit; a coach does not open S12", async () => {
   const w = world();
   assertEquals(await w.update({ priceMonthly: " 400 ", coinsWorkout: 0, feedbackFull: "יפה מאוד (test)" }), ok(null));
   const values = { priceMonthly: "400", coinsWorkout: "0", cancelHours: "24", feedbackFull: "יפה מאוד (test)", noteMaxLength: "280" };
   const read = (actor: Actor) => handle({ caller: "S12", module: "settings", action: "get_settings" }, actor, w.repo, { settings });
-  assertEquals(await read({ ...coach, roles: ["coach"] }), ok({ ...values, canEdit: false }));
+  assertEquals(await read({ ...coach, roles: ["coach"] }), fail("ACTION_NOT_ALLOWED"));
   assertEquals(await read(owner), ok({ ...values, canEdit: true }));
   assertEquals(w.store[OTHER_COACH], { priceMonthly: "999" });
 });

@@ -1,6 +1,7 @@
 // The app shell: role, screen stack, tabs and toast (stage 2 plan, task 7). Screens are separate modules;
 // this file only routes between them. The "More" and "Me" tabs are navigation menus, with no action of their own.
 // Stage 4e (map v11): the owner's tabs and menu, and moving between owner and coach with no new sign-in (rule 10).
+// The business settings (S12) are in the owner's menu only (the team's decision, 01.10.2026; map v12, rule 9).
 import { useMemo, useRef, useState, type ComponentType } from "react";
 import { setSession } from "./api/client";
 import { Row, Screen } from "./design/components";
@@ -44,7 +45,6 @@ function CoachMenu() {
         <Row title="אתגר שבועי" onClick={() => nav.go("S09")} />
         <Row title="תגמולים ומימושים" onClick={() => nav.go("S10")} />
         <Row title="תשלומים וחשבוניות" onClick={() => nav.go("S08")} />
-        <Row title="הגדרות העסק (לצפייה)" onClick={() => nav.go("S12")} />
         {nav.roles.includes("owner") && <Row title="מעבר לבעל העסק" onClick={() => nav.switchRole("owner")} />}
         <Row title="יציאה" onClick={nav.signOut} />
       </div>

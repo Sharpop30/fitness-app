@@ -19,7 +19,7 @@ const CASES: [string, "owner" | "coach" | "trainee", Record<string, unknown>, st
   ["S01", "coach", {}, "הבית שלי"], ["S02", "coach", {}, "מתאמנים"], ["S03", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "נועה (דוגמה)"],
   ["S04", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "תוכנית אימון"], ["S05", "coach", {}, "תרגילים"], ["S06", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "אימונים שבוצעו"],
   ["S07", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "יעד אישי"], ["S08", "coach", {}, "תשלומים וחשבוניות"], ["S09", "coach", {}, "אתגר שבועי"],
-  ["S10", "coach", {}, "תגמולים"], ["S11", "coach", {}, "שיעורים"], ["S12", "coach", {}, "הגדרות העסק"],
+  ["S10", "coach", {}, "תגמולים"], ["S11", "coach", {}, "שיעורים"], ["S12", "owner", {}, "הגדרות העסק"],
   ["S13", "trainee", {}, "הבית שלי"], ["S14", "trainee", {}, "אימון"],
   ["S15", "trainee", { feedback: { done: 9, total: 9, records: [], coins: 10, goal: false, challenge: false, text: "כל הכבוד" } }, "כל הכבוד!"],
   ["S16", "trainee", {}, "האימונים שלי"], ["S17", "trainee", {}, "שיעורים"], ["S18", "trainee", {}, "מטבעות ותגמולים"],
@@ -31,6 +31,20 @@ const CASES: [string, "owner" | "coach" | "trainee", Record<string, unknown>, st
 ];
 
 afterEach(cleanup);
+
+// Map v12 (the team's decision, 01.10.2026): the business settings are in the owner's menu only.
+test("the business settings are in the owner's menu, and not in the coach's", () => {
+  const menu = (role: "owner" | "coach", id: string) => {
+    const S = SCREENS[id];
+    render(<NavContext.Provider value={{ ...nav(role), roles: ["owner", "coach"] }}><S /></NavContext.Provider>);
+  };
+  menu("coach", "more");
+  expect(screen.queryByText(/הגדרות העסק/)).toBeNull();
+  expect(screen.getByText("מעבר לבעל העסק")).toBeTruthy();
+  cleanup();
+  menu("owner", "ownerMore");
+  expect(screen.getByText("הגדרות העסק: מחירים, מטבעות וכללים")).toBeTruthy();
+});
 
 test.each(CASES)("%s opens and shows its title", async (id, role, params, title) => {
   setSession({ role, traineeID: role === "trainee" ? "d0000000-0000-4000-8000-000000001001" : null });
@@ -409,14 +423,9 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     expect(screen.queryByText(/שיא יפה בסקוואט|ק"ג|יעד אישי/)).toBeNull();
   }, 30000);
 
-  test("S12: the owner's view can save; the coach's view shows the values only", async () => {
+  test("S12: the owner's view can save", async () => {
     open("S12", {}, "owner");
     await waitFor(() => expect((document.getElementById("setting-priceMonthly") as HTMLInputElement).disabled).toBe(false), { timeout: 8000 });
     expect(screen.getByRole("button", { name: "שמירה" })).toBeTruthy();
-    cleanup();
-    open("S12", {}, "coach");
-    await shows("ההגדרות נקבעות בידי בעל העסק. כאן אפשר לראות אותן.");
-    expect((document.getElementById("setting-priceMonthly") as HTMLInputElement).disabled).toBe(true);
-    expect(screen.queryByRole("button", { name: "שמירה" })).toBeNull();
   }, 30000);
 });

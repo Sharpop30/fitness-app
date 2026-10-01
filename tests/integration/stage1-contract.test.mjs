@@ -40,6 +40,7 @@ before(async () => {
   // Stage 4e: a coach belongs to a business (0013), here a business of one.
   const businessID = psql(`insert into businesses ("businessName") values ('מאמן (test)') returning "BusinessID"`).split("\n")[0];
   const coachID = psql(`insert into coaches ("BusinessID","authUserID","fullName","email") values ('${businessID}','${coach.id}','מאמן (test)','coach-${stamp}@test.local') returning "CoachID"`).split("\n")[0];
+  psql(`insert into owners ("BusinessID","authUserID","fullName","email") values ('${businessID}','${coach.id}','מאמן (test)','coach-${stamp}@test.local')`); // its owner (rule 9)
   psql(`insert into trainees ("CoachID","authUserID","fullName","email") values ('${coachID}','${trainee.id}','מתאמן (test)','trainee-${stamp}@test.local')`);
   psql(`insert into settings ("BusinessID","settingKey","settingValue") values ('${businessID}','cancelHours','24')`);
   coachToken = coach.token;
