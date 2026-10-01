@@ -82,7 +82,9 @@ export const results: ModuleDef = {
           records: Array.isArray(built.records) ? built.records : [],
           coins: typeof awarded.coins === "number" ? awarded.coins : 0,
           goal: awarded.goal === true,
+          goalCoins: typeof awarded.goalCoins === "number" ? awarded.goalCoins : 0, // map v13
           challenge: checked.challenge === true,
+          challengeCoins: typeof checked.coins === "number" ? checked.coins : 0, // map v13
           text: typeof built.text === "string" ? built.text : "", // empty when feedback failed (module map v4)
         },
       });

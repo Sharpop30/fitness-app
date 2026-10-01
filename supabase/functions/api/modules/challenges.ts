@@ -97,8 +97,10 @@ export const challenges: ModuleDef = {
 
       const completionID = await ctx.repo.addCompletion(c.ChallengeID, traineeID);
       if (!completionID) return ok({ challenge: false }); // completed before: once only
-      await ctx.call({ module: "coins", action: "award", payload: { traineeID, reason: "challenge", eventRef: completionID } });
-      return ok({ challenge: true });
+      const awarded = await ctx.call({ module: "coins", action: "award", payload: { traineeID, reason: "challenge", eventRef: completionID } });
+      // Map v13: the coins credited for completing, for S15; a failed credit is 0, and the completion stays (alternative d).
+      const coins = awarded.ok && typeof (awarded.data as { coins?: unknown })?.coins === "number" ? (awarded.data as { coins: number }).coins : 0;
+      return ok({ challenge: true, coins });
     },
 
     // UC8 step 9: who completed this week's challenge.
