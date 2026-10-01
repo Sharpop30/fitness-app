@@ -192,3 +192,27 @@ export function paymentRequest(coachID, traineeID, { paymentType = "monthly", am
   if (paid) psql(`insert into invoices ("PaymentRequestID","amount","isDemo","issuedAt") values ('${id}',${amount},true, now() - interval '${daysAgo} days')`);
   return id;
 }
+
+// Stage 4e (usecase-12): the coach token of a coach invite link (SITE_URL?coach=token).
+export const coachTokenOf = (link) => new URL(link).searchParams.get("coach");
+
+// Stage 4e, UC12 steps 3-7, LOCAL only: the owner invites a coach by link, and a newcomer signs up and joins on S22.
+// Returns the new coach's { coachID, token }.
+export async function coachJoins(ownerToken, name = `מאמן ${randomBytes(3).toString("hex")} (test)`) {
+  const invited = await call(ownerToken, "S25", "business", "invite_coach", { name, channel: "link" });
+  if (!invited.ok) throw new Error(`invite_coach: ${JSON.stringify(invited.error)}`);
+  const token = await signUp(freshEmail("coach"), freshPassword());
+  const joined = await call(token, "S22", "business", "accept_coach_invite", { token: coachTokenOf(invited.data.link), fullName: name });
+  if (!joined.ok) throw new Error(`accept_coach_invite: ${JSON.stringify(joined.error)}`);
+  return { coachID: joined.data.CoachID, token };
+}
+
+// Stage 4e, LOCAL only: an active trainee "(test)" of a coach, straight into the database, with an identity user.
+export async function traineeOfCoach(coachID) {
+  const email = freshEmail("trainee");
+  const token = await signUp(email, freshPassword());
+  const auth = psql(`select id from auth.users where email = '${email}'`);
+  const traineeID = psql(`insert into trainees ("CoachID","authUserID","fullName","email") values ('${coachID}','${auth}','מתאמן (test)','${email}')
+                          returning "TraineeID"`).split("\n")[0];
+  return { traineeID, token };
+}
