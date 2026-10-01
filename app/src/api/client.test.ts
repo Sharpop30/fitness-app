@@ -23,8 +23,8 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-test("stage 5 puts all 23 screens on the Endpoint", () => {
-  expect([...LIVE_SCREENS].sort()).toEqual(Array.from({ length: 23 }, (_, i) => `S${String(i + 1).padStart(2, "0")}`));
+test("stage 4e puts all 27 screens on the Endpoint, the owner's S24 to S27 too", () => {
+  expect([...LIVE_SCREENS].sort()).toEqual(Array.from({ length: 27 }, (_, i) => `S${String(i + 1).padStart(2, "0")}`));
 });
 
 test("stage 4d: S01, S03, S08, S12 and S19, signed in, go to the Endpoint and declare themselves", async () => {

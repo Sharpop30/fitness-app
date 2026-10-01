@@ -16,6 +16,7 @@ export const ICONS = {
   more: svg(<><circle cx="5" cy="10" r=".6" /><circle cx="10" cy="10" r=".6" /><circle cx="15" cy="10" r=".6" /></>),
   dumbbell: svg(<path d="M6 6v8M14 6v8M3.5 8v4M16.5 8v4M6 10h8" />),
   user: svg(<><circle cx="10" cy="7" r="3.2" /><path d="M3.5 17c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5" /></>),
+  chart: svg(<path d="M3.5 16.5h13M6 13.5v-3M10 13.5v-7M14 13.5v-5" />), // the owner's measures (prototype version 3)
   back: svg(<path d="M7.5 4l6 6-6 6" />, 16), // "back" points right, as in Hebrew apps (finding 38)
   chevron: svg(<path d="M12 5l-5 5 5 5" />, 14), // a list row points left, forward (finding 38)
   offline: svg(<path d="M3 8.5a10 10 0 0 1 14 0M5.5 11.3a6.5 6.5 0 0 1 9 0M8.2 14a2.6 2.6 0 0 1 3.6 0M3 3l14 14" />, 28),
@@ -24,6 +25,8 @@ export const Chevron = () => <span className="chev">{ICONS.chevron}</span>;
 
 const COACH_TABS: [string, string, ReactNode][] = [["S01", "בית", ICONS.home], ["S02", "מתאמנים", ICONS.users], ["S11", "שיעורים", ICONS.calendar], ["more", "עוד", ICONS.more]];
 const TRAINEE_TABS: [string, string, ReactNode][] = [["S13", "בית", ICONS.home], ["S14", "אימון", ICONS.dumbbell], ["S17", "שיעורים", ICONS.calendar], ["me", "אני", ICONS.user]];
+// The owner's tabs (prototype version 3; map v11): overview, coaches, measures, and "more", a navigation menu.
+const OWNER_TABS: [string, string, ReactNode][] = [["S24", "סקירה", ICONS.home], ["S25", "מאמנים", ICONS.users], ["S26", "מדדים", ICONS.chart], ["ownerMore", "עוד", ICONS.more]];
 
 // ---- The theme: the choice is kept in this browser (finding 27). Storage may be missing; the page works without it. ----
 const THEME_KEY = "fitness-theme";
@@ -52,7 +55,7 @@ function ThemeButton() {
 // on demo data, everything is sample data.
 export function Screen({ eyebrow, title, children, noBack }: { eyebrow: ReactNode; title: ReactNode; children: ReactNode; noBack?: boolean }) {
   const nav = useNav();
-  const tabs = nav.role === "coach" ? COACH_TABS : nav.role === "trainee" ? TRAINEE_TABS : [];
+  const tabs = nav.role === "coach" ? COACH_TABS : nav.role === "trainee" ? TRAINEE_TABS : nav.role === "owner" ? OWNER_TABS : [];
   return (
     <>
       <div className="demo-bar">{identityConfigured() ? "תשלומים וחשבוניות הם הדגמה בלבד." : "גרסת דוגמה. כל הנתונים הם נתוני דוגמה, ותשלומים וחשבוניות הם הדגמה בלבד."}</div>

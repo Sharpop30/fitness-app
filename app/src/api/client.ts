@@ -16,9 +16,10 @@ import { accessToken, signOutIdentity } from "../identity/auth";
 // Stage 4d: S01, S03, S08, S12 and S19, with payments, invoices, settings and the trainee card built (stage 4d plan).
 // S19 is the trainee's, and works in the browser with a trainee sign-in in stage 5.
 // Stage 5: S22 and S23, with the identity service (stage 5 plan, task 7). Every screen is on the Endpoint once signed in.
+// Stage 4e: S24 to S27, the owner's screens, with business and home.get_owner_home built (stage 4e plan, task 9).
 export const LIVE_SCREENS = new Set([
   "S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18",
-  "S19", "S20", "S21", "S22", "S23",
+  "S19", "S20", "S21", "S22", "S23", "S24", "S25", "S26", "S27",
 ]);
 
 export interface Envelope {
@@ -40,8 +41,10 @@ export interface Reply<T = any> {
   error: ReplyError | null;
 }
 
+// The role on show. The Endpoint does not take it from here: it finds the person's roles itself, and answers each screen
+// by its Registry row (map v11), so this is the view only.
 export interface Session {
-  role: "coach" | "trainee";
+  role: "owner" | "coach" | "trainee";
   traineeID: string | null;
 }
 

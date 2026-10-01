@@ -16,17 +16,20 @@ for (const line of table.split("\n")) {
   if (!m || m[2].startsWith("(")) continue;
   // A note in parentheses after an action, like S06's "(noteMaxLength)" in map v8, is not an action.
   // Map v9 and v10: S23 lists its actions joined by "ו-", and S22 a note after a comma.
-  m[2] = m[2].replace(/^שירות הזהות; /, "").replace(/, (פעם אחת|לפני).*$/, "").replace(/ ו-/g, ", ").replace(/\s*\([^)]*\)/g, "");
+  // Map v11: S22 joins two actions by "או", and a note in words may follow an action (S12 "לבעל העסק בלבד"); only the
+  // action's own name is kept, and a part with none, like "לפי הקישור", is no action.
+  m[2] = m[2].replace(/^שירות הזהות; /, "").replace(/, (פעם אחת|לפני).*$/, "").replace(/ ו-/g, ", ").replace(/ או /g, ", ").replace(/\s*\([^)]*\)/g, "");
   let mod = "";
-  allowed[m[1]] = new Set(m[2].split(/[;,]\s*/).map((p) => { p = p.trim(); if (p.includes(".")) { const [a, b] = p.split("."); mod = a; return `${a}.${b}`; } return `${mod}.${p}`; }));
+  allowed[m[1]] = new Set(m[2].split(/[;,]\s*/).map((p) => p.trim().match(/^[a-z_.]+/i)?.[0] ?? "").filter(Boolean)
+    .map((p) => { if (p.includes(".")) { const [a, b] = p.split("."); mod = a; return `${a}.${b}`; } return `${mod}.${p}`; }));
 }
 
 
 const usedBy = (f: string) =>
   [...read(f).matchAll(/(?:call|useCall)\(\s*"(S\d\d)",\s*"(\w+)",\s*"(\w+)"/g)].map((m) => ({ caller: m[1], action: `${m[2]}.${m[3]}` }));
 
-test("there are 23 screen files, S01 to S23", () => {
-  expect(screenFiles.map((f) => f.slice(0, 3)).sort()).toEqual(Array.from({ length: 23 }, (_, i) => `S${String(i + 1).padStart(2, "0")}`));
+test("there are 27 screen files, S01 to S27 (map v11)", () => {
+  expect(screenFiles.map((f) => f.slice(0, 3)).sort()).toEqual(Array.from({ length: 27 }, (_, i) => `S${String(i + 1).padStart(2, "0")}`));
 });
 
 test.each(screenFiles)("%s declares itself as the caller and uses only its own actions", (f: string) => {

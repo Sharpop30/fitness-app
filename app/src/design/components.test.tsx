@@ -10,7 +10,7 @@ import {
 } from "./components";
 
 const nav = (over: Partial<Nav> = {}): Nav => ({
-  role: "coach", tab: "S01", depth: 2, go: () => {}, replace: () => {}, back: () => {}, setTab: () => {}, signIn: () => {}, signOut: () => {}, toast: () => {}, ...over,
+  role: "coach", roles: ["coach"], tab: "S01", depth: 2, go: () => {}, replace: () => {}, back: () => {}, setTab: () => {}, signIn: () => {}, switchRole: () => {}, signOut: () => {}, toast: () => {}, ...over,
 });
 
 afterEach(() => { cleanup(); delete document.documentElement.dataset.theme; localStorage.clear(); });

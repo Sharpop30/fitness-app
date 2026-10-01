@@ -93,7 +93,7 @@ const actions: Record<string, H> = {
     t.joined = true;
     return ok({ TraineeID: t.TraineeID });
   },
-  "trainees.get_me": (_p, s) => ok({ role: s.role, traineeID: s.traineeID,
+  "trainees.get_me": (_p, s) => ok({ roles: s.role === "trainee" ? ["trainee"] : ["owner", "coach"], role: s.role, traineeID: s.traineeID,
     fullName: s.role === "trainee" ? D.trainees.find((t) => t.TraineeID === s.traineeID)?.fullName ?? "" : "מאמן (דוגמה)" }),
   "trainees.get_trainee_card": (p) => {
     const tid = String(p.traineeID);
@@ -382,8 +382,56 @@ const actions: Record<string, H> = {
       challenge: c && { challengeName: c.challengeName, ...challengeProgress(tid)! },
       offers: D.classes.flatMap((k) => k.regs.filter((r) => r.TraineeID === tid && r.status === "offered").map(() => ({ ClassID: k.ClassID, startsAt: k.startsAt, hours: num("spotOfferHours") }))) });
   },
+  // ---- M13 home, the owner; M15 business (usecase-12; the demo business has one coach, its owner) ----
+  "home.get_owner_home": () => {
+    const month = (d: Date) => `${d.getFullYear()}-${d.getMonth()}`;
+    const paid = D.payments.filter((q) => q.status === "paid" && month(q.createdAt) === month(D.TODAY));
+    const open = D.payments.filter((q) => q.status === "open");
+    const from = D.sundayOf(D.TODAY), to = D.addDays(from, 7);
+    const week = D.classes.filter((k) => k.status === "active" && k.startsAt >= from && k.startsAt < to);
+    return ok({
+      incomeMonth: paid.reduce((a, q) => a + q.amount, 0), paidMonth: paid.length,
+      openPayments: open.length, openAmount: open.reduce((a, q) => a + q.amount, 0),
+      coaches: 1, pendingCoaches: D.coachInvites.filter((i) => i.status === "open").length,
+      activeTrainees: D.trainees.filter((t) => t.isActive && t.joined).length,
+      classesWeek: { registered: week.reduce((a, k) => a + k.regs.filter((r) => r.status === "registered").length, 0), capacity: week.reduce((a, k) => a + k.capacity, 0) },
+      rewardsToDeliver: D.redemptions.filter((r) => r.status === "pending").length,
+    });
+  },
+  "business.list_coaches": () => ok([
+    { CoachID: D.coach.CoachID, CoachInviteID: null, fullName: D.coach.fullName, joined: true, trainees: D.trainees.filter((t) => t.joined).length },
+    ...D.coachInvites.filter((i) => i.status === "open").map((i) => ({ CoachID: null, CoachInviteID: i.CoachInviteID, fullName: i.inviteeName, joined: false, trainees: 0 })),
+  ]),
+  "business.invite_coach": (p) => {
+    const name = String(p.name ?? "").trim();
+    if (!name || (p.channel !== "link" && p.channel !== "email")) return fail("INVITE_INVALID");
+    D.coachInvites.push({ CoachInviteID: uid(), inviteeName: name, status: "open", expiresAt: D.addDays(D.TODAY, num("inviteValidDays")) });
+    return ok({ link: `https://sharpop30.github.io/fitness-app/?coach=${uid()} (דוגמה)` });
+  },
+  "business.accept_coach_invite": (p) => (p.expired ? fail("INVITE_EXPIRED") : ok({ CoachID: D.coach.CoachID })),
+  "business.get_coach_card": (p) => {
+    if (p.coachID !== D.coach.CoachID) return fail("NOT_ALLOWED");
+    const joined = D.trainees.filter((t) => t.joined);
+    return ok({
+      coach: D.coach,
+      trainees: joined.map((t) => ({ TraineeID: t.TraineeID, fullName: t.fullName, hasProgram: !!activeProgram(t.TraineeID), streak: streak(t.TraineeID) })),
+      income: D.payments.filter((q) => q.status === "paid").reduce((a, q) => a + q.amount, 0),
+      upcomingClasses: D.classes.filter((k) => k.status === "active" && k.startsAt > D.TODAY).length,
+    });
+  },
+  "business.get_kpis": () => {
+    const active = D.trainees.filter((t) => t.isActive && t.joined);
+    const weekAgo = D.addDays(D.TODAY, -7);
+    return ok({
+      activeTrainees: active.length,
+      withProgram: active.filter((t) => activeProgram(t.TraineeID)).length,
+      invoicedPayments: D.payments.filter((q) => q.invoiceNumber !== null).length, allPayments: D.payments.length,
+      challengeCompletions: currentChallenge()?.completions.length ?? 0,
+      loggedThisWeek: active.filter((t) => D.logs.some((l) => l.TraineeID === t.TraineeID && l.performedAt >= weekAgo)).length,
+    });
+  },
   // ---- M14 settings ----
-  "settings.get_settings": () => ok({ ...D.settings }),
+  "settings.get_settings": (_p, s) => ok({ ...D.settings, canEdit: s.role === "owner" }),
   "settings.get_error_texts": () => ok({ ...D.errorTexts }),
   "settings.update_settings": (p) => { Object.assign(D.settings, p.values as Record<string, string>); return ok(null); },
 };

@@ -35,6 +35,9 @@ export const errorTexts: Record<string, string> = {
 
 export const coach = { CoachID: "d0000000-0000-4000-8000-000000000001", fullName: "המאמן (דוגמה)" };
 
+// The business (CLAUDE.md v8, section 7): its owner is the demo coach, and one coach invite is open (prototype version 3).
+export const coachInvites = [{ CoachInviteID: "d0000000-0000-4000-8000-000000000b03", inviteeName: "שירה (דוגמה)", status: "open", expiresAt: addDays(TODAY, 5) }];
+
 export const trainees = [
   { TraineeID: "d0000000-0000-4000-8000-000000001001", fullName: "נועה (דוגמה)", isActive: true, joined: true },
   { TraineeID: "d0000000-0000-4000-8000-000000001002", fullName: "איתי (דוגמה)", isActive: true, joined: true },

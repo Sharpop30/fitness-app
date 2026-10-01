@@ -11,20 +11,23 @@ import { NavContext, type Nav } from "../nav";
 // No identity token by default, so every screen stays on the demo adapter; the live block below sets one.
 vi.mock("../identity/auth", async (original) => ({ ...(await original<object>()), accessToken: vi.fn(() => null) }));
 
-const nav = (role: "coach" | "trainee"): Nav => ({
-  role, tab: null, depth: 2, go: () => {}, replace: () => {}, back: () => {}, setTab: () => {}, signIn: () => {}, signOut: () => {}, toast: () => {},
+const nav = (role: "owner" | "coach" | "trainee"): Nav => ({
+  role, roles: [role], tab: null, depth: 2, go: () => {}, replace: () => {}, back: () => {}, setTab: () => {}, signIn: () => {}, switchRole: () => {}, signOut: () => {}, toast: () => {},
 });
 
-const CASES: [string, "coach" | "trainee", Record<string, unknown>, string][] = [
+const CASES: [string, "owner" | "coach" | "trainee", Record<string, unknown>, string][] = [
   ["S01", "coach", {}, "הבית שלי"], ["S02", "coach", {}, "מתאמנים"], ["S03", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "נועה (דוגמה)"],
   ["S04", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "תוכנית אימון"], ["S05", "coach", {}, "תרגילים"], ["S06", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "אימונים שבוצעו"],
   ["S07", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "יעד אישי"], ["S08", "coach", {}, "תשלומים וחשבוניות"], ["S09", "coach", {}, "אתגר שבועי"],
-  ["S10", "coach", {}, "תגמולים"], ["S11", "coach", {}, "שיעורים"], ["S12", "coach", {}, "הגדרות"],
+  ["S10", "coach", {}, "תגמולים"], ["S11", "coach", {}, "שיעורים"], ["S12", "coach", {}, "הגדרות העסק"],
   ["S13", "trainee", {}, "הבית שלי"], ["S14", "trainee", {}, "אימון"],
   ["S15", "trainee", { feedback: { done: 9, total: 9, records: [], coins: 10, goal: false, challenge: false, text: "כל הכבוד" } }, "כל הכבוד!"],
   ["S16", "trainee", {}, "האימונים שלי"], ["S17", "trainee", {}, "שיעורים"], ["S18", "trainee", {}, "מטבעות ותגמולים"],
   ["S19", "trainee", {}, "תשלומים"], ["S20", "trainee", {}, "האתגר השבועי"], ["S21", "trainee", {}, "גרף התקדמות"],
   ["S22", "trainee", {}, "הצטרפות"], ["S23", "trainee", {}, "כניסה לאפליקציה"],
+  // Stage 4e: the owner's screens (prototype version 3).
+  ["S24", "owner", {}, "העסק שלי"], ["S25", "owner", {}, "מאמנים"], ["S26", "owner", {}, "מדדים"],
+  ["S27", "owner", { coachID: "d0000000-0000-4000-8000-000000000001" }, "המאמן (דוגמה)"],
 ];
 
 afterEach(cleanup);
@@ -98,11 +101,12 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
   afterAll(() => { vi.mocked(accessToken).mockReturnValue(null); vi.unstubAllEnvs(); });
 
   const rows = (sql: string) => psql(sql).split("\n").filter(Boolean).map((l) => l.split("|"));
-  const signedIn = (role: "coach" | "trainee") => {
-    vi.mocked(accessToken).mockReturnValue(role === "coach" ? tokens.coach : tokens.noa);
+  const signedIn = (role: "owner" | "coach" | "trainee") => {
+    vi.mocked(accessToken).mockReturnValue(role === "trainee" ? tokens.noa : tokens.coach);
     setSession({ role, traineeID: role === "trainee" ? NOA : null });
   };
-  const open = (id: string, params: Record<string, unknown> = {}, role: "coach" | "trainee" = "coach") => {
+  // The demo coach is also the owner of the demo business (map v11): the same token, either view.
+  const open = (id: string, params: Record<string, unknown> = {}, role: "owner" | "coach" | "trainee" = "coach") => {
     signedIn(role);
     const S = SCREENS[id];
     render(<NavContext.Provider value={nav(role)}><S {...params} /></NavContext.Provider>);
@@ -279,7 +283,7 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     const count = (want: string) => list.filter(([mine, status]) => status === "active" && mine === want).length;
     if (count("registered")) expect((await screen.findAllByText("רשום", {}, { timeout: 8000 })).length).toBe(count("registered"));
     if (count("waitlist")) await shows(/^בהמתנה, מקום \d+$/);
-    await shows(new RegExp(`אפשר לבטל עד ${psql(`select "settingValue" from settings where "CoachID"='${COACH}' and "settingKey"='cancelHours'`)} שעות`));
+    await shows(new RegExp(`אפשר לבטל עד ${psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID"='${COACH}') and "settingKey"='cancelHours'`)} שעות`));
   }, 30000);
 
   test("S13 (as Noa): her unread messages, and her next class or none", async () => {
@@ -294,7 +298,8 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
   }, 30000);
 
   // ---- Stage 4d: S01, S03, S08, S12 and S19, and S06's note limit (stage 4d plan, task 11) ----
-  const setting = (key: string) => psql(`select "settingValue" from settings where "CoachID"='${COACH}' and "settingKey"='${key}'`);
+  // SETTINGS belong to the business since stage 4e (0013).
+  const setting = (key: string) => psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID"='${COACH}') and "settingKey"='${key}'`);
   const PAY: Record<string, string> = { monthly: "מנוי חודשי", pack10: "חבילת 10 אימונים (כרטיסייה)" };
 
   test("S01: active trainees, open payments and today's date, from the database", async () => {
@@ -362,5 +367,56 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
   test("S06: the note form shows the longest note from SETTINGS (stage 4b report, gap 2)", async () => {
     open("S06", { traineeID: NOA, noteFor: "d0000000-0000-4000-8000-000000006001" });
     await shows(new RegExp(`עד ${setting("noteMaxLength")} תווים`));
+  }, 30000);
+
+  // ---- Stage 4e: S24 to S27, and S12 by the role on show (stage 4e plan, task 9) ----
+  const BUSINESS = `(select "BusinessID" from coaches where "CoachID"='${COACH}')`;
+  const money = (n: number) => `₪${n.toLocaleString("he-IL")}`;
+
+  test("S24: the month's income, the open sum and the active trainees of the whole demo business", async () => {
+    open("S24", {}, "owner");
+    const [[income], [openSum], [active]] = [
+      rows(`select coalesce(sum(p.amount),0)::int from payment_requests p join coaches c using ("CoachID") where c."BusinessID"=${BUSINESS}
+            and p.status='paid' and to_char(p."paidAt" at time zone 'Asia/Jerusalem','YYYY-MM') = to_char(now() at time zone 'Asia/Jerusalem','YYYY-MM')`)[0],
+      rows(`select coalesce(sum(p.amount),0)::int from payment_requests p join coaches c using ("CoachID") where c."BusinessID"=${BUSINESS} and p.status='open'`)[0],
+      rows(`select count(*) from trainees t join coaches c using ("CoachID") where c."BusinessID"=${BUSINESS} and t."isActive"`)[0],
+    ];
+    await shows(money(Number(income)));
+    expect(await lineOf("מתאמנים פעילים")).toContain(active);
+    if (Number(openSum)) await shows(`${money(Number(openSum))} לגבייה`);
+  }, 30000);
+
+  test("S25: every coach of the demo business, and every open coach invite as not joined", async () => {
+    open("S25", {}, "owner");
+    for (const [name] of rows(`select "fullName" from coaches where "BusinessID"=${BUSINESS} and "isActive"`)) await shows(name);
+    for (const [name] of rows(`select "inviteeName" from coach_invites where "BusinessID"=${BUSINESS} and status='open' and "expiresAt" > now()`)) {
+      expect(await lineOf(name)).toContain("הוזמן, טרם הצטרף");
+    }
+  }, 30000);
+
+  test("S26: the measures from the database, each with its target not set", async () => {
+    open("S26", {}, "owner");
+    const [[active]] = rows(`select count(*) from trainees t join coaches c using ("CoachID") where c."BusinessID"=${BUSINESS} and t."isActive"`);
+    const [[all]] = rows(`select count(*) from payment_requests p join coaches c using ("CoachID") where c."BusinessID"=${BUSINESS}`);
+    expect(await lineOf("תוכניות פעילות לכל מתאמן")).toContain(`מתוך ${active}`);
+    expect(await lineOf("תשלומים עם חשבונית")).toContain(`מתוך ${all}`);
+    expect((await screen.findAllByText(/יעד: טרם נקבע/)).length).toBe(4);
+  }, 30000);
+
+  test("S27: the demo coach's card names their trainees, with no result, note or goal", async () => {
+    open("S27", { coachID: COACH }, "owner");
+    for (const [name] of rows(`select "fullName" from trainees where "CoachID"='${COACH}' and "isActive"`)) await shows(name);
+    expect(screen.queryByText(/שיא יפה בסקוואט|ק"ג|יעד אישי/)).toBeNull();
+  }, 30000);
+
+  test("S12: the owner's view can save; the coach's view shows the values only", async () => {
+    open("S12", {}, "owner");
+    await waitFor(() => expect((document.getElementById("setting-priceMonthly") as HTMLInputElement).disabled).toBe(false), { timeout: 8000 });
+    expect(screen.getByRole("button", { name: "שמירה" })).toBeTruthy();
+    cleanup();
+    open("S12", {}, "coach");
+    await shows("ההגדרות נקבעות בידי בעל העסק. כאן אפשר לראות אותן.");
+    expect((document.getElementById("setting-priceMonthly") as HTMLInputElement).disabled).toBe(true);
+    expect(screen.queryByRole("button", { name: "שמירה" })).toBeNull();
   }, 30000);
 });

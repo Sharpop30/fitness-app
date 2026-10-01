@@ -61,6 +61,7 @@ main { flex: 1; padding: 16px 18px 28px; display: flex; flex-direction: column; 
 .divider { border-top: 1px solid var(--line); padding-top: 8px; }
 .muted { color: var(--muted); } .small { font-size: 12px; }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.kpi { font-size: 18px; } /* a measure at the end of its row, S26 (prototype version 3) */
 .ltr { direction: ltr; unicode-bidi: isolate; }
 
 /* Cards */
