@@ -103,6 +103,7 @@ test("stage 5: S22 and S23, signed in, go to the Endpoint and declare themselves
 
 test("without the identity service, S22 and S23 stay on the demo adapter", async () => {
   vi.mocked(accessToken).mockReturnValue(null);
+  setSession({ role: "coach", traineeID: null }); // a demo sign-in: no token when the session opens
   for (const caller of ["S22", "S23"]) expect((await call(caller, "settings", "get_error_texts")).data.from).toBe("demo");
   expect(fetchMock).not.toHaveBeenCalled();
 });
@@ -122,11 +123,23 @@ test("I04: a file goes straight to the upload address; a refusal or no network i
 
 test("S04 stays on the demo adapter with a demo sign-in, or with no Endpoint configured", async () => {
   vi.mocked(accessToken).mockReturnValue(null);
+  setSession({ role: "coach", traineeID: null }); // a demo sign-in: no token when the session opens
   expect((await call("S04", "programs", "get_active_program")).data.from).toBe("demo");
   vi.mocked(accessToken).mockReturnValue("test-token");
   vi.stubEnv("VITE_API_URL", "");
   expect((await call("S04", "programs", "get_active_program")).data.from).toBe("demo");
   expect(fetchMock).not.toHaveBeenCalled();
+});
+
+// Found closing stage 4e, in the cloud: a sign-in lost after the session opened showed the demo data as the business's.
+test("a session opened with the identity service whose sign-in is lost is NOT_ALLOWED, never the demo", async () => {
+  setErrorTexts({ NOT_ALLOWED: "אין לך גישה לזה" });
+  vi.mocked(accessToken).mockReturnValue(null); // the session of beforeEach opened with a token
+  const r = await call("S24", "home", "get_owner_home");
+  expect(r).toEqual({ ok: false, data: null, error: { code: "NOT_ALLOWED", message: "אין לך גישה לזה" } });
+  expect(demoSeen).toEqual([]);
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect((await uploadFile("http://store.test/upload", new Blob([]))).error?.code).toBe("UPLOAD_FAILED");
 });
 
 test("an unreachable Endpoint is STORAGE_UNAVAILABLE, with the human text from ERROR_CODES", async () => {

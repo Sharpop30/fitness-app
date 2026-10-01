@@ -59,8 +59,12 @@ export function setErrorTexts(texts: Record<string, string>) {
   errorTexts = texts;
 }
 
+// True for a session opened with the identity service (a token was there), and false for the demo sign-in.
+let liveSession = false;
+
 export function setSession(s: Session | null) {
   session = s;
+  liveSession = !!s && accessToken() !== null;
   if (!s) signOutIdentity();
 }
 
@@ -98,6 +102,11 @@ export function call<T = any>(caller: string, module: string, action: string, pa
   if (!session && caller !== "S22" && !(caller === "S23" && isLive(caller))) {
     return Promise.resolve({ ok: false, data: null, error: { code: "NOT_ALLOWED", message: "אין לך גישה לזה" } });
   }
+  // A session opened with the identity service never falls back to the demo data: once its sign-in is lost, a screen of
+  // the Endpoint is NOT_ALLOWED, and the demo is never shown as if it were the business's (found closing stage 4e).
+  if (liveSession && LIVE_SCREENS.has(caller) && accessToken() === null) {
+    return Promise.resolve({ ok: false, data: null, error: { code: "NOT_ALLOWED", message: errorTexts.NOT_ALLOWED ?? "אין לך גישה לזה" } });
+  }
   return (isLive(caller) ? endpointAdapter : adapter)({ caller, module, action, payload, lang: "he" }, session ?? { role: "trainee", traineeID: null }).then((r) =>
     r.error && !r.error.message ? { ...r, error: { ...r.error, message: errorTexts[r.error.code] ?? "משהו השתבש. אפשר לנסות שוב" } } : r);
 }
@@ -106,6 +115,7 @@ export function call<T = any>(caller: string, module: string, action: string, pa
 // Any refusal or failure is UPLOAD_FAILED (UC10 c). On demo data there is no store, and the demo upload always goes through.
 export async function uploadFile(uploadUrl: string, file: Blob): Promise<Reply<null>> {
   const failed: Reply<null> = { ok: false, data: null, error: { code: "UPLOAD_FAILED", message: errorTexts.UPLOAD_FAILED ?? "משהו השתבש. אפשר לנסות שוב" } };
+  if (liveSession && accessToken() === null) return failed; // the sign-in was lost: nothing pretends the upload went
   if (!isLive("S05")) return { ok: true, data: null, error: null };
   try {
     const res = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
