@@ -3,7 +3,7 @@
 | שדה | ערך |
 | :-- | :-- |
 | השם | usecase-12-business-owner.md |
-| מעמד | טיוטה לאישור הצוות, גרסה 2, 01.10.2026 (דוח שלב 4ה, פער 2, והכרעת הצוות 01.10.2026 על S12, חלופה 1). גרסה 1 אושרה 30.09.2026 |
+| מעמד | מאושר, גרסה 1, 30.09.2026. הכרעות הצוות: מסלול ב והכרעות 2 עד 7 ב-doc-owner-role |
 | תאריך | 30.09.2026 |
 | לפי | ההנחיה ליצירת מקרי שימוש (פריט 55), חלק ז; מדריך התרשימים (פריט 24), סוג 8 |
 | התרשים | mermaid/diagram-uc12-business-owner.mmd |
@@ -63,7 +63,7 @@
 | ג | הערוץ לא שלח | צעד 5 | ההזמנה נשארת פתוחה, ובעל העסק יכול לשלוח שוב או להעתיק קישור. קוד INVITE_DELIVERY_FAILED | Interface | קוד רגיל | invite_channel |
 | ד | המשתמש כבר מאמן בעסק כלשהו, או מתאמן | צעד 7 | ההצטרפות נדחית. קוד NOT_ALLOWED | Code | קוד רגיל | business |
 | ה | אין מאמנים מלבד בעל העסק | צעד 8 | הרשימה מציגה את בעל העסק כמאמן, והודעה איך מזמינים מאמן | Code | קוד רגיל | S25 |
-| ו | מאמן מנסה לשנות הגדרות | צעד 10 | אין שורת Registry למאמן מול S12. קוד ACTION_NOT_ALLOWED. "הגדרות העסק" אינן בתפריט של המאמן | Code | קוד רגיל | Orchestrator |
+| ו | מאמן מנסה לשנות הגדרות | צעד 10 | אין שורת Registry למאמן מול update_settings. קוד ACTION_NOT_ALLOWED. ב-S12 המאמן רואה את הערכים בלבד | Code | קוד רגיל | Orchestrator |
 | ז | פנייה בין מודולים נכשלה | צעדים 2, 8, 9 | השדה שלה חוזר ריק, ושאר המסך מוצג, כמו ב-get_trainee_card | Code | קוד רגיל | home, business |
 
 ## 7. חריגות מערכתיות
@@ -101,12 +101,11 @@
 | S25 | business | list_coaches, invite_coach | בעל העסק |
 | S27 | business | get_coach_card | בעל העסק (של העסק) |
 | S26 | business | get_kpis | בעל העסק |
-| S12 | settings | get_settings | בעל העסק בלבד (השורה של המאמן יוצאת משימוש) |
+| S12 | settings | get_settings | בעל העסק, מאמן |
 | S12 | settings | update_settings | בעל העסק בלבד (השורה של המאמן יוצאת משימוש) |
 | S22 | business | accept_coach_invite | בעל ההזמנה: משתמש מזוהה שעוד אינו מאמן או מתאמן |
 | M15 | invite_channel | send_invite | מודול |
 | M15 | trainees, payments, classes, progress, challenges, results | list_trainees, list_payments, list_upcoming_classes, get_streak, list_completions, list_results | מודול, בשם בעל העסק |
-| M15 | settings | get_settings | מודול: inviteValidDays של העסק (צעד 4) |
 | M13 | business | list_coaches | מודול |
 
 ## 11. קודי השגיאה
@@ -152,4 +151,3 @@
 | גרסה | תאריך | מה השתנה |
 | :-- | :-- | :-- |
 | 1 | 30.09.2026 | מקרה השימוש המקורי |
-| 2 | 01.10.2026 | מדוח שלב 4ה, פער 2: סעיף 10, השורה M15 מול settings.get_settings. מהכרעת הצוות על S12 (חלופה 1): חלופה ו, וסעיף 10, S12 מול get_settings לבעל העסק בלבד |

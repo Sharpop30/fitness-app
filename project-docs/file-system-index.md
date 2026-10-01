@@ -105,7 +105,7 @@
 | doc-stage-4c-plan.md, findings-stage-4c.md | project-docs | 28.09.2026. שלב 4ג נסגר |
 | doc-stage-4d-plan.md, findings-stage-4d.md | project-docs | 28.09.2026. שלב 4ד נסגר |
 | doc-stage-5-plan.md, findings-stage-5.md | project-docs | 29.09.2026. שלב 5 נסגר |
-| doc-stage-4e-plan.md, findings-stage-4e.md | project-docs | 01.10.2026. שלב 4ה: התוכנית והדוח אושרו; טיוטות המפה ו-usecase-12 ממתינות |
+| doc-stage-4e-plan.md, findings-stage-4e.md | project-docs | 01.10.2026. שלב 4ה נסגר |
 | doc-design-stage-plan.md, findings-design-stage.md | project-docs | 30.09.2026. שלב העיצוב (5א) נסגר |
 | findings-design-review.md, doc-design-images.md | project-docs | 30.09.2026. סקירת העיצוב, והתמונות שנבחרו |
 | doc-design-review-brief.md | project-docs | 29.09.2026. הנחיות לסשן סקירת העיצוב |
