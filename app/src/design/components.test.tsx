@@ -2,6 +2,7 @@
 // Synthetic data only.
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { StrictMode } from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NavContext, type Nav } from "../nav";
 import {
@@ -62,6 +63,17 @@ test("finding 16: a button with a pending action says it is sending and cannot b
   expect(onClick).toHaveBeenCalledTimes(1);
   await act(async () => finish());
   expect(screen.getByRole("button", { name: "שמירה" })).toBeTruthy();
+});
+
+// Found signing in to the cloud in stage 4e: in development React mounts every component twice (StrictMode), and the
+// button stayed "sending" after the reply.
+test("finding 16, under StrictMode: the button comes back after the reply", async () => {
+  let finish!: () => void;
+  render(<StrictMode><Button onClick={() => new Promise<void>((r) => { finish = r; })}>כניסה</Button></StrictMode>);
+  fireEvent.click(screen.getByRole("button", { name: "כניסה" }));
+  await screen.findByRole("button", { name: "שולח..." });
+  await act(async () => finish());
+  expect(screen.getByRole("button", { name: "כניסה" })).toBeTruthy();
 });
 
 test("finding 18: a label names its field, with the field's own id or a made one; ✓ has a name and a pressed state", () => {
