@@ -16,9 +16,9 @@ import { fakeRepo, U } from "./fake-repo.ts";
 const COACH = U(1), OTHER_COACH = U(2);
 const NOA = U(11), ITAI = U(12), MAYA = U(13), STRANGER = U(19);
 const NAMES: Record<string, string> = { [NOA]: "נועה (test)", [ITAI]: "איתי (test)", [MAYA]: "מאיה (test)", [STRANGER]: "זר (test)" };
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const otherCoach: Actor = { role: "coach", coachID: OTHER_COACH, traineeID: null };
-const as = (t: string): Actor => ({ role: "trainee", coachID: t === STRANGER ? OTHER_COACH : COACH, traineeID: t });
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const otherCoach: Actor = { role: "coach", businessID: OTHER_COACH, coachID: OTHER_COACH, traineeID: null };
+const as = (t: string): Actor => ({ role: "trainee", businessID: t === STRANGER ? OTHER_COACH : COACH, coachID: t === STRANGER ? OTHER_COACH : COACH, traineeID: t });
 const HOUR = 60 * 60 * 1000;
 const inHours = (h: number) => new Date(Date.now() + h * HOUR).toISOString();
 const SETTINGS = { cancelHours: "24", spotOfferHours: "2", coinsAttendance: "5" };
@@ -53,7 +53,7 @@ function world(opts: { settings?: Record<string, string>; storageDown?: boolean 
   }
 
   const w = fakeRepo({
-    getCoachSettings: async () => (down(), opts.settings ?? SETTINGS),
+    getBusinessSettings: async () => (down(), opts.settings ?? SETTINGS),
     isActiveTraineeOfCoach: async (t, c) => (down(), c === COACH ? [NOA, ITAI, MAYA].includes(t) : t === STRANGER),
     publishClass: async (CoachID, startsAt, place, capacity) => {
       down();

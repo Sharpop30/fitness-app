@@ -102,6 +102,17 @@ export const coins: ModuleDef = {
 
     // UC7 steps 2 and 9. op "add" adds a reward; a missing name or price is VALUE_NOT_SET (module map v5, decision 7).
     async manage_rewards(ctx, payload) {
+      // The owner, through M13 (map v11): the list only, as the redemptions of every coach of the business and their state.
+      if (ctx.actor.role === "owner") {
+        if (payload.op !== undefined && payload.op !== "list") return fail("NOT_ALLOWED");
+        const coaches = await ctx.repo.coachesInReach(ctx.actor.businessID, payload.coachID);
+        if (!coaches) return fail("NOT_ALLOWED");
+        const redemptions = [];
+        for (const CoachID of coaches) {
+          redemptions.push(...(await ctx.repo.listRedemptions(CoachID)).map((r) => ({ RedemptionID: r.RedemptionID, CoachID, status: r.status })));
+        }
+        return ok({ redemptions });
+      }
       if (ctx.actor.role !== "coach") return fail("NOT_ALLOWED");
       if (payload.op === "add") {
         const name = typeof payload.rewardName === "string" ? payload.rewardName.trim() : "";

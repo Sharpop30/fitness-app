@@ -14,9 +14,9 @@ import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2), TRAINEE = U(11), OTHER_TRAINEE = U(12);
 const SQUAT = U(21), PUSHUP = U(22), FOREIGN = U(23);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const otherCoach: Actor = { role: "coach", coachID: OTHER_COACH, traineeID: null };
-const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: TRAINEE };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const otherCoach: Actor = { role: "coach", businessID: OTHER_COACH, coachID: OTHER_COACH, traineeID: null };
+const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: TRAINEE };
 const AMOUNTS = { coinsWorkout: "10", coinsGoal: "30", coinsChallenge: "50", coinsAttendance: "5" };
 
 let seq = 800;
@@ -48,7 +48,7 @@ function world(opts: { settings?: Record<string, string>; logs?: WorkoutLog[]; g
 
   const w = fakeRepo({
     isActiveTraineeOfCoach: async (t, c) => (down(), c === COACH && [TRAINEE, OTHER_TRAINEE].includes(t)),
-    getCoachSettings: async () => (down(), opts.settings ?? AMOUNTS),
+    getBusinessSettings: async () => (down(), opts.settings ?? AMOUNTS),
     getWorkoutLog: async (id) => (down(), structuredClone(logs.find((l) => l.WorkoutLogID === id) ?? null)),
     getExerciseInReach: async (id, c) => (down(), exercises.find((e) => e.ExerciseID === id && (e.CoachID === null || e.CoachID === c)) ?? null),
     awardCoins: async (TraineeID, eventType, eventRef, amount) => {

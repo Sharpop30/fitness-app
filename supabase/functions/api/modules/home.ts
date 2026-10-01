@@ -1,5 +1,6 @@
-// M13 home: the coach's home and the trainee's home, made only of existing actions, through the Orchestrator.
-// Requirements 19 (story-19, usecase-04 step 6) and 25 (story-25, usecase-09). No data of its own, and no table.
+// M13 home: the coach's home, the trainee's home and the owner's home, made only of existing actions, through the
+// Orchestrator. Requirements 19 (story-19, usecase-04 step 6), 25 (story-25, usecase-09) and 15 (story-15, usecase-12
+// step 2). No data of its own, and no table.
 // Acceptance (UC9 section 13): the trainee sees the next workout, the next class, the challenge progress and the
 // streak. UC9 c and section 7: an item that fails is left out, and the rest of the screen still comes.
 // Payments are built in 4d and classes in 4c, so every item of both homes now has its source.
@@ -8,6 +9,7 @@ import type { ModuleContext, ModuleDef } from "../orchestrator.ts";
 
 const ISRAEL_DAY = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem" });
 const dayKey = (at: string | number) => ISRAEL_DAY.format(new Date(at));
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 // One item: the data of a reply that worked, or null for one that failed (UC9 c).
 const dataOf = <T>(r: Reply): T | null => (r.ok ? (r.data as T) : null);
@@ -96,6 +98,45 @@ export const home: ModuleDef = {
         lateRequests: k?.lateRequests ? k.lateRequests.length : null,
         rewardsToDeliver: redemptions ? redemptions.filter((r) => r.status === "pending").length : null,
         challenge: c && { challengeName: c.challengeName, completions: done ? done.length : null },
+      });
+    },
+
+    // UC12 step 2 and alternative g: the business at a glance, for the whole business (map v11).
+    async get_owner_home(ctx: ModuleContext) {
+      if (ctx.actor.role !== "owner") return fail("NOT_ALLOWED");
+      const ask = (module: string, action: string, payload: Record<string, unknown> = {}) => ctx.call({ module, action, payload });
+
+      const [payments, classes, rewards, trainees, coaches] = await Promise.all([
+        ask("payments", "list_payments"),
+        ask("classes", "list_upcoming_classes"),
+        ask("coins", "manage_rewards", { op: "list" }),
+        ask("trainees", "list_trainees"),
+        ask("business", "list_coaches"),
+      ]);
+
+      // This month and this week in Israel time; the week starts on Sunday, as the challenge's (stage 4e plan, decision 7).
+      const today = dayKey(Date.now());
+      const sunday = new Date(Date.parse(today) - new Date(today).getUTCDay() * DAY_MS).toISOString().slice(0, 10);
+      const saturday = new Date(Date.parse(sunday) + 6 * DAY_MS).toISOString().slice(0, 10);
+      const pay = dataOf<{ status: string; amount: number; paidAt: string | null }[]>(payments);
+      const paidMonth = pay?.filter((p) => p.status === "paid" && p.paidAt && dayKey(p.paidAt).slice(0, 7) === today.slice(0, 7));
+      const open = pay?.filter((p) => p.status === "open");
+      const week = dataOf<{ classes: { startsAt: string; status: string; capacity: number; registered: number }[] }>(classes)?.classes
+        .filter((k) => k.status === "active" && dayKey(k.startsAt) >= sunday && dayKey(k.startsAt) <= saturday);
+      const redemptions = dataOf<{ redemptions: { status: string }[] }>(rewards)?.redemptions;
+      const list = dataOf<{ joined: boolean; isActive: boolean }[]>(trainees);
+      const team = dataOf<{ joined: boolean }[]>(coaches);
+
+      return ok({
+        incomeMonth: paidMonth ? paidMonth.reduce((sum, p) => sum + p.amount, 0) : null,
+        paidMonth: paidMonth ? paidMonth.length : null,
+        openPayments: open ? open.length : null,
+        openAmount: open ? open.reduce((sum, p) => sum + p.amount, 0) : null,
+        coaches: team ? team.filter((k) => k.joined).length : null,
+        pendingCoaches: team ? team.filter((k) => !k.joined).length : null,
+        activeTrainees: list ? list.filter((t) => t.joined && t.isActive).length : null,
+        classesWeek: week ? { registered: week.reduce((n, k) => n + k.registered, 0), capacity: week.reduce((n, k) => n + k.capacity, 0) } : null,
+        rewardsToDeliver: redemptions ? redemptions.filter((r) => r.status === "pending").length : null,
       });
     },
   },

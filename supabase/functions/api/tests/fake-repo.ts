@@ -1,4 +1,4 @@
-// An in-memory Repository for the unit tests of stages 4a to 4d (synthetic data, no database).
+// An in-memory Repository for the unit tests of stages 4a to 4e (synthetic data, no database).
 // Every operation a test does not supply rejects, so a module that reaches past what it should fails the test.
 import type { AuditRecord, Repository } from "../repository.ts";
 
@@ -22,16 +22,22 @@ export const stage4cNotUsed = {
 // The stage 4d operations (payments, invoices and settings), in the same way.
 export const stage4dNotUsed = {
   createPaymentRequest: notUsed, getPaymentRequest: notUsed, listPaymentRequests: notUsed, markPaymentPaid: notUsed,
-  createInvoice: notUsed, listInvoices: notUsed, updateCoachSettings: notUsed,
+  createInvoice: notUsed, listInvoices: notUsed, updateBusinessSettings: notUsed,
 };
 
 // The stage 5 operations (joining and file storage), in the same way.
 export const stage5NotUsed = { listErrorTexts: notUsed, acceptInvite: notUsed, createVideoUploadAddress: notUsed, uploadedVideoAddress: notUsed };
 
+// The stage 4e operations (the business), in the same way.
+export const stage4eNotUsed = {
+  coachesInReach: notUsed, listBusinessCoaches: notUsed, listOpenCoachInvites: notUsed, createCoachInvite: notUsed,
+  acceptCoachInvite: notUsed, businessOfTrainee: notUsed, countWorkoutsSince: notUsed,
+};
+
 export function fakeRepo(over: Partial<Repository> = {}): { repo: Repository; audits: AuditRecord[] } {
   const audits: AuditRecord[] = [];
   const repo: Repository = {
-    findActorByAuthUser: notUsed, getCoachSettings: notUsed,
+    findActorByAuthUser: notUsed, getBusinessSettings: notUsed,
     isActiveTraineeOfCoach: notUsed, listExercisesForCoach: notUsed, getActiveProgram: notUsed, listInactivePrograms: notUsed,
     saveProgram: notUsed, swapExercise: notUsed, startNewProgram: notUsed,
     listTraineesForCoach: notUsed, createInvite: notUsed, createExercise: notUsed, getExerciseInReach: notUsed, attachVideo: notUsed,
@@ -40,6 +46,7 @@ export function fakeRepo(over: Partial<Repository> = {}): { repo: Repository; au
     ...stage4cNotUsed,
     ...stage4dNotUsed,
     ...stage5NotUsed,
+    ...stage4eNotUsed,
     // Every row is registered: the Registry itself is tested in orchestrator.test.ts and in the integration tests.
     isRegistered: () => Promise.resolve(true),
     writeAudit: (e) => (audits.push(e), Promise.resolve()),

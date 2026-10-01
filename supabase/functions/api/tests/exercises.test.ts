@@ -12,8 +12,8 @@ import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2);
 const SQUAT = U(21), FOREIGN = U(24);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: U(11) };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: U(11) };
 
 function world(opts: { settings?: Record<string, string>; storageDown?: boolean; bucketDown?: boolean } = {}) {
   const uploaded = new Set<string>(); // the files in the bucket
@@ -25,7 +25,7 @@ function world(opts: { settings?: Record<string, string>; storageDown?: boolean;
   const down = () => { if (opts.storageDown) throw new StorageUnavailable("db down"); };
   const strip = ({ coach: _, ...e }: Exercise & { coach: string | null }): Exercise => e;
   const { repo } = fakeRepo({
-    getCoachSettings: async () => (down(), opts.settings ?? { videoMaxSeconds: "60", videoMaxMegabytes: "50" }),
+    getBusinessSettings: async () => (down(), opts.settings ?? { videoMaxSeconds: "60", videoMaxMegabytes: "50" }),
     createVideoUploadAddress: async (path) => opts.bucketDown ? null : (issued.push(path), `https://store.test/upload/${path}?token=t`),
     uploadedVideoAddress: async (path) => uploaded.has(path) ? `https://store.test/public/${path}` : null,
     getExerciseInReach: async (id, c) => {

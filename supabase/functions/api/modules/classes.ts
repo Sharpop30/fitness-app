@@ -133,7 +133,24 @@ export const classes: ModuleDef = {
 
     // UC11 steps 3 and 8. The coach: from the start of the day three days back, to mark attendance after a class, with
     // the late-cancel requests. The trainee: classes that have not started (module map v7).
-    async list_upcoming_classes(ctx) {
+    async list_upcoming_classes(ctx, payload) {
+      // The owner, through M13 and M15 (map v11): the classes of every coach of the business, or of the coach asked, from
+      // this week's Sunday, as counts only. Reading only: no expired offer is moved on here, so the owner writes nothing.
+      if (ctx.actor.role === "owner") {
+        const coaches = await ctx.repo.coachesInReach(ctx.actor.businessID, payload.coachID);
+        if (!coaches) return fail("NOT_ALLOWED");
+        const from = israelDayStart(new Date(ISRAEL_DAY.format(new Date())).getUTCDay());
+        const classes = [];
+        for (const coachID of coaches) {
+          for (const k of await ctx.repo.listClasses(coachID, from)) {
+            classes.push({
+              ClassID: k.ClassID, CoachID: k.CoachID, startsAt: k.startsAt, place: k.place, capacity: k.capacity, status: k.status,
+              registered: k.registrations.filter((r) => r.status === "registered").length,
+            });
+          }
+        }
+        return ok({ classes, lateRequests: [] });
+      }
       const [cancelHours, offerHours] = await Promise.all([hoursFor(ctx, "cancelHours"), hoursFor(ctx, "spotOfferHours")]);
       if (typeof cancelHours === "string") return fail(cancelHours);
       if (typeof offerHours === "string") return fail(offerHours);

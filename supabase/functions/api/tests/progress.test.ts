@@ -11,9 +11,9 @@ import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2), TRAINEE = U(11), OTHER_TRAINEE = U(12);
 const SQUAT = U(21), PUSHUP = U(22), BENCH = U(23);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const otherCoach: Actor = { role: "coach", coachID: OTHER_COACH, traineeID: null };
-const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: TRAINEE };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const otherCoach: Actor = { role: "coach", businessID: OTHER_COACH, coachID: OTHER_COACH, traineeID: null };
+const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: TRAINEE };
 
 const exercises: Exercise[] = [
   { ExerciseID: SQUAT, exerciseName: "סקוואט", isBodyweight: false, videoType: null, videoUrl: null },
@@ -42,7 +42,7 @@ function world(logs: WorkoutLog[], opts: { settings?: Record<string, string>; st
     listResults: async (t) => (down(), structuredClone(logs.filter((l) => l.TraineeID === t).sort(newestFirst))),
     getWorkoutLog: async (id) => (down(), structuredClone(logs.find((l) => l.WorkoutLogID === id) ?? null)),
     getExercisesByID: async (ids) => (down(), exercises.filter((e) => ids.includes(e.ExerciseID))),
-    getCoachSettings: async () => (down(), opts.settings ?? { streakGapDays: "3" }),
+    getBusinessSettings: async () => (down(), opts.settings ?? { streakGapDays: "3" }),
   });
 }
 

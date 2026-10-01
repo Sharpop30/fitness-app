@@ -48,6 +48,18 @@ export const payments: ModuleDef = {
 
     // UC2 steps 4, 10 and alternatives a, e. Newest first, with the invoice number of a paid request.
     async list_payments(ctx, payload) {
+      // The owner, through M13 and M15 (map v11): every coach of the business, or the coach asked, with the coach and the
+      // day it was paid, for the sums of the business.
+      if (ctx.actor.role === "owner") {
+        const coaches = await ctx.repo.coachesInReach(ctx.actor.businessID, payload.coachID);
+        if (!coaches) return fail("NOT_ALLOWED");
+        const rows = [];
+        for (const coachID of coaches) rows.push(...await ctx.repo.listPaymentRequests(coachID, null));
+        return ok(rows.map((p) => ({
+          PaymentRequestID: p.PaymentRequestID, CoachID: p.CoachID, fullName: p.fullName, paymentType: p.paymentType, amount: p.amount,
+          status: p.status, createdAt: p.createdAt, paidAt: p.paidAt, invoiceNumber: p.status === "paid" ? p.invoiceNumber : null,
+        })));
+      }
       const traineeID = await whose(ctx, payload);
       if (traineeID === undefined) return fail("NOT_ALLOWED");
       const list = await ctx.repo.listPaymentRequests(ctx.actor.coachID, traineeID);

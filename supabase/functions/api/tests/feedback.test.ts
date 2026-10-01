@@ -12,9 +12,9 @@ import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2), TRAINEE = U(11), OTHER_TRAINEE = U(12);
 const SQUAT = U(21);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const otherCoach: Actor = { role: "coach", coachID: OTHER_COACH, traineeID: null };
-const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: TRAINEE };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const otherCoach: Actor = { role: "coach", businessID: OTHER_COACH, coachID: OTHER_COACH, traineeID: null };
+const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: TRAINEE };
 const squat: Exercise = { ExerciseID: SQUAT, exerciseName: "סקוואט", isBodyweight: false, videoType: null, videoUrl: null };
 
 const TEXTS = { feedbackFull: "כל הכבוד (test)", feedbackPartial: "עבודה טובה (test)", feedbackRecord: "שיא (test)", noteMaxLength: "20" };
@@ -34,7 +34,7 @@ function world(logs: WorkoutLog[], opts: { settings?: Record<string, string>; st
     getWorkoutLog: async (id) => (down(), structuredClone(logs.find((l) => l.WorkoutLogID === id) ?? null)),
     listResults: async (t) => (down(), structuredClone(logs.filter((l) => l.TraineeID === t))),
     getExercisesByID: async () => (down(), [squat]),
-    getCoachSettings: async () => (down(), opts.settings ?? TEXTS),
+    getBusinessSettings: async () => (down(), opts.settings ?? TEXTS),
     addCoachNote: async (WorkoutLogID, CoachID, noteText) => { down(); notes.push({ WorkoutLogID, CoachID, noteText, createdAt: "2026-09-28" }); },
     listCoachNotes: async (t) => (down(), notes.filter((n) => logs.find((l) => l.WorkoutLogID === n.WorkoutLogID)?.TraineeID === t)),
   });

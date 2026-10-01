@@ -2,7 +2,7 @@
 // logs, routes to exactly one module, and holds no Business Logic (CLAUDE.md rules 1-4, 6).
 import { audit } from "./audit.ts";
 import { type Envelope, fail, type Reply } from "./errors.ts";
-import { isAllowed, isKnownCaller, isModuleCaller } from "./registry.ts";
+import { isAllowed, isKnownCaller, isModuleCaller, roleFor } from "./registry.ts";
 import { type Actor, type Repository, StorageUnavailable } from "./repository.ts";
 
 export interface ModuleContext {
@@ -17,7 +17,7 @@ export interface ModuleContext {
 export type Handler = (ctx: ModuleContext, payload: Record<string, unknown>) => Promise<Reply>;
 
 export interface ModuleDef {
-  id: string; // M01..M14, used as the caller when this module calls another
+  id: string; // M01..M15, used as the caller when this module calls another
   actions: Record<string, Handler>;
 }
 
@@ -47,18 +47,27 @@ export async function handle(
     try {
       if (!envelope.caller) return fail("CALLER_MISSING");
       if (!isKnownCaller(envelope.caller)) return fail("CALLER_INVALID");
-      const role = isModuleCaller(envelope.caller) ? "module" : actor.role;
-      if (!(await isAllowed(repo, envelope.caller, moduleName, actionName, role))) return fail("ACTION_NOT_ALLOWED");
+      // A module asks on behalf of the person, in the role of the original request. A screen's request takes the role
+      // of its Registry row (map v11): as the owner, the module sees the business and no coach or trainee of its own,
+      // so no path written for a coach reads a coach's data for the owner (rule 5).
+      let acting = actor;
+      if (isModuleCaller(envelope.caller)) {
+        if (!(await isAllowed(repo, envelope.caller, moduleName, actionName, "module"))) return fail("ACTION_NOT_ALLOWED");
+      } else {
+        const role = await roleFor(repo, envelope.caller, moduleName, actionName, actor.roles?.length ? actor.roles : [actor.role]);
+        if (!role) return fail("ACTION_NOT_ALLOWED");
+        acting = role === "owner" ? { ...actor, role, coachID: "", traineeID: null } : { ...actor, role };
+      }
 
       const handler = modules[moduleName]?.actions[actionName];
       if (!handler) return fail("ACTION_NOT_ALLOWED"); // registered, but not built yet
 
       const ctx: ModuleContext = {
-        actor,
+        actor: acting,
         repo,
         requestID,
         caller: envelope.caller,
-        call: (inner) => handle({ ...inner, caller: modules[moduleName].id }, actor, repo, modules, requestID),
+        call: (inner) => handle({ ...inner, caller: modules[moduleName].id }, acting, repo, modules, requestID),
       };
       return await handler(ctx, envelope.payload ?? {});
     } catch (e) {

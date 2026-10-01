@@ -10,8 +10,8 @@ import type { Actor } from "../repository.ts";
 import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), TRAINEE = U(11);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: TRAINEE };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: TRAINEE };
 const A = U(41), B = U(42);
 const TODAY = new Date().toISOString();
 
@@ -29,7 +29,7 @@ const traineeModules = (over: Modules = {}): Modules => ({
 });
 
 function world(values: Record<string, string> = { reminderText: "יום טוב (test)", spotOfferHours: "2" }) {
-  return fakeRepo({ getCoachSettings: async () => values });
+  return fakeRepo({ getBusinessSettings: async () => values });
 }
 const traineeHome = (w: ReturnType<typeof world>, modules: Modules, actor: Actor = trainee) =>
   handle({ caller: "S13", module: "home", action: "get_trainee_home", payload: {} }, actor, w.repo, { home, settings, ...modules });

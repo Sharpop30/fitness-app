@@ -14,10 +14,10 @@ import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2), TRAINEE = U(11), MAYA = U(12);
 const SQUAT = U(21), PUSHUP = U(22), FOREIGN = U(23);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const otherCoach: Actor = { role: "coach", coachID: OTHER_COACH, traineeID: null };
-const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: TRAINEE };
-const maya: Actor = { role: "trainee", coachID: COACH, traineeID: MAYA };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const otherCoach: Actor = { role: "coach", businessID: OTHER_COACH, coachID: OTHER_COACH, traineeID: null };
+const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: TRAINEE };
+const maya: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: MAYA };
 
 // The week of today in Israel, as the module counts it.
 const ISRAEL_DAY = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem" });
@@ -56,7 +56,7 @@ function world(opts: { logs?: WorkoutLog[]; challenge?: Partial<Challenge>; prog
   const logs = opts.logs ?? [];
   const w = fakeRepo({
     isActiveTraineeOfCoach: async (t, c) => (down(), c === COACH && [TRAINEE, MAYA].includes(t)),
-    getCoachSettings: async () => (down(), { coinsChallenge: "50" }),
+    getBusinessSettings: async () => (down(), { coinsChallenge: "50" }),
     listResults: async (t) => (down(), structuredClone(logs.filter((l) => l.TraineeID === t))),
     getActiveProgram: async (t) => (down(), structuredClone((opts.programs ?? []).find((p) => p.TraineeID === t) ?? null)),
     getExercisesByID: async (ids) => (down(), exercises.filter((e) => ids.includes(e.ExerciseID))),
@@ -193,7 +193,7 @@ Deno.test("execution decision 5: a bodyweight exercise challenge counts reps; an
 
 Deno.test("UC8 d: when the credit fails, the completion is kept", async () => {
   const w = world({ challenge: {}, logs: [log(TRAINEE, TODAY), log(TRAINEE, TODAY), log(TRAINEE, TODAY)] });
-  w.repo.getCoachSettings = async () => ({}); // coinsChallenge missing: coins.award refuses
+  w.repo.getBusinessSettings = async () => ({}); // coinsChallenge missing: coins.award refuses
   assertEquals(await check(w), ok({ challenge: true }));
   assertEquals([w.completions.length, w.ledger.length], [1, 0]);
 });

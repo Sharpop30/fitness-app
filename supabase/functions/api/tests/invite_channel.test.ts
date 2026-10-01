@@ -7,7 +7,7 @@ import { inviteChannel, type Sender } from "../interfaces/invite_channel.ts";
 import type { Actor } from "../repository.ts";
 import { fakeRepo, U } from "./fake-repo.ts";
 
-const coach: Actor = { role: "coach", coachID: U(1), traineeID: null };
+const coach: Actor = { role: "coach", businessID: U(1), coachID: U(1), traineeID: null };
 const invite = { name: "דנה", email: "dana@example.com", link: "https://site.test/fitness-app/?join=abc" };
 const send = (sender: Sender, payload: Record<string, unknown> = invite) =>
   handle({ caller: "M01", module: "invite_channel", action: "send_invite", payload }, coach, fakeRepo().repo, { invite_channel: inviteChannel(sender) });

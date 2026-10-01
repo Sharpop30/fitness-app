@@ -32,7 +32,15 @@ export const trainees: ModuleDef = {
   id: "M01",
   actions: {
     // Joined trainees, and open invites as "invited" (UC4 step 6). An empty list is UC4 alternative e, for the screen.
-    async list_trainees(ctx) {
+    async list_trainees(ctx, payload) {
+      // The owner, through M13 and M15 (map v11): the trainees of every coach of the business, or of the coach asked.
+      if (ctx.actor.role === "owner") {
+        const coaches = await ctx.repo.coachesInReach(ctx.actor.businessID, payload.coachID);
+        if (!coaches) return fail("NOT_ALLOWED");
+        const rows = [];
+        for (const CoachID of coaches) rows.push(...(await ctx.repo.listTraineesForCoach(CoachID)).map((t) => ({ ...t, CoachID })));
+        return ok(rows);
+      }
       return ok(await ctx.repo.listTraineesForCoach(ctx.actor.coachID));
     },
 
@@ -83,10 +91,12 @@ export const trainees: ModuleDef = {
       return ok({ TraineeID: joined.traineeID });
     },
 
-    // S23 after signing in: who this is (stage 5 plan, decision 1).
+    // S23 after signing in: who this is (stage 5 plan, decision 1), with every role (map v11). A newcomer, who has no
+    // business yet, is not anyone yet.
     async get_me(ctx) {
-      if (!ctx.actor.coachID) return fail("NOT_ALLOWED");
-      return ok({ role: ctx.actor.role, traineeID: ctx.actor.traineeID, fullName: ctx.actor.fullName ?? "" });
+      if (!ctx.actor.businessID) return fail("NOT_ALLOWED");
+      const roles = ctx.actor.roles?.length ? ctx.actor.roles : [ctx.actor.role];
+      return ok({ roles, role: roles[0], traineeID: roles[0] === "trainee" ? ctx.actor.traineeID : null, fullName: ctx.actor.fullName ?? "" });
     },
 
     // UC4 step 7, made of existing actions through the Orchestrator (module map v8, its contract).
