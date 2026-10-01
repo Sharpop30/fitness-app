@@ -51,12 +51,19 @@ function NewExercise() {
   );
 }
 
+// As the prototype: 60 seconds is "עד דקה"; any other length in seconds. The size follows (map v13).
+const limitText = (seconds: number, megabytes: number) =>
+  `${seconds === 60 ? "עד דקה" : `עד ${seconds} שניות`} ועד ${megabytes} מגה-בייט`;
+
 function OneExercise({ exerciseID }: { exerciseID: string }) {
   const nav = useNav();
   const one = useCall("S05", "exercises", "get_exercise", { exerciseID });
   const [url, setUrl] = useState("");
   const [file, setFile] = useState<{ blob: File; preview: string; seconds: number } | null>(null);
   const [uploading, setUploading] = useState(false);
+  // The limits beside the upload button, from SETTINGS (map v13; design-stage gap 2, finding 19): never a fixed "minute".
+  const limits = useCall<Record<string, string>>("S05", "settings", "get_settings", { keys: ["videoMaxSeconds", "videoMaxMegabytes"] });
+  const limit = limits.data ? ` (${limitText(Number(limits.data.videoMaxSeconds), Number(limits.data.videoMaxMegabytes))})` : "";
 
   const attach = async (payload: Record<string, unknown>, done: string) => {
     const r = await call("S05", "exercises", "attach_video", { exerciseID, ...payload });
@@ -99,14 +106,14 @@ function OneExercise({ exerciseID }: { exerciseID: string }) {
         <Field label="קישור לסרטון"><input id="videoUrl" type="url" value={url} onChange={(ev) => setUrl(ev.target.value)} placeholder="https://www.youtube.com/..." /></Field>
         <Button secondary onClick={() => attach({ kind: "link", url }, "הסרטון צורף, ומופיע בכל התוכניות")}>צירוף קישור</Button>
         {live ? <>
-          <FileButton id="videoFile" accept="video/*" onFile={choose} busy={uploading}>העלאת סרטון קצר מהטלפון</FileButton>
+          <FileButton id="videoFile" accept="video/*" onFile={choose} busy={uploading}>{`העלאת סרטון מהטלפון${limit}`}</FileButton>
           {file && <>
             <VideoPlayer key={file.preview} videoType="upload" videoUrl={file.preview} />
             <Button onClick={upload} busyText="מעלה...">שמירה</Button>
           </>}
         </> : <>
-          <Button secondary onClick={() => attach({ kind: "upload", seconds: 45 }, "הסרטון עלה (דוגמה)")} busyText="מעלה...">העלאת סרטון קצר מהטלפון</Button>
-          <LinkButton onClick={() => attach({ kind: "upload", seconds: 120 }, "")}>מה קורה בסרטון של שתי דקות?</LinkButton>
+          <Button secondary onClick={() => attach({ kind: "upload", seconds: 45 }, "הסרטון עלה (דוגמה)")} busyText="מעלה...">{`העלאת סרטון מהטלפון${limit}`}</Button>
+          <LinkButton onClick={() => attach({ kind: "upload", seconds: 120 }, "")}>מה קורה בסרטון ארוך יותר?</LinkButton>
         </>}
       </>}</Load>
     </Screen>

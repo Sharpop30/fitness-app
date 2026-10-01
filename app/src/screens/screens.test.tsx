@@ -89,6 +89,44 @@ test("S09 with a challenge this week: no add button, the next Sunday instead, an
   await waitFor(() => expect((screen.getByRole("button", { name: "פרסום האתגר" }) as HTMLButtonElement).disabled).toBe(true));
 });
 
+// ---- Stage 7a, task 2: the numbers the coach's screens show come from SETTINGS (map v13; design-stage gaps 1 to 3) ----
+const coachOpens = (id: string, params: Record<string, unknown> = {}) => {
+  setSession({ role: "coach", traineeID: null });
+  const S = SCREENS[id];
+  render(<NavContext.Provider value={nav("coach")}><S {...params} /></NavContext.Provider>);
+};
+
+test("S08: each payment type with its price from SETTINGS", async () => {
+  setAdapter(demoAdapter);
+  coachOpens("S08", { request: true });
+  expect(await screen.findByRole("option", { name: "מנוי חודשי · ₪350" })).toBeTruthy();
+  expect(screen.getByRole("option", { name: "חבילת 10 אימונים (כרטיסייה) · ₪600" })).toBeTruthy();
+  expect(screen.getByText(/המחירים מגיעים מההגדרות/)).toBeTruthy();
+});
+
+test("S05, S07 and S11: the video limit and the coins from SETTINGS, never a fixed number", async () => {
+  setAdapter(demoAdapter);
+  coachOpens("S05", { exerciseID: "d0000000-0000-4000-8000-000000002001" });
+  expect(await screen.findByRole("button", { name: "העלאת סרטון מהטלפון (עד דקה ועד 50 מגה-בייט)" })).toBeTruthy();
+  cleanup();
+  coachOpens("S07", { traineeID: "d0000000-0000-4000-8000-000000001001" });
+  expect(await screen.findByText(/מתקבלים 30 מטבעות/)).toBeTruthy();
+  cleanup();
+  coachOpens("S11", { classID: "d0000000-0000-4000-8000-00000000a000" });
+  expect(await screen.findByRole("button", { name: "שמירת נוכחות (מי שסומן מקבל 5 מטבעות)" })).toBeTruthy();
+});
+
+test("rule 8: a value not set yet shows no number, and S08 says it is not set", async () => {
+  setAdapter((e, sess) => e.action === "get_settings" ? Promise.resolve({ ok: false, data: null, error: { code: "VALUE_NOT_SET", message: "הערך עוד לא הוגדר בהגדרות" } }) : demoAdapter(e, sess));
+  coachOpens("S08", { request: true });
+  expect(await screen.findByText(/הערך עוד לא הוגדר בהגדרות/)).toBeTruthy();
+  expect(screen.getByRole("option", { name: "מנוי חודשי" })).toBeTruthy();
+  cleanup();
+  coachOpens("S07", { traineeID: "d0000000-0000-4000-8000-000000001001" });
+  expect(await screen.findByText("כשהמתאמן עובר את היעד מתקבלים מטבעות, והיעד נסגר עד שיוגדר יעד חדש.")).toBeTruthy();
+  setAdapter(demoAdapter);
+});
+
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
 // Stage 4a: S02 and S05. Stage 4b: S04 (the stage 3 debt), and every screen that moved in stage 4b (plan, task 12).
 // Stage 4c: S11, S13 and S17. Stage 4d: S01, S03, S08, S12 and S19, and the note limit on S06.
@@ -381,6 +419,33 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
   test("S06: the note form shows the longest note from SETTINGS (stage 4b report, gap 2)", async () => {
     open("S06", { traineeID: NOA, noteFor: "d0000000-0000-4000-8000-000000006001" });
     await shows(new RegExp(`עד ${setting("noteMaxLength")} תווים`));
+  }, 30000);
+
+  // ---- Stage 7a, task 2: a change in SETTINGS shows on the coach's screens (map v13) ----
+  const withSetting = async (key: string, value: string, check: () => Promise<void>) => {
+    const was = setting(key);
+    const where = `"BusinessID" = (select "BusinessID" from coaches where "CoachID"='${COACH}') and "settingKey"='${key}'`;
+    psql(`update settings set "settingValue"='${value}' where ${where}`);
+    try { await check(); } finally { psql(`update settings set "settingValue"='${was}' where ${where}`); }
+  };
+
+  test("S08: a new price in SETTINGS is the price beside the type", async () => {
+    await withSetting("priceMonthly", "412", async () => {
+      open("S08", { request: true });
+      expect(await screen.findByRole("option", { name: "מנוי חודשי · ₪412" }, { timeout: 8000 })).toBeTruthy();
+    });
+  }, 30000);
+
+  test("S05 and S07: a new video limit and new goal coins in SETTINGS show on the screens", async () => {
+    await withSetting("videoMaxSeconds", "90", async () => {
+      open("S05", { exerciseID: "d0000000-0000-4000-8000-000000002001" });
+      await shows(/העלאת סרטון מהטלפון \(עד 90 שניות ועד \d+ מגה-בייט\)/);
+    });
+    cleanup();
+    await withSetting("coinsGoal", "33", async () => {
+      open("S07", { traineeID: NOA });
+      await shows(/מתקבלים 33 מטבעות/);
+    });
   }, 30000);
 
   // ---- Stage 4e: S24 to S27, and S12 by the role on show (stage 4e plan, task 9) ----

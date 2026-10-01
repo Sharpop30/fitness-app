@@ -81,6 +81,8 @@ function Classes({ isPast }: { isPast: (startsAt: string) => boolean }) {
 function OneClass({ classID, isPast }: { classID: string; isPast: (startsAt: string) => boolean }) {
   const nav = useNav();
   const one = useCall("S11", "classes", "list_registrations", { classID });
+  // The coins for coming, from SETTINGS (map v13; design-stage gap 3). Not set yet: the line without a number.
+  const coins = useCall<Record<string, string>>("S11", "settings", "get_settings", { keys: ["coinsAttendance"] });
   const [present, setPresent] = useState<string[]>([]);
   useEffect(() => { if (one.data) setPresent(one.data.registered.filter((r: any) => r.attended).map((r: any) => r.TraineeID)); }, [one.data]);
   const k = one.data;
@@ -120,7 +122,7 @@ function OneClass({ classID, isPast }: { classID: string; isPast: (startsAt: str
             <h2>רשימת המתנה</h2>
             {c.waitlist.map((r: any, i: number) => <div className="row" key={r.TraineeID}><span className="av">{i + 1}</span><Name>{r.fullName}</Name></div>)}
           </>}
-          {past ? <Button onClick={save}>שמירת נוכחות (מי שסומן מקבל מטבעות)</Button>
+          {past ? <Button onClick={save}>{`שמירת נוכחות (מי שסומן מקבל ${coins.data?.coinsAttendance ? `${coins.data.coinsAttendance} ` : ""}מטבעות)`}</Button>
             : c.status === "active" && <Button secondary onClick={cancel}>ביטול השיעור והודעה לנרשמים</Button>}
         </>;
       }}</Load>

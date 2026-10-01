@@ -431,7 +431,12 @@ const actions: Record<string, H> = {
     });
   },
   // ---- M14 settings ----
-  "settings.get_settings": (_p, s) => ok({ ...D.settings, canEdit: s.role === "owner" }),
+  // As the server (map v13, rule 9): a screen that names its keys gets those keys only.
+  "settings.get_settings": (p, s) => {
+    const keys = Array.isArray(p.keys) ? (p.keys as string[]) : typeof p.key === "string" ? [p.key] : null;
+    if (!keys) return ok({ ...D.settings, canEdit: s.role === "owner" });
+    return keys.every((k) => k in D.settings) ? ok(Object.fromEntries(keys.map((k) => [k, D.settings[k]]))) : fail("VALUE_NOT_SET");
+  },
   "settings.get_error_texts": () => ok({ ...D.errorTexts }),
   "settings.update_settings": (p) => { Object.assign(D.settings, p.values as Record<string, string>); return ok(null); },
 };
