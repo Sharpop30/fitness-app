@@ -3,7 +3,7 @@
 // decisions 1, 6, 9). A sign-in kept from the last visit opens straight away. On demo data, the role choice stays.
 // Stage 4e (map v11; prototype version 3): someone with two roles, an owner who is also a coach, chooses one here, and
 // moves between them later from "more" (rule 10).
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { call, setErrorTexts } from "../api/client";
 import { Button, Chevron, Field, Item, Picture, Screen } from "../design/components";
 import { identityConfigured, restoreSession, signInWithPassword, signOutIdentity } from "../identity/auth";
@@ -36,7 +36,12 @@ export default function S23SignIn() {
     await enter(roles[0], me.data!.traineeID ?? undefined, roles);
   };
 
+  // Once per screen: in development React runs an effect twice (StrictMode), and two restores at once raced, so one that
+  // failed signed the other out (found closing stage 4e, in the cloud).
+  const restored = useRef(false);
   useEffect(() => {
+    if (restored.current) return;
+    restored.current = true;
     if (live) void restoreSession().then((o) => { if (o === "ok") void enterLive(true); });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
