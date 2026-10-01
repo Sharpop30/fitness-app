@@ -1,6 +1,6 @@
 # CLAUDE.md: מסמך הבנייה של fitness-app
 
-**מעמד**: מאושר, גרסה 9, 01.10.2026. מסמך הבנייה לפי מתודולוגיית הכוכב (פריט 45), פרק ח, ומנגנון הבנייה (פריט 46). הוא מתרגם את מפת המודולים לקוד, ואינו מוסיף עליה. משתנה בידי הצוות בלבד, בגרסה חדשה. סוכן שמוצא בו טעות מדווח פער, ואינו עורך.
+**מעמד**: מאושר, גרסה 8, 30.09.2026. מסמך הבנייה לפי מתודולוגיית הכוכב (פריט 45), פרק ח, ומנגנון הבנייה (פריט 46). הוא מתרגם את מפת המודולים לקוד, ואינו מוסיף עליה. משתנה בידי הצוות בלבד, בגרסה חדשה. סוכן שמוצא בו טעות מדווח פער, ואינו עורך.
 
 ## 1. המקורות המחייבים
 
@@ -9,7 +9,7 @@
 | מפת המודולים | project-docs/doc-module-map.md | כל החלטת מבנה |
 | מקרי השימוש | project-docs/usecase-01 עד 12 | כל זרימה, קוד שגיאה ושורת Registry |
 | ה-ERD הלוגי | project-docs/doc-erd-logical.html, mermaid/diagram-07a עד 07f | כל טבלה ושדה |
-| אב הטיפוס, גרסה 3.1 | project-docs/prototype-fitness-app.html | מראה המסכים והנוסחים |
+| אב הטיפוס, גרסה 3 | project-docs/prototype-fitness-app.html | מראה המסכים והנוסחים |
 | ה-PRD | project-docs/prd-fitness-app.docx | הדרישות הממוספרות |
 | מבנה הקבצים | project-docs/file-system-index.md | מיקומים |
 
@@ -68,7 +68,7 @@
 | מהמפה | הקובץ |
 | :-- | :-- |
 | C01 Endpoint ו-Orchestrator | supabase/functions/api/index.ts, orchestrator.ts |
-| C02 Registry | supabase/functions/api/registry.ts; הנתונים ב-supabase/migrations/20260928000002_reference.sql, ותוספות גרסאות המפה ב-20260928000003, 20260928000004, 20260928000008 (גרסאות 4 עד 6) ו-20260928000011 (גרסאות 4 ו-8), ו-20260928000012 (גרסה 9), ו-20260928000014 (גרסה 11, בעל העסק) ו-20260928000015 (גרסה 12, S12 לבעל העסק בלבד). תוספת Registry בשלב הבא נכנסת ל-migration חדשה משלה |
+| C02 Registry | supabase/functions/api/registry.ts; הנתונים ב-supabase/migrations/20260928000002_reference.sql, ותוספות גרסאות המפה ב-20260928000003, 20260928000004, 20260928000008 (גרסאות 4 עד 6) ו-20260928000011 (גרסאות 4 ו-8), ו-20260928000012 (גרסה 9). שורות גרסה 11 (בעל העסק) נכנסות ב-migration חדשה של שלב 4ה. תוספת Registry בשלב הבא נכנסת ל-migration חדשה משלה |
 | C03 Audit | supabase/functions/api/audit.ts |
 | C04 Repository | supabase/functions/api/repository.ts |
 | C05 Error Codes | supabase/functions/api/errors.ts; הנתונים ב-20260928000002_reference.sql ו-20260928000003_module_map_v2.sql, והנוסח של CANCEL_TOO_LATE ב-20260928000011_module_map_v8.sql |
@@ -77,7 +77,7 @@
 | I03 Invite Channel | supabase/functions/api/interfaces/invite_channel.ts |
 | I01 Identity Connector | app/src/identity/auth.ts (בדפדפן), ואימות האסימון ב-index.ts |
 | I04 File Storage | בתוך repository.ts; הדלי videos ב-20260928000012 |
-| הטבלאות | supabase/migrations/20260928000001_schema.sql, מה-ERD הלוגי כלשונו. BUSINESSES, OWNERS ו-COACH_INVITES, ו-BusinessID ב-COACHES וב-SETTINGS (ERD גרסה 2), ב-20260928000013_business.sql, שממלאת עסק לכל מאמן קיים. שמות ה-migrations פותחים בחותמת זמן, כפי שה-Supabase CLI יוצר אותם |
+| הטבלאות | supabase/migrations/20260928000001_schema.sql, מה-ERD הלוגי כלשונו. BUSINESSES, OWNERS ו-COACH_INVITES, ו-BusinessID ב-COACHES וב-SETTINGS (ERD גרסה 2), ב-migration חדשה של שלב 4ה, שממלאת עסק לכל מאמן קיים. שמות ה-migrations פותחים בחותמת זמן, כפי שה-Supabase CLI יוצר אותם |
 | נתוני הדגמה | supabase/migrations/20260928000005_demo_data.sql, מסומנים, ויוסרו בשלב 7 |
 | D01 מודול העיצוב | app/src/design/tokens.css, app/src/design/components.tsx; התמונות הדקורטיביות ב-app/public/images |
 | S01 עד S27 | app/src/screens/S01CoachHome.tsx וכן הלאה, קובץ לכל מסך. S24 עד S27 הם מסכי בעל העסק |
@@ -138,4 +138,3 @@
 | 6 | 29.09.2026 | מפער שנמצא בשלב 5, משימה 5: סעיף 3, משתנה הסביבה המקומי PUBLIC_API_URL, כי במחשב הפונקציה רואה את Supabase בכתובת פנימית של Docker. מה לא השתנה: כל השאר | הצוות |
 | 7 | 30.09.2026 | מתוכנית שלב העיצוב, משימה 0: סעיף 1, אב הטיפוס גרסה 2 (סגנון FORM, נוסח ניטרלי, ממצאי סקירת העיצוב); סעיף 5, התמונות הדקורטיביות בשורת D01; סעיף 6, שלב 5א, העיצוב, ובדיקת הקבלה שלו. מה לא השתנה: המקורות האחרים, הערימה, חוקי הברזל, מיפוי המודולים, מבחני הקבלה וגבולות הפעולה | הצוות |
 | 8 | 30.09.2026 | מהכרעת הצוות על בעל העסק (doc-owner-role, מסלול ב): סעיף 1, מקרי שימוש 01 עד 12 ואב הטיפוס גרסה 3; סעיף 3, שלושה תפקידים; סעיף 5, M15, S24 עד S27, הטבלאות החדשות וה-migration של 4ה; סעיף 6, שלב 4ה; סעיף 7, העסק והזמנת המאמן בנתוני ההדגמה; סעיף 9, 12 מקרי שימוש. מה לא השתנה: הערימה, חוקי הברזל, מבחני הקבלה האחרים וגבולות הפעולה | הצוות |
-| 9 | 01.10.2026 | מסגירת שלב 4ה: סעיף 1, אב הטיפוס גרסה 3.1 (S12 לבעל העסק בלבד); סעיף 5, שמות ה-migrations של שלב 4ה, 0013 (הטבלאות) ו-0014 ו-0015 (Registry, מפה גרסאות 11 ו-12). מה לא השתנה: הערימה, חוקי הברזל, סדר הבנייה, מבחני הקבלה וגבולות הפעולה | הצוות |
