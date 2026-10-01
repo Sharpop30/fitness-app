@@ -25,7 +25,7 @@ test("normal: the coach creates a challenge, and every trainee sees it with thei
     const c = (await call(t.token, "S20", "challenges", "get_current_challenge")).data;
     assert.equal(c.challengeName, "שני אימונים (test)");
     assert.deepEqual(c.progress, { value: 0, target: 2, exempt: false });
-    assert.equal(c.coins, Number(psql(`select "settingValue" from settings where "CoachID"='${w.coachID}' and "settingKey"='coinsChallenge'`)));
+    assert.equal(c.coins, Number(psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='coinsChallenge'`)));
   }
   // A trainee of another coach does not see it.
   assert.equal((await call(other.trainees[0].token, "S20", "challenges", "get_current_challenge")).data, null);

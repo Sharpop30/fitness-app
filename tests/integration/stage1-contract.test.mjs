@@ -37,9 +37,11 @@ async function makeUser(email) {
 before(async () => {
   const coach = await makeUser(`coach-${stamp}@test.local`);
   const trainee = await makeUser(`trainee-${stamp}@test.local`);
-  const coachID = psql(`insert into coaches ("authUserID","fullName","email") values ('${coach.id}','מאמן (test)','coach-${stamp}@test.local') returning "CoachID"`).split("\n")[0];
+  // Stage 4e: a coach belongs to a business (0013), here a business of one.
+  const businessID = psql(`insert into businesses ("businessName") values ('מאמן (test)') returning "BusinessID"`).split("\n")[0];
+  const coachID = psql(`insert into coaches ("BusinessID","authUserID","fullName","email") values ('${businessID}','${coach.id}','מאמן (test)','coach-${stamp}@test.local') returning "CoachID"`).split("\n")[0];
   psql(`insert into trainees ("CoachID","authUserID","fullName","email") values ('${coachID}','${trainee.id}','מתאמן (test)','trainee-${stamp}@test.local')`);
-  psql(`insert into settings ("CoachID","settingKey","settingValue") values ('${coachID}','cancelHours','24')`);
+  psql(`insert into settings ("BusinessID","settingKey","settingValue") values ('${businessID}','cancelHours','24')`);
   coachToken = coach.token;
   traineeToken = trainee.token;
 });

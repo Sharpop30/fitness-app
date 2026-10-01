@@ -95,7 +95,7 @@ test("edge c: the coach cancels a class, and everyone registered or waiting gets
 
 test("normal: the coach marks attendance, and only those marked get coinsAttendance, once", async () => {
   const k = classInHours(w.coachID, -1, 8, [[w.trainees[0].traineeID, "registered"], [w.trainees[1].traineeID, "registered"]]);
-  const coins = Number(psql(`select "settingValue" from settings where "CoachID"='${w.coachID}' and "settingKey"='coinsAttendance'`));
+  const coins = Number(psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='coinsAttendance'`));
   const [a0, a1] = [balance(0), balance(1)].map(Number);
   assert.deepEqual((await coach("mark_attendance", { classID: k, present: [w.trainees[0].traineeID] })).data, { awarded: 1 });
   assert.deepEqual((await coach("mark_attendance", { classID: k, present: [w.trainees[0].traineeID] })).data, { awarded: 0 });

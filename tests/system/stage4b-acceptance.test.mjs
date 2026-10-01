@@ -10,7 +10,7 @@ import { call, demoTokens, freshWorld, ID, psql, workoutDaysAgo } from "./demo-u
 let t, w;
 before(async () => { t = await demoTokens(); w = await freshWorld(1); });
 
-const setting = (key, value) => psql(`update settings set "settingValue" = '${value}' where "CoachID" = '${w.coachID}' and "settingKey" = '${key}'`);
+const setting = (key, value) => psql(`update settings set "settingValue" = '${value}' where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey" = '${key}'`);
 const saveWorkout = async (trainee) => {
   const workout = (await call(trainee.token, "S14", "programs", "get_active_program")).data.workouts[0];
   const sets = workout.items.flatMap((i) => Array.from({ length: i.targetSets }, (_, n) =>
