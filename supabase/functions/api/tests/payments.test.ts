@@ -13,9 +13,9 @@ import { type Actor, type Invoice, type PaymentRequest, StorageUnavailable } fro
 import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2), NOA = U(11), ITAI = U(12), GONE = U(13);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const noa: Actor = { role: "trainee", coachID: COACH, traineeID: NOA };
-const itai: Actor = { role: "trainee", coachID: COACH, traineeID: ITAI };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const noa: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: NOA };
+const itai: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: ITAI };
 const NAMES: Record<string, string> = { [NOA]: "נועה (test)", [ITAI]: "איתי (test)", [GONE]: "לא פעיל (test)" };
 
 // The Registry rows of 0002 for payments and invoices.
@@ -43,7 +43,7 @@ function world(opts: { values?: Record<string, string>; storageDown?: boolean; g
 
   const w = fakeRepo({
     isRegistered: async (caller, module, action, role) => ROWS.has(`${caller}/${module}/${action}/${role}`),
-    getCoachSettings: async () => (down(), values),
+    getBusinessSettings: async () => (down(), values),
     isActiveTraineeOfCoach: async (t, c) => (down(), c === COACH && [NOA, ITAI].includes(t)),
     createPaymentRequest: async (CoachID, TraineeID, paymentType, amount) => {
       down();

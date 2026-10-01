@@ -11,10 +11,10 @@ import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2), TRAINEE = U(11), OTHER_TRAINEE = U(12), STRANGER = U(13);
 const SQUAT = U(21), PUSHUP = U(22), WORKOUT = U(41), OLD_WORKOUT = U(49);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const otherCoach: Actor = { role: "coach", coachID: OTHER_COACH, traineeID: null };
-const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: TRAINEE };
-const otherTrainee: Actor = { role: "trainee", coachID: COACH, traineeID: OTHER_TRAINEE };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const otherCoach: Actor = { role: "coach", businessID: OTHER_COACH, coachID: OTHER_COACH, traineeID: null };
+const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: TRAINEE };
+const otherTrainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: OTHER_TRAINEE };
 
 const program: Program = {
   ProgramID: U(31), TraineeID: TRAINEE, programName: "תוכנית אימון", isActive: true, createdAt: "2026-09-01",

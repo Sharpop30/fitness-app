@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { call, demoTokens, freshWorld, ID, lastAudit, psql, workoutDaysAgo } from "./demo-users.mjs";
 
 let w, t;
-const text = (key) => psql(`select "settingValue" from settings where "CoachID"='${w.coachID}' and "settingKey"='${key}'`);
+const text = (key) => psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='${key}'`);
 // The sets as S14 fills them in, with an optional change per set.
 const asPlanned = async (change = (s) => s) => {
   const workout = (await call(t.token, "S14", "programs", "get_active_program")).data.workouts[0];

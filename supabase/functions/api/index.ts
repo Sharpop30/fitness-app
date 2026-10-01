@@ -19,11 +19,12 @@ import { payments } from "./modules/payments.ts";
 import { programs } from "./modules/programs.ts";
 import { progress } from "./modules/progress.ts";
 import { results } from "./modules/results.ts";
+import { business } from "./modules/business.ts";
 import { settings } from "./modules/settings.ts";
 import { trainees } from "./modules/trainees.ts";
 
 const modules: Modules = {
-  challenges, classes, coins, exercises, feedback, home, invoices, notifications, payments, programs, progress, results, settings, trainees,
+  business, challenges, classes, coins, exercises, feedback, home, invoices, notifications, payments, programs, progress, results, settings, trainees,
   // The interfaces (module map section 3), reached only by the modules the Registry names.
   payment_gateway, invite_channel,
 };
@@ -49,10 +50,11 @@ async function authUser(req: Request): Promise<{ id: string; email: string } | n
   return typeof user?.id === "string" ? { id: user.id, email: typeof user.email === "string" ? user.email : "" } : null;
 }
 
-// A newcomer: signed in, not yet a coach or a trainee. Only S22: joining by invite (module map v9; stage 5 plan,
-// decision 3), and the error texts, so a failed join reads as it should (module map v10).
+// A newcomer: signed in, not yet an owner, a coach or a trainee. Only S22: joining by invite as a trainee (module map
+// v9; stage 5 plan, decision 3) or as a coach (map v11), and the error texts, so a failed join reads as it should (v10).
 const isJoining = (e: Envelope) => e.caller === "S22" &&
-  ((e.module === "trainees" && e.action === "accept_invite") || (e.module === "settings" && e.action === "get_error_texts"));
+  ((e.module === "trainees" && e.action === "accept_invite") || (e.module === "business" && e.action === "accept_coach_invite") ||
+    (e.module === "settings" && e.action === "get_error_texts"));
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -81,7 +83,7 @@ Deno.serve(async (req) => {
     const user = await authUser(req);
     const known = user ? await repo.findActorByAuthUser(user.id) : null;
     const actor: Actor | null = known ? { ...known, authUserID: user!.id, email: user!.email }
-      : user && isJoining(envelope) ? { role: "trainee", coachID: "", traineeID: null, authUserID: user.id, email: user.email }
+      : user && isJoining(envelope) ? { role: "trainee", roles: ["trainee"], businessID: null, coachID: "", traineeID: null, authUserID: user.id, email: user.email }
       : null;
     if (!actor) return await refuse("NOT_ALLOWED");
     return reply(await handle(envelope, actor, repo, modules));

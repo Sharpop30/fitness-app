@@ -11,9 +11,9 @@ import { type Actor, type Notification, StorageUnavailable, type WorkoutLog } fr
 import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2), NOA = U(11), ITAI = U(12);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const noa: Actor = { role: "trainee", coachID: COACH, traineeID: NOA };
-const itai: Actor = { role: "trainee", coachID: COACH, traineeID: ITAI };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const noa: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: NOA };
+const itai: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: ITAI };
 // The Registry rows of 0002: notify_in_app from M06 and M11 only; list and mark_read from S13.
 const ROWS = new Set(["M06/notify_in_app/module", "M11/notify_in_app/module", "S13/list_notifications/trainee", "S13/mark_read/trainee",
   "S06/add_coach_note/coach", "M06/get_settings/module"]);
@@ -40,7 +40,7 @@ function world(opts: { storageDown?: boolean } = {}) {
       return true;
     },
     getWorkoutLog: async (id) => (id === log.WorkoutLogID ? structuredClone(log) : null),
-    getCoachSettings: async () => ({ noteMaxLength: "280" }),
+    getBusinessSettings: async () => ({ noteMaxLength: "280" }),
     addCoachNote: async () => {},
   });
   const ask = (actor: Actor, caller: string, action: string, payload: Record<string, unknown> = {}, module = "notifications") =>

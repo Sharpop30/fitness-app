@@ -58,10 +58,7 @@ export async function demoTokens() {
   const password = `local-only-${randomBytes(12).toString("hex")}`;
   for (const email of Object.values(EMAIL)) await ensureUser(email, password);
   if (psql("select demo.load()") !== "t") throw new Error("demo.load() did not load the demo data");
-  // Locally the demo coach is loaded after the migrations, so the value 0012 adds to every coach is added here too.
-  psql(`insert into settings ("CoachID","settingKey","settingValue")
-        select "CoachID", 'videoMaxMegabytes', '50' from settings where "settingKey" = 'videoMaxSeconds'
-        on conflict ("CoachID","settingKey") do nothing`);
+  // Since 0013, demo.load() holds videoMaxMegabytes itself, in the SETTINGS of the demo business.
   const tokens = {};
   for (const [who, email] of Object.entries(EMAIL)) tokens[who] = await signIn(email, password);
   return tokens;
@@ -103,13 +100,26 @@ export const call = async (token, caller, module, action, payload = {}) => {
   return res.json();
 };
 
+// Stage 4e plan, decision 3: every coach belongs to a business. A coach on their own is a business of one, and its
+// owner (rule 9), so this makes the business, the owner and the coach together. Returns { coachID, businessID }.
+export function newCoach(authUserID, fullName, email) {
+  const businessID = psql(`insert into businesses ("businessName") values ('${fullName}') returning "BusinessID"`).split("\n")[0];
+  psql(`insert into owners ("BusinessID","authUserID","fullName","email") values ('${businessID}','${authUserID}','${fullName}','${email}')`);
+  const coachID = psql(`insert into coaches ("BusinessID","authUserID","fullName","email") values ('${businessID}','${authUserID}','${fullName}','${email}')
+                        returning "CoachID"`).split("\n")[0];
+  return { coachID, businessID };
+}
+
+// The business of a coach, for SETTINGS (0013: SETTINGS belong to the business).
+export const businessOf = (coachID) => psql(`select "BusinessID" from coaches where "CoachID" = '${coachID}'`);
+
 // A second coach, outside the demo data, for the "not your trainee" cases (UC1 alternative d).
 export async function strangerCoachToken() {
   const password = `local-only-${randomBytes(12).toString("hex")}`;
   const email = "stranger.coach@fitness-app.test";
   await ensureUser(email, password);
   const id = psql(`select id from auth.users where email = '${email}'`);
-  psql(`insert into coaches ("authUserID","fullName","email") values ('${id}','מאמן זר (test)','${email}') on conflict ("authUserID") do nothing`);
+  if (!psql(`select 1 from coaches where "authUserID" = '${id}'`)) newCoach(id, "מאמן זר (test)", email);
   return signIn(email, password);
 }
 
@@ -123,10 +133,9 @@ export async function freshWorld(traineeCount = 1) {
 
   const coachEmail = `coach.${run}@fitness-app.test`;
   const coachAuth = await person(coachEmail);
-  const coachID = psql(`insert into coaches ("authUserID","fullName","email") values ('${coachAuth}','מאמן ${run} (test)','${coachEmail}')
-                        returning "CoachID"`).split("\n")[0];
-  psql(`insert into settings ("CoachID","settingKey","settingValue")
-        select '${coachID}', "settingKey", "settingValue" from settings where "CoachID" = '${ID.coach}'`);
+  const { coachID, businessID } = newCoach(coachAuth, `מאמן ${run} (test)`, coachEmail);
+  psql(`insert into settings ("BusinessID","settingKey","settingValue")
+        select '${businessID}', "settingKey", "settingValue" from settings where "BusinessID" = '${businessOf(ID.coach)}'`);
 
   const trainees = [];
   for (let i = 1; i <= traineeCount; i++) {
@@ -140,7 +149,7 @@ export async function freshWorld(traineeCount = 1) {
           ('${workoutID}','${ID.squat}',0,3,5,60), ('${workoutID}','${ID.pushup}',1,2,10,0)`);
     trainees.push({ traineeID, programID, workoutID, email, token: await signIn(email, password) });
   }
-  return { coachID, coachToken: await signIn(coachEmail, password), trainees };
+  return { coachID, businessID, coachToken: await signIn(coachEmail, password), trainees };
 }
 
 // A workout saved n days before today, at noon in Israel (stage 4b plan, decision 8), straight into the database, so a
@@ -182,4 +191,28 @@ export function paymentRequest(coachID, traineeID, { paymentType = "monthly", am
                            now() - interval '${daysAgo} days', ${paid ? `now() - interval '${daysAgo} days'` : "null"}) returning "PaymentRequestID"`).split("\n")[0];
   if (paid) psql(`insert into invoices ("PaymentRequestID","amount","isDemo","issuedAt") values ('${id}',${amount},true, now() - interval '${daysAgo} days')`);
   return id;
+}
+
+// Stage 4e (usecase-12): the coach token of a coach invite link (SITE_URL?coach=token).
+export const coachTokenOf = (link) => new URL(link).searchParams.get("coach");
+
+// Stage 4e, UC12 steps 3-7, LOCAL only: the owner invites a coach by link, and a newcomer signs up and joins on S22.
+// Returns the new coach's { coachID, token }.
+export async function coachJoins(ownerToken, name = `מאמן ${randomBytes(3).toString("hex")} (test)`) {
+  const invited = await call(ownerToken, "S25", "business", "invite_coach", { name, channel: "link" });
+  if (!invited.ok) throw new Error(`invite_coach: ${JSON.stringify(invited.error)}`);
+  const token = await signUp(freshEmail("coach"), freshPassword());
+  const joined = await call(token, "S22", "business", "accept_coach_invite", { token: coachTokenOf(invited.data.link), fullName: name });
+  if (!joined.ok) throw new Error(`accept_coach_invite: ${JSON.stringify(joined.error)}`);
+  return { coachID: joined.data.CoachID, token };
+}
+
+// Stage 4e, LOCAL only: an active trainee "(test)" of a coach, straight into the database, with an identity user.
+export async function traineeOfCoach(coachID) {
+  const email = freshEmail("trainee");
+  const token = await signUp(email, freshPassword());
+  const auth = psql(`select id from auth.users where email = '${email}'`);
+  const traineeID = psql(`insert into trainees ("CoachID","authUserID","fullName","email") values ('${coachID}','${auth}','מתאמן (test)','${email}')
+                          returning "TraineeID"`).split("\n")[0];
+  return { traineeID, token };
 }

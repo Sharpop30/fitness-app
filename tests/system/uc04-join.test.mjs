@@ -31,7 +31,7 @@ test("norm, by link: the newcomer signs up, joins with a name, shows in the coac
   assert.equal(psql(`select "status" || ':' || "TraineeID" from invites where "token"='${inviteToken}'`), `accepted:${r.data.TraineeID}`);
   assert.equal(psql(`select "email" from trainees where "TraineeID"='${r.data.TraineeID}'`), email); // from the identity service
   const again = await signIn(email, password);
-  assert.deepEqual((await call(again, "S23", "trainees", "get_me")).data, { role: "trainee", traineeID: r.data.TraineeID, fullName: name });
+  assert.deepEqual((await call(again, "S23", "trainees", "get_me")).data, { roles: ["trainee"], role: "trainee", traineeID: r.data.TraineeID, fullName: name });
   assert.equal((await call(again, "S13", "home", "get_trainee_home")).ok, true);
 });
 

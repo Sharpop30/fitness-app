@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { call, demoTokens, freshWorld, ID, lastAudit, psql } from "./demo-users.mjs";
 
 let w;
-const setting = (key) => Number(psql(`select "settingValue" from settings where "CoachID"='${w.coachID}' and "settingKey"='${key}'`));
+const setting = (key) => Number(psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='${key}'`));
 const balance = async (t) => (await call(t.token, "S18", "coins", "get_balance")).data.balance;
 const saveWorkout = async (t, squatWeight = 60) => {
   const workout = (await call(t.token, "S14", "programs", "get_active_program")).data.workouts[0];
@@ -76,7 +76,7 @@ test("failure a: a price above the balance is COINS_INSUFFICIENT, logged, and no
 test("failure c: with no coinsWorkout in SETTINGS the workout is saved, nothing is credited, and VALUE_NOT_SET is logged", async () => {
   const t = w.trainees[2];
   // This test coach's SETTINGS only; renamed rather than deleted (CLAUDE.md rule 9).
-  psql(`update settings set "settingKey"='coinsWorkout-removed (test)' where "CoachID"='${w.coachID}' and "settingKey"='coinsWorkout'`);
+  psql(`update settings set "settingKey"='coinsWorkout-removed (test)' where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='coinsWorkout'`);
   const r = await saveWorkout(t);
   assert.equal(r.ok, true);
   assert.equal(r.data.feedback.coins, 0);

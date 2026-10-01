@@ -7,7 +7,7 @@ import { demoProvider, paymentGateway, type Provider } from "../interfaces/payme
 import type { Actor } from "../repository.ts";
 import { fakeRepo, U } from "./fake-repo.ts";
 
-const noa: Actor = { role: "trainee", coachID: U(1), traineeID: U(11) };
+const noa: Actor = { role: "trainee", businessID: U(1), coachID: U(1), traineeID: U(11) };
 const charge = (gw = paymentGateway(), payload: Record<string, unknown> = { paymentRequestID: U(900), amount: 350 }) =>
   handle({ caller: "M09", module: "payment_gateway", action: "charge", payload }, noa, fakeRepo().repo, { payment_gateway: gw });
 

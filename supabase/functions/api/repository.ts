@@ -2,11 +2,13 @@
 // Modules and the core call it through business-named operations and never see table names.
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 
-export type Role = "coach" | "trainee";
+export type Role = "owner" | "coach" | "trainee";
 
 export interface Actor {
-  role: Role;
-  coachID: string;          // the coach this actor belongs to (self for a coach)
+  role: Role;               // the role of this request; the Orchestrator sets it from the Registry row (map v11)
+  roles?: Role[];           // every role of the identity user, owner first (rule 10)
+  businessID?: string | null; // the business: the owner's, the coach's, or the trainee's coach's (rule 9)
+  coachID: string;          // the coach this actor belongs to (self for a coach); empty for the owner's role
   traineeID: string | null; // set for a trainee
   fullName?: string;
   // I01: the identity user. A newcomer (signed up, not yet a trainee) has no coachID and may only join (map v9).
@@ -16,6 +18,19 @@ export interface Actor {
 
 // UC4 step 5, one action in the database (0012): joined, or why not.
 export type JoinResult = { status: "joined"; traineeID: string } | { status: "expired" } | { status: "taken" };
+// UC12 step 7, the same for a coach (0013).
+export type CoachJoinResult = { status: "joined"; coachID: string } | { status: "expired" } | { status: "taken" };
+
+// A coach of the business (UC12 steps 3, 8), and an open coach invite that has not expired.
+export interface BusinessCoach {
+  CoachID: string;
+  fullName: string;
+}
+
+export interface CoachInvite {
+  CoachInviteID: string;
+  inviteeName: string;
+}
 
 export interface AuditRecord {
   requestID: string;
@@ -259,7 +274,8 @@ export interface Repository {
   findActorByAuthUser(authUserID: string): Promise<Actor | null>;
   isRegistered(caller: string, moduleName: string, actionName: string, role: string): Promise<boolean>;
   writeAudit(entry: AuditRecord): Promise<void>;
-  getCoachSettings(coachID: string): Promise<Record<string, string>>;
+  // SETTINGS belong to the business (rule 9; 0013).
+  getBusinessSettings(businessID: string): Promise<Record<string, string>>;
   // ERROR_CODES (C05): for each code, the text for people.
   listErrorTexts(): Promise<Record<string, string>>;
   // Training (UC1): trainees, exercises, programs.
@@ -336,7 +352,20 @@ export interface Repository {
   createInvoice(paymentRequestID: string, amount: number): Promise<number>;
   listInvoices(coachID: string, traineeID: string | null): Promise<Invoice[]>;
   // Settings (M14): the given keys in one statement, all or nothing.
-  updateCoachSettings(coachID: string, values: Record<string, string>): Promise<void>;
+  updateBusinessSettings(businessID: string, values: Record<string, string>): Promise<void>;
+  // The business (UC12; 0013), private to M15 apart from the reach of the owner (rule 5).
+  // The owner's reach (rule 5; stage 4e plan, decision 5): the active coaches of the business, or the one asked (coachID
+  // as the request sent it) when it is one of them; null when it is not, or is not an ID (NOT_ALLOWED).
+  coachesInReach(businessID: string | null | undefined, coachID: unknown): Promise<string[] | null>;
+  listBusinessCoaches(businessID: string): Promise<BusinessCoach[]>;
+  listOpenCoachInvites(businessID: string): Promise<CoachInvite[]>;
+  createCoachInvite(businessID: string, invite: NewInvite): Promise<string>;
+  // UC12 step 7: the coach is created with the invite's business and the invite closed together.
+  acceptCoachInvite(token: string, authUserID: string, fullName: string, email: string): Promise<CoachJoinResult>;
+  // The business of an active trainee, through their coach; null when there is none.
+  businessOfTrainee(traineeID: string): Promise<string | null>;
+  // How many workouts each trainee saved since the given time: counts only, no sets (rule 5, the owner).
+  countWorkoutsSince(traineeIDs: string[], since: string): Promise<Record<string, number>>;
 }
 
 export class StorageUnavailable extends Error {}
@@ -367,12 +396,27 @@ export function createRepository(): Repository {
   };
 
   return {
+    // Every role of the identity user (map v11): owner, coach, trainee, in that order. An owner may also be a coach
+    // in the same business (rule 10); a trainee is never either.
     async findActorByAuthUser(authUserID) {
-      const coach = must(await db.from("coaches").select('"CoachID","fullName"').eq("authUserID", authUserID).eq("isActive", true).maybeSingle());
-      if (coach) return { role: "coach", coachID: coach.CoachID, traineeID: null, fullName: coach.fullName };
-      const trainee = must(await db.from("trainees").select('"TraineeID","CoachID","fullName"').eq("authUserID", authUserID).eq("isActive", true).maybeSingle());
-      if (trainee) return { role: "trainee", coachID: trainee.CoachID, traineeID: trainee.TraineeID, fullName: trainee.fullName };
-      return null;
+      const [owner, coach, trainee] = await Promise.all([
+        db.from("owners").select('"BusinessID","fullName"').eq("authUserID", authUserID).eq("isActive", true).maybeSingle(),
+        db.from("coaches").select('"CoachID","BusinessID","fullName"').eq("authUserID", authUserID).eq("isActive", true).maybeSingle(),
+        db.from("trainees").select('"TraineeID","CoachID","fullName",coaches("BusinessID")').eq("authUserID", authUserID).eq("isActive", true).maybeSingle(),
+      ]);
+      const o = must(owner) as { BusinessID: string; fullName: string } | null;
+      const c = must(coach) as { CoachID: string; BusinessID: string; fullName: string } | null;
+      const t = must(trainee) as unknown as { TraineeID: string; CoachID: string; fullName: string; coaches: { BusinessID: string } } | null;
+      const roles: Role[] = [...(o ? ["owner" as const] : []), ...(c ? ["coach" as const] : []), ...(!o && !c && t ? ["trainee" as const] : [])];
+      if (!roles.length) return null;
+      return {
+        role: roles[0],
+        roles,
+        businessID: o?.BusinessID ?? c?.BusinessID ?? t?.coaches.BusinessID ?? null,
+        coachID: c?.CoachID ?? (roles[0] === "trainee" ? t!.CoachID : ""),
+        traineeID: roles[0] === "trainee" ? t!.TraineeID : null,
+        fullName: c?.fullName ?? o?.fullName ?? t?.fullName,
+      };
     },
 
     async listErrorTexts() {
@@ -391,8 +435,8 @@ export function createRepository(): Repository {
       must(await db.from("audit_entries").insert(entry));
     },
 
-    async getCoachSettings(coachID) {
-      const rows = must(await db.from("settings").select('"settingKey","settingValue"').eq("CoachID", coachID)) as
+    async getBusinessSettings(businessID) {
+      const rows = must(await db.from("settings").select('"settingKey","settingValue"').eq("BusinessID", businessID)) as
         { settingKey: string; settingValue: string }[];
       return Object.fromEntries(rows.map((r) => [r.settingKey, r.settingValue]));
     },
@@ -757,9 +801,52 @@ export function createRepository(): Repository {
       return (must(await q.order("issuedAt", { ascending: false })) as unknown as InvoiceRow[]).map(toInvoice);
     },
 
-    async updateCoachSettings(coachID, values) {
-      const rows = Object.entries(values).map(([settingKey, settingValue]) => ({ CoachID: coachID, settingKey, settingValue }));
-      if (rows.length) must(await db.from("settings").upsert(rows, { onConflict: "CoachID,settingKey" }));
+    async updateBusinessSettings(businessID, values) {
+      const rows = Object.entries(values).map(([settingKey, settingValue]) => ({ BusinessID: businessID, settingKey, settingValue }));
+      if (rows.length) must(await db.from("settings").upsert(rows, { onConflict: "BusinessID,settingKey" }));
+    },
+
+    async coachesInReach(businessID, coachID) {
+      if (!businessID) return null;
+      const ids = (must(await db.from("coaches").select('"CoachID"').eq("BusinessID", businessID).eq("isActive", true)) as
+        { CoachID: string }[]).map((c) => c.CoachID);
+      if (coachID === undefined || coachID === null || coachID === "") return ids;
+      return typeof coachID === "string" && ids.includes(coachID) ? [coachID] : null;
+    },
+
+    async listBusinessCoaches(businessID) {
+      return must(await db.from("coaches").select('"CoachID","fullName"')
+        .eq("BusinessID", businessID).eq("isActive", true).order("createdAt")) as BusinessCoach[];
+    },
+
+    async listOpenCoachInvites(businessID) {
+      return must(await db.from("coach_invites").select('"CoachInviteID","inviteeName"')
+        .eq("BusinessID", businessID).eq("status", "open").gt("expiresAt", new Date().toISOString()).order("createdAt")) as CoachInvite[];
+    },
+
+    async createCoachInvite(businessID, invite) {
+      const row = must(await db.from("coach_invites").insert({ BusinessID: businessID, ...invite }).select('"CoachInviteID"').single()) as
+        { CoachInviteID: string };
+      return row.CoachInviteID;
+    },
+
+    async acceptCoachInvite(token, authUserID, fullName, email) {
+      return must(await db.rpc("business_accept_coach_invite", { p_token: token, p_auth: authUserID, p_name: fullName, p_email: email })) as CoachJoinResult;
+    },
+
+    async businessOfTrainee(traineeID) {
+      const row = must(await db.from("trainees").select('coaches("BusinessID")').eq("TraineeID", traineeID).eq("isActive", true).maybeSingle()) as
+        unknown as { coaches: { BusinessID: string } } | null;
+      return row?.coaches.BusinessID ?? null;
+    },
+
+    async countWorkoutsSince(traineeIDs, since) {
+      const counts: Record<string, number> = Object.fromEntries(traineeIDs.map((id) => [id, 0]));
+      if (!traineeIDs.length) return counts;
+      const rows = must(await db.from("workout_logs").select('"TraineeID"').in("TraineeID", traineeIDs).gte("performedAt", since)) as
+        { TraineeID: string }[];
+      for (const r of rows) counts[r.TraineeID] = (counts[r.TraineeID] ?? 0) + 1;
+      return counts;
     },
   };
 }

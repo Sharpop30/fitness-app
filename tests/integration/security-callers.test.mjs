@@ -38,7 +38,8 @@ test("a trainee declaring a module reaches no module-only action: CALLER_INVALID
 });
 
 test("every module ID and system are refused from outside, for a coach too; a screen still works", async () => {
-  for (const caller of [...Array.from({ length: 14 }, (_, i) => `M${String(i + 1).padStart(2, "0")}`), "system", "I02", "S24", 7]) {
+  // Map v11: M01 to M15, and S28 is past the last screen (S27).
+  for (const caller of [...Array.from({ length: 15 }, (_, i) => `M${String(i + 1).padStart(2, "0")}`), "system", "I02", "S28", 7]) {
     assert.equal((await call(w.coachToken, caller, "settings", "get_settings")).error?.code, "CALLER_INVALID", String(caller));
   }
   assert.equal((await call(w.coachToken, "S12", "settings", "get_settings")).ok, true);

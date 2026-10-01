@@ -23,9 +23,9 @@ test("a change to AUDIT_ENTRIES or SETTINGS does not change S04", async () => {
   const before = JSON.stringify((await s04()).data);
   psql(`insert into audit_entries ("requestID","caller","moduleName","actionName","isOk","errorCode")
         select gen_random_uuid(), 'S04', 'programs', 'get_active_program', false, 'NOT_ALLOWED' from generate_series(1, 20)`);
-  psql(`update settings set "settingValue" = '99' where "CoachID" = '${ID.coach}' and "settingKey" = 'coinsWorkout'`);
-  psql(`insert into settings ("CoachID","settingKey","settingValue") values ('${ID.coach}','acceptanceProbe','1')`);
+  psql(`update settings set "settingValue" = '99' where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${ID.coach}\') and "settingKey" = 'coinsWorkout'`);
+  psql(`insert into settings ("BusinessID","settingKey","settingValue") select "BusinessID",'acceptanceProbe','1' from coaches where "CoachID" = '${ID.coach}'`);
   assert.equal(JSON.stringify((await s04()).data), before);
-  psql(`update settings set "settingValue" = '10' where "CoachID" = '${ID.coach}' and "settingKey" = 'coinsWorkout'`);
+  psql(`update settings set "settingValue" = '10' where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${ID.coach}\') and "settingKey" = 'coinsWorkout'`);
   psql(`delete from settings where "settingKey" = 'acceptanceProbe'`); // local test row only
 });

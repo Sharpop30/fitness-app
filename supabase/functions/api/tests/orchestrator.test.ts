@@ -4,9 +4,9 @@ import { assertEquals } from "jsr:@std/assert@1";
 import { handle, type Modules } from "../orchestrator.ts";
 import { fail, ok } from "../errors.ts";
 import { type Actor, type AuditRecord, type Repository, StorageUnavailable } from "../repository.ts";
-import { stage4bNotUsed, stage4cNotUsed, stage4dNotUsed, stage5NotUsed } from "./fake-repo.ts";
+import { stage4bNotUsed, stage4cNotUsed, stage4dNotUsed, stage5NotUsed, stage4eNotUsed } from "./fake-repo.ts";
 
-const coach: Actor = { role: "coach", coachID: "coach-1", traineeID: null };
+const coach: Actor = { role: "coach", businessID: "coach-1", coachID: "coach-1", traineeID: null };
 
 // The training operations are not reached by these tests.
 const notUsed = () => Promise.reject(new Error("not used in orchestrator tests"));
@@ -19,6 +19,7 @@ const trainingNotUsed = {
   ...stage4cNotUsed,
   ...stage4dNotUsed,
   ...stage5NotUsed,
+  ...stage4eNotUsed,
 };
 
 function fakeRepo(opts: { rows?: string[]; auditFails?: boolean } = {}) {
@@ -33,7 +34,7 @@ function fakeRepo(opts: { rows?: string[]; auditFails?: boolean } = {}) {
       audits.push(e);
       return Promise.resolve();
     },
-    getCoachSettings: () => Promise.resolve({ cancelHours: "24" }),
+    getBusinessSettings: () => Promise.resolve({ cancelHours: "24" }),
   };
 
   return { repo, audits };
@@ -102,7 +103,7 @@ Deno.test("registered but not yet built is refused, not crashed", async () => {
 
 // Security review 1, finding 1: from outside only a screen is a caller; the Endpoint refuses the rest.
 import { isScreenCaller } from "../registry.ts";
-Deno.test("isScreenCaller: S01 to S23 only; not a module, system, another string or a number", () => {
-  for (const c of ["S01", "S12", "S23"]) assertEquals(isScreenCaller(c), true, c);
-  for (const c of ["M01", "M14", "system", "S00", "S24", "s01", "", 7, null, undefined]) assertEquals(isScreenCaller(c), false, String(c));
+Deno.test("isScreenCaller: S01 to S27 only (map v11); not a module, system, another string or a number", () => {
+  for (const c of ["S01", "S12", "S23", "S24", "S27"]) assertEquals(isScreenCaller(c), true, c);
+  for (const c of ["M01", "M14", "M15", "system", "S00", "S28", "s01", "", 7, null, undefined]) assertEquals(isScreenCaller(c), false, String(c));
 });

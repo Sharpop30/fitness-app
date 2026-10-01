@@ -37,7 +37,8 @@ test("S22: a newcomer's accept_invite goes through the envelope with two Audit r
 
 test("S23: get_me for the coach and for a trainee, with two Audit rows", async () => {
   const coach = (await call(t.coach, "S23", "trainees", "get_me")).data;
-  assert.deepEqual([coach.role, coach.traineeID], ["coach", null]);
+  // Map v11: the demo coach is also the owner of the demo business; roles lists both, owner first.
+  assert.deepEqual([coach.roles, coach.role, coach.traineeID], [["owner", "coach"], "owner", null]);
   const noa = (await call(t.noa, "S23", "trainees", "get_me")).data;
   assert.deepEqual([noa.role, noa.traineeID], ["trainee", ID.noa]);
   assert.deepEqual(trail("S23", "get_me"), ["S23>trainees.get_me:true:-", "S23>trainees.get_me:true:-"]);

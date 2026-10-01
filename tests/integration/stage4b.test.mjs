@@ -59,7 +59,7 @@ test("S14: log_workout asks feedback, coins and challenges, and they ask progres
     ({ ExerciseID: i.ExerciseID, setNumber: s + 1, reps: i.targetReps, weight: i.targetWeight, isDone: true })));
   const r = await call(t.noa, "S14", "results", "log_workout", { workoutID: workout.WorkoutID, sets });
   assert.equal(r.ok, true);
-  assert.equal(r.data.feedback.coins, Number(psql(`select "settingValue" from settings where "CoachID"='${ID.coach}' and "settingKey"='coinsWorkout'`)));
+  assert.equal(r.data.feedback.coins, Number(psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${ID.coach}\') and "settingKey"='coinsWorkout'`)));
   assert.equal(typeof r.data.feedback.text, "string");
   assert.notEqual(r.data.feedback.text, "");
 

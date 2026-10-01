@@ -197,6 +197,7 @@ nav.tabs button.on{color:var(--accent);font-weight:500}
    - S24 סקירה עסקית, S25 מאמנים והזמנה, S26 מדדים (מ-doc-okr-kpi), S27 כרטיס מאמן; "עוד" של בעל העסק.
    - בעל העסק בנתוני הדוגמה הוא גם המאמן (הכרעות 4 ו-7): בחירת תפקיד אחרי הכניסה, ומעבר בין התפקידים ב"עוד".
    - ההגדרות (S12) של העסק: בעל העסק משנה, והמאמן רואה בלבד (הכרעה 3).
+   גרסה 3.1 (01.10.2026, אושרה בידי הצוות): מהכרעת הצוות על S12, חלופה 1: ההגדרות לבעל העסק בלבד; "הגדרות העסק (לצפייה)" יורדות מ"עוד" של המאמן.
    - בכרטיס המאמן: שם, תוכנית ורצף לכל מתאמן, בלי תוצאות והערות (הכרעה 5). לכל שיעור יש מאמן.
    - S22 משמש גם להצטרפות מאמן, באותו מבנה; באב הטיפוס מוצג רק המסלול של המתאמן.
    ============================================================ */
@@ -651,7 +652,6 @@ screens.more=()=>shell('כלים','עוד',`
    <button class="item" data-a="go" data-v="challengeCoach"><span class="t grow">אתגר שבועי</span>${chev}</button>
    <button class="item" data-a="go" data-v="rewardsCoach"><span class="t grow">תגמולים ומימושים</span>${chev}</button>
    <button class="item" data-a="go" data-v="paymentsCoach"><span class="t grow">תשלומים וחשבוניות</span>${chev}</button>
-   <button class="item" data-a="go" data-v="settings"><span class="t grow">הגדרות העסק (לצפייה)</span>${chev}</button>
    ${S.roles.includes('owner')?`<button class="item" data-a="role" data-v="owner"><span class="t grow">מעבר לבעל העסק</span>${chev}</button>`:''}
    <button class="item" data-a="logout"><span class="t grow">יציאה</span>${chev}</button>
   </div>`,{backBtn:false});

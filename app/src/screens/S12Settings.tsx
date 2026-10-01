@@ -2,10 +2,12 @@
 // Stage 5 (plan, decision 12; report 4d, gap 4): the limits and the daily reminder, which were read at run time but not shown.
 // Design stage, finding 14: numbers open the number keypad and are checked here, naming the field that is wrong; the
 // texts are long fields. Loading and an error with a retry (2, 6).
+// Stage 4e (map v12, rule 9; usecase-12 step 10 and f): the settings of the business, the owner's screen only (the team's
+// decision, 01.10.2026). Fields open when the owner's view is on and the Endpoint says canEdit; otherwise read only.
 import { useEffect, useState } from "react";
 import { call } from "../api/client";
 import { useCall } from "../api/useCall";
-import { Button, Card, Field, Load, Screen } from "../design/components";
+import { Button, Card, Field, Load, Notice, Screen } from "../design/components";
 import { useNav } from "../nav";
 
 const GROUPS: [string, [string, string][]][] = [
@@ -23,7 +25,13 @@ export default function S12Settings() {
   const nav = useNav();
   const settings = useCall("S12", "settings", "get_settings");
   const [values, setValues] = useState<Record<string, string>>({});
-  useEffect(() => { if (settings.data) setValues(settings.data); }, [settings.data]);
+  const [canEdit, setCanEdit] = useState(false);
+  useEffect(() => {
+    if (!settings.data) return;
+    const { canEdit: may, ...rest } = settings.data as Record<string, string> & { canEdit?: boolean };
+    setValues(rest);
+    setCanEdit(nav.role === "owner" && may !== false); // the demo data has no canEdit: the owner's view decides
+  }, [settings.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const save = async () => {
     const bad = NUMBERS.find(([k]) => { const v = String(values[k] ?? "").trim(); return v === "" || !Number.isFinite(Number(v)) || Number(v) < 0; });
@@ -33,8 +41,11 @@ export default function S12Settings() {
   };
   const set = (k: string) => (e: { target: { value: string } }) => setValues({ ...values, [k]: e.target.value });
   return (
-    <Screen eyebrow="בלי קוד" title="הגדרות">
+    <Screen eyebrow="בלי קוד" title="הגדרות העסק">
       <Load state={settings}>{() => <>
+        {canEdit
+          ? <div className="muted small">הערכים חלים על כל המאמנים בעסק.</div>
+          : <Notice>ההגדרות נקבעות בידי בעל העסק. כאן אפשר לראות אותן.</Notice>}
         {GROUPS.map(([title, fields]) => (
           <Card col key={title}>
             <b>{title}</b>
@@ -42,14 +53,14 @@ export default function S12Settings() {
               {fields.map(([k, l]) => (
                 <Field key={k} label={l}>
                   {TEXTS.has(title)
-                    ? <textarea id={`setting-${k}`} rows={2} value={values[k] ?? ""} onChange={set(k)} />
-                    : <input id={`setting-${k}`} type="text" inputMode="numeric" value={values[k] ?? ""} onChange={set(k)} />}
+                    ? <textarea id={`setting-${k}`} rows={2} value={values[k] ?? ""} onChange={set(k)} disabled={!canEdit} />
+                    : <input id={`setting-${k}`} type="text" inputMode="numeric" value={values[k] ?? ""} onChange={set(k)} disabled={!canEdit} />}
                 </Field>
               ))}
             </div>
           </Card>
         ))}
-        <Button onClick={save}>שמירה</Button>
+        {canEdit && <Button onClick={save}>שמירה</Button>}
       </>}</Load>
     </Screen>
   );

@@ -17,7 +17,7 @@ test("normal: the home has the reminder, the streak, the coins, the next workout
   await call(w.coachToken, "S09", "challenges", "create_challenge", { challengeName: "אתגר (test)", challengeType: "count", targetValue: 5 });
   workoutDaysAgo(t.traineeID, t.workoutID, 0, set);
   const h = (await home(t)).data;
-  assert.equal(h.reminder, psql(`select "settingValue" from settings where "CoachID"='${w.coachID}' and "settingKey"='reminderText'`));
+  assert.equal(h.reminder, psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='reminderText'`));
   assert.deepEqual([h.streak, h.streakGapDays], [1, 3]);
   assert.equal(h.coins, 0); // saved straight into the database, not through log_workout
   assert.deepEqual(h.nextWorkout, { WorkoutID: t.workoutID, workoutName: "אימון (test)" });
@@ -61,7 +61,7 @@ test("UC9 section 13 (stage 4c): the next class the trainee registered to, and a
 
 test("failure c: an item that cannot load is left out, and the rest of the home still comes", async () => {
   // spotOfferHours renamed for this coach (rule 9: no deletion), so classes returns VALUE_NOT_SET, and nothing else is lost.
-  const key = (from, to) => psql(`update settings set "settingKey"='${to}' where "CoachID"='${w.coachID}' and "settingKey"='${from}'`);
+  const key = (from, to) => psql(`update settings set "settingKey"='${to}' where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='${from}'`);
   key("spotOfferHours", "spotOfferHours (test off)");
   try {
     const r = await home(w.trainees[3]);

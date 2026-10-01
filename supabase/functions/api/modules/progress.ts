@@ -97,7 +97,11 @@ export const progress: ModuleDef = {
     // UC9 step 4 and alternative b, asked by trainees and home only (Registry). Business Logic rule 8: the streak
     // counts the days with a workout, and holds while at most streakGapDays days pass between them.
     async get_streak(ctx, payload) {
-      const traineeID = await traineeInReach(ctx, payload);
+      // The owner, through M15 (map v11): a trainee of any coach of the business (rule 5).
+      const traineeID = ctx.actor.role === "owner"
+        ? (typeof payload.traineeID === "string" && UUID.test(payload.traineeID) && ctx.actor.businessID &&
+            (await ctx.repo.businessOfTrainee(payload.traineeID)) === ctx.actor.businessID ? payload.traineeID : null)
+        : await traineeInReach(ctx, payload);
       if (!traineeID) return fail("NOT_ALLOWED");
 
       const r = await ctx.call({ module: "settings", action: "get_settings", payload: { key: "streakGapDays" } });

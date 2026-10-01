@@ -49,7 +49,7 @@ test("every payments, invoices and settings screen action goes through the envel
     const own = trail(caller, action).filter((row) => row.startsWith(`${caller}>`)).map((row) => row.split(":").slice(1).join(":"));
     assert.deepEqual(own, ["true:-", expected === true ? "true:-" : `false:${expected}`], label);
   }
-  assert.equal(psql(`select "settingValue" from settings where "CoachID"='${w.coachID}' and "settingKey"='pricePack10'`), "650");
+  assert.equal(psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='pricePack10'`), "650");
 });
 
 test("S19: pay_demo asks payment_gateway.charge and invoices.create_invoice as M09 under one requestID; paid, with its invoice", {

@@ -16,7 +16,7 @@ const filesUnder = (dir) => readdirSync(dir, { recursive: true }).filter((f) => 
 let t;
 before(async () => { t = await demoTokens(); });
 
-const setting = (key, value) => psql(`update settings set "settingValue" = '${value}' where "CoachID" = '${ID.coach}' and "settingKey" = '${key}'`);
+const setting = (key, value) => psql(`update settings set "settingValue" = '${value}' where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${ID.coach}\') and "settingKey" = '${key}'`);
 
 // ---- structural (CLAUDE.md section 9) ----
 test("9.1: a database client is created in repository.ts only, in the server and in the app", () => {

@@ -102,7 +102,18 @@ export const challenges: ModuleDef = {
     },
 
     // UC8 step 9: who completed this week's challenge.
-    async list_completions(ctx) {
+    async list_completions(ctx, payload) {
+      // The owner, through M15 (map v11): who completed this week's challenge of every coach of the business.
+      if (ctx.actor.role === "owner") {
+        const coaches = await ctx.repo.coachesInReach(ctx.actor.businessID, payload.coachID);
+        if (!coaches) return fail("NOT_ALLOWED");
+        const rows = [];
+        for (const CoachID of coaches) {
+          const c = await ctx.repo.getChallengeForWeek(CoachID, thisSunday());
+          if (c) rows.push(...(await ctx.repo.listCompletions(c.ChallengeID)).map((x) => ({ TraineeID: x.TraineeID, CoachID, completedAt: x.completedAt })));
+        }
+        return ok(rows);
+      }
       if (ctx.actor.role !== "coach") return fail("NOT_ALLOWED");
       const c = await ctx.repo.getChallengeForWeek(ctx.actor.coachID, thisSunday());
       return ok(c ? await ctx.repo.listCompletions(c.ChallengeID) : []);

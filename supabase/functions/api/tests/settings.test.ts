@@ -1,6 +1,7 @@
 // Unit tests for M14 settings, against an in-memory Repository (synthetic data), behind the Orchestrator.
 // Sources: doc-module-map v8 section 4 (settings.update_settings, its contract); stage 4d plan, decision 4 and execution
-// decision 5; usecase-02 step 1 and d; CLAUDE.md rule 8.
+// decision 5; usecase-02 step 1 and d; CLAUDE.md rule 8. Map v11 (stage 4e): SETTINGS of the business, changed by its
+// owner only (rule 9; usecase-12 step 10 and alternative f). The business here is a coach's business of one.
 import { assertEquals } from "jsr:@std/assert@1";
 import { handle } from "../orchestrator.ts";
 import { fail, ok } from "../errors.ts";
@@ -9,9 +10,13 @@ import { type Actor, StorageUnavailable } from "../repository.ts";
 import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: U(11) };
-const ROWS = new Set(["S12/get_settings/coach", "S12/update_settings/coach", "S06/get_settings/coach", "S22/get_error_texts/trainee"]);
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: U(11) };
+const owner: Actor = { role: "owner", roles: ["owner", "coach"], businessID: COACH, coachID: COACH, traineeID: null };
+// The coach's update_settings row is out of use (0014); the owner has both rows.
+// Map v12: S12 is the owner's only; the coach's rows are out of use (0014, 0015).
+const ROWS = new Set(["S12/get_settings/owner", "S12/update_settings/owner", "S06/get_settings/coach",
+  "S22/get_error_texts/trainee"]);
 
 function world(opts: { storageDown?: boolean } = {}) {
   const store: Record<string, Record<string, string>> = {
@@ -22,20 +27,28 @@ function world(opts: { storageDown?: boolean } = {}) {
   let writes = 0;
   const w = fakeRepo({
     isRegistered: async (caller, _m, action, role) => ROWS.has(`${caller}/${action}/${role}`),
-    getCoachSettings: async (c) => (down(), { ...store[c] }),
-    updateCoachSettings: async (c, values) => { down(); writes++; Object.assign(store[c], values); },
+    getBusinessSettings: async (c) => (down(), { ...store[c] }),
+    updateBusinessSettings: async (c, values) => { down(); writes++; Object.assign(store[c], values); },
   });
-  const update = (values: unknown, actor: Actor = coach) =>
+  const update = (values: unknown, actor: Actor = owner) =>
     handle({ caller: "S12", module: "settings", action: "update_settings", payload: { values } }, actor, w.repo, { settings });
   return { ...w, store, update, writes: () => writes };
 }
 
-Deno.test("update_settings: the coach changes values, get_settings reads them back, and a key not sent stays", async () => {
+Deno.test("update_settings: the owner changes values and reads them back with canEdit; a coach does not open S12", async () => {
   const w = world();
   assertEquals(await w.update({ priceMonthly: " 400 ", coinsWorkout: 0, feedbackFull: "יפה מאוד (test)" }), ok(null));
-  const r = await handle({ caller: "S12", module: "settings", action: "get_settings" }, coach, w.repo, { settings });
-  assertEquals(r, ok({ priceMonthly: "400", coinsWorkout: "0", cancelHours: "24", feedbackFull: "יפה מאוד (test)", noteMaxLength: "280" }));
+  const values = { priceMonthly: "400", coinsWorkout: "0", cancelHours: "24", feedbackFull: "יפה מאוד (test)", noteMaxLength: "280" };
+  const read = (actor: Actor) => handle({ caller: "S12", module: "settings", action: "get_settings" }, actor, w.repo, { settings });
+  assertEquals(await read({ ...coach, roles: ["coach"] }), fail("ACTION_NOT_ALLOWED"));
+  assertEquals(await read(owner), ok({ ...values, canEdit: true }));
   assertEquals(w.store[OTHER_COACH], { priceMonthly: "999" });
+});
+
+Deno.test("UC12 f: a coach cannot change settings (no Registry row), and nothing is written", async () => {
+  const w = world();
+  assertEquals(await w.update({ priceMonthly: "1" }, coach), fail("ACTION_NOT_ALLOWED"));
+  assertEquals(w.writes(), 0);
 });
 
 Deno.test("decision 4: an empty value, or a number that is not valid for its key, is VALUE_NOT_SET and saves nothing", async () => {

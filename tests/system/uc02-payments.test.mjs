@@ -11,7 +11,7 @@ before(async () => { t = await demoTokens(); w = await freshWorld(2); });
 
 const request = (traineeID, paymentType = "monthly") =>
   call(w.coachToken, "S08", "payments", "create_payment_request", { traineeID, paymentType });
-const price = (key) => psql(`select "settingValue" from settings where "CoachID"='${w.coachID}' and "settingKey"='${key}'`);
+const price = (key) => psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='${key}'`);
 
 // ---- norm ----
 test("norm steps 1-4 and a: the coach creates a request at the price in SETTINGS, and both see it open", async () => {
@@ -83,7 +83,7 @@ test("failure c: the gateway declines: PAYMENT_GATEWAY_UNAVAILABLE, open, no inv
 
 test("failure d: with no price for the type, no request is made (VALUE_NOT_SET)", async () => {
   const [a] = w.trainees;
-  psql(`update settings set "settingValue"='' where "CoachID"='${w.coachID}' and "settingKey"='pricePack10'`); // this fresh coach only
+  psql(`update settings set "settingValue"='' where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='pricePack10'`); // this fresh coach only
   const count = () => psql(`select count(*) from payment_requests where "TraineeID"='${a.traineeID}'`);
   const before = count();
   assert.equal((await request(a.traineeID, "pack10")).error?.code, "VALUE_NOT_SET");

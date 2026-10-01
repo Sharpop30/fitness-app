@@ -10,7 +10,7 @@ import { type Actor, type JoinResult, type NewInvite, StorageUnavailable, type T
 import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
 const DAY_MS = 24 * 60 * 60 * 1000;
 const SITE = "https://site.test/fitness-app/";
 Deno.env.set("SITE_URL", SITE);
@@ -23,7 +23,7 @@ function world(opts: { settings?: Record<string, string>; storageDown?: boolean 
   ];
   const down = () => { if (opts.storageDown) throw new StorageUnavailable("db down"); };
   const { repo, audits } = fakeRepo({
-    getCoachSettings: async () => (down(), opts.settings ?? { inviteValidDays: "7" }),
+    getBusinessSettings: async () => (down(), opts.settings ?? { inviteValidDays: "7" }),
     listTraineesForCoach: async (c) => (down(), c === COACH ? list : []),
     createInvite: async (coachID, invite) => { down(); invites.push({ coachID, ...invite }); return U(62); },
   });
@@ -153,17 +153,20 @@ Deno.test("UC4 a: an invite past its date, used, or unknown is INVITE_EXPIRED; s
 Deno.test("UC4 d: someone already a coach or a trainee cannot join, and nothing is written", async () => {
   assertEquals(await accept(joinWorld({ status: "taken" }), { token: "abc" }), fail("NOT_ALLOWED"));
   const w = joinWorld({ status: "joined", traineeID: U(12) });
-  const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: U(11), authUserID: AUTH, email: "noa@example.com" };
+  const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: U(11), authUserID: AUTH, email: "noa@example.com" };
   assertEquals(await accept(w, { token: "abc" }, trainee), fail("NOT_ALLOWED"));
   assertEquals(await accept(w, { token: "abc" }, { ...newcomer, authUserID: undefined }), fail("NOT_ALLOWED"));
   assertEquals(w.seen, []);
 });
 
-Deno.test("get_me: the role, the trainee's ID and the name; a newcomer has none", async () => {
+Deno.test("get_me: the roles, the trainee's ID and the name (map v11); a newcomer has none", async () => {
   const { repo } = fakeRepo();
   const me = (actor: Actor) => handle({ caller: "S23", module: "trainees", action: "get_me" }, actor, repo, { trainees });
-  assertEquals(await me({ ...coach, fullName: "המאמן" }), ok({ role: "coach", traineeID: null, fullName: "המאמן" }));
-  assertEquals(await me({ role: "trainee", coachID: COACH, traineeID: U(11), fullName: "נועה" }), ok({ role: "trainee", traineeID: U(11), fullName: "נועה" }));
+  assertEquals(await me({ ...coach, roles: ["coach"], fullName: "המאמן" }), ok({ roles: ["coach"], role: "coach", traineeID: null, fullName: "המאמן" }));
+  assertEquals(await me({ role: "trainee", businessID: COACH, coachID: COACH, traineeID: U(11), fullName: "נועה" }),
+    ok({ roles: ["trainee"], role: "trainee", traineeID: U(11), fullName: "נועה" }));
+  assertEquals(await me({ ...coach, roles: ["owner", "coach"], fullName: "המאמן" }),
+    ok({ roles: ["owner", "coach"], role: "owner", traineeID: null, fullName: "המאמן" }));
   assertEquals(await me(newcomer), fail("NOT_ALLOWED"));
 });
 
@@ -226,5 +229,5 @@ Deno.test("rule 5: a trainee of another coach, a bad ID, or a trainee asking, is
   const w = cardWorld();
   assertEquals(await card(w, cardModules(), U(99)), fail("NOT_ALLOWED"));
   assertEquals(await card(w, cardModules(), "not-an-id"), fail("NOT_ALLOWED"));
-  assertEquals(await card(w, cardModules(), U(11), { role: "trainee", coachID: COACH, traineeID: U(11) }), fail("NOT_ALLOWED"));
+  assertEquals(await card(w, cardModules(), U(11), { role: "trainee", businessID: COACH, coachID: COACH, traineeID: U(11) }), fail("NOT_ALLOWED"));
 });

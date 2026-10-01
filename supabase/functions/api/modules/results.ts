@@ -115,6 +115,20 @@ export const results: ModuleDef = {
 
     // UC3 step 9: the trainee's own workouts, or the coach's trainee's, newest first.
     async list_results(ctx, payload) {
+      // The owner, through M15 (map v11; rule 5): how many workouts each active trainee of the business saved since the
+      // given time, and nothing of the sets.
+      if (ctx.actor.role === "owner") {
+        const coaches = await ctx.repo.coachesInReach(ctx.actor.businessID, payload.coachID);
+        if (!coaches) return fail("NOT_ALLOWED");
+        const since = typeof payload.since === "string" && Number.isFinite(Date.parse(payload.since))
+          ? new Date(payload.since).toISOString() : new Date(0).toISOString();
+        const trainees: { TraineeID: string; CoachID: string }[] = [];
+        for (const CoachID of coaches) {
+          for (const t of await ctx.repo.listTraineesForCoach(CoachID)) if (t.TraineeID && t.joined && t.isActive) trainees.push({ TraineeID: t.TraineeID, CoachID });
+        }
+        const counts = await ctx.repo.countWorkoutsSince(trainees.map((t) => t.TraineeID), since);
+        return ok(trainees.map((t) => ({ ...t, workouts: counts[t.TraineeID] ?? 0 })));
+      }
       const traineeID = await traineeInReach(ctx, payload);
       if (!traineeID) return fail("NOT_ALLOWED");
       const logs = await ctx.repo.listResults(traineeID);

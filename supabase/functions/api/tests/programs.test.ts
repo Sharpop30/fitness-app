@@ -6,13 +6,13 @@ import { fail } from "../errors.ts";
 import { programs } from "../modules/programs.ts";
 import { exercises } from "../modules/exercises.ts";
 import { type Actor, type Exercise, type Program, type Repository, StorageUnavailable, type WorkoutDraft } from "../repository.ts";
-import { stage4bNotUsed, stage4cNotUsed, stage4dNotUsed, stage5NotUsed } from "./fake-repo.ts";
+import { stage4bNotUsed, stage4cNotUsed, stage4dNotUsed, stage5NotUsed, stage4eNotUsed } from "./fake-repo.ts";
 
 const U = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const COACH = U(1), OTHER_COACH = U(2), TRAINEE = U(11), OTHER_TRAINEE = U(12), STRANGER = U(13);
 const SQUAT = U(21), BENCH = U(22), LUNGE = U(23), FOREIGN = U(24);
-const coach: Actor = { role: "coach", coachID: COACH, traineeID: null };
-const trainee: Actor = { role: "trainee", coachID: COACH, traineeID: TRAINEE };
+const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
+const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: TRAINEE };
 
 const notUsed = () => Promise.reject(new Error("not used in programs tests"));
 
@@ -44,7 +44,7 @@ function world(opts: { storageDown?: boolean } = {}) {
     findActorByAuthUser: () => Promise.resolve(coach),
     isRegistered: () => Promise.resolve(true),
     writeAudit: () => Promise.resolve(),
-    getCoachSettings: () => Promise.resolve({}),
+    getBusinessSettings: () => Promise.resolve({}),
     isActiveTraineeOfCoach: async (t, c) => (down(), trainees.some((x) => x.id === t && x.coach === c)),
     listExercisesForCoach: async (c) => (down(), list.filter((e) => e.coach === null || e.coach === c).map(({ coach: _, ...e }) => e)),
     getActiveProgram: async (t) => { down(); const r = rows.find((x) => x.TraineeID === t && x.isActive); return r ? toProgram(r) : null; },
@@ -68,6 +68,7 @@ function world(opts: { storageDown?: boolean } = {}) {
     ...stage4cNotUsed,
     ...stage4dNotUsed,
     ...stage5NotUsed,
+    ...stage4eNotUsed,
   };
   return { repo, rows, results };
 }

@@ -12,7 +12,7 @@ vi.mock("../identity/auth", async (original) => ({ ...(await original<object>())
 const NOA = "d0000000-0000-4000-8000-000000001001";
 const toasts: string[] = [];
 const nav = (role: "coach" | "trainee", over: Partial<Nav> = {}): Nav => ({
-  role, tab: null, depth: 2, go: () => {}, replace: () => {}, back: () => {}, setTab: () => {}, signIn: () => {}, signOut: () => {},
+  role, roles: [role], tab: null, depth: 2, go: () => {}, replace: () => {}, back: () => {}, setTab: () => {}, signIn: () => {}, switchRole: () => {}, signOut: () => {},
   toast: (t) => { toasts.push(t); }, ...over,
 });
 const open = (id: string, role: "coach" | "trainee", params: Record<string, unknown> = {}, over: Partial<Nav> = {}) => {

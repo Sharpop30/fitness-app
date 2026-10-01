@@ -10,7 +10,7 @@ import { call, classInHours, demoTokens, freshWorld, psql, regStatus } from "./d
 let t, w;
 before(async () => { t = await demoTokens(); w = await freshWorld(2); });
 
-const setting = (key, value) => psql(`update settings set "settingValue" = '${value}' where "CoachID" = '${w.coachID}' and "settingKey" = '${key}'`);
+const setting = (key, value) => psql(`update settings set "settingValue" = '${value}' where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey" = '${key}'`);
 
 // ---- 9.3: every request leaves audit rows with a shared requestID ----
 test("9.3: each request of S11, S13 and S17 leaves its audit rows under one requestID, inner requests included", async () => {

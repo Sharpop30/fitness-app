@@ -1,9 +1,11 @@
 // The app shell: role, screen stack, tabs and toast (stage 2 plan, task 7). Screens are separate modules;
 // this file only routes between them. The "More" and "Me" tabs are navigation menus, with no action of their own.
+// Stage 4e (map v11): the owner's tabs and menu, and moving between owner and coach with no new sign-in (rule 10).
+// The business settings (S12) are in the owner's menu only (the team's decision, 01.10.2026; map v12, rule 9).
 import { useMemo, useRef, useState, type ComponentType } from "react";
 import { setSession } from "./api/client";
 import { Row, Screen } from "./design/components";
-import { NavContext, useNav, type Nav, type Role, type Route } from "./nav";
+import { NavContext, useNav, type Nav, type Role, type Route, type SignedRole } from "./nav";
 import S01 from "./screens/S01CoachHome";
 import S02 from "./screens/S02Trainees";
 import S03 from "./screens/S03TraineeCard";
@@ -27,6 +29,12 @@ import S20 from "./screens/S20TraineeChallenge";
 import S21 from "./screens/S21Progress";
 import S22 from "./screens/S22JoinInvite";
 import S23 from "./screens/S23SignIn";
+import S24 from "./screens/S24OwnerHome";
+import S25 from "./screens/S25Coaches";
+import S26 from "./screens/S26Kpis";
+import S27 from "./screens/S27CoachCard";
+
+const HOME: Record<SignedRole, string> = { owner: "S24", coach: "S01", trainee: "S13" };
 
 function CoachMenu() {
   const nav = useNav();
@@ -37,7 +45,21 @@ function CoachMenu() {
         <Row title="אתגר שבועי" onClick={() => nav.go("S09")} />
         <Row title="תגמולים ומימושים" onClick={() => nav.go("S10")} />
         <Row title="תשלומים וחשבוניות" onClick={() => nav.go("S08")} />
-        <Row title="הגדרות: מטבעות, מחירים ונוסחים" onClick={() => nav.go("S12")} />
+        {nav.roles.includes("owner") && <Row title="מעבר לבעל העסק" onClick={() => nav.switchRole("owner")} />}
+        <Row title="יציאה" onClick={nav.signOut} />
+      </div>
+    </Screen>
+  );
+}
+
+// The owner's menu (prototype version 3): the business settings, the move to the coach's role, and signing out.
+function OwnerMenu() {
+  const nav = useNav();
+  return (
+    <Screen eyebrow="ניהול העסק" title="עוד" noBack>
+      <div className="list">
+        <Row title="הגדרות העסק: מחירים, מטבעות וכללים" onClick={() => nav.go("S12")} />
+        {nav.roles.includes("coach") && <Row title="מעבר למאמן" onClick={() => nav.switchRole("coach")} />}
         <Row title="יציאה" onClick={nav.signOut} />
       </div>
     </Screen>
@@ -64,41 +86,48 @@ function TraineeMenu() {
 
 export const SCREENS: Record<string, ComponentType<any>> = {
   S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23,
-  more: CoachMenu, me: TraineeMenu,
+  S24, S25, S26, S27,
+  more: CoachMenu, me: TraineeMenu, ownerMore: OwnerMenu,
 };
 
 export default function App() {
   const [role, setRole] = useState<Role>(null);
+  const [roles, setRoles] = useState<SignedRole[]>([]);
   const [tab, setTabState] = useState<string | null>(null);
-  // An invite link (SITE_URL?join=token) opens joining, over the sign-in (stage 5 plan, decision 2).
+  // An invite link (SITE_URL?join=token) opens joining, over the sign-in (stage 5 plan, decision 2); a coach invite
+  // link (SITE_URL?coach=token) opens joining as a coach (map v11).
   const [stack, setStack] = useState<Route[]>(() => {
-    const inviteToken = new URLSearchParams(window.location.search).get("join");
-    return [{ screen: "S23", params: {} }, ...(inviteToken ? [{ screen: "S22", params: { inviteToken } }] : [])];
+    const query = new URLSearchParams(window.location.search);
+    const inviteToken = query.get("join"), coachToken = query.get("coach");
+    return [{ screen: "S23", params: {} },
+      ...(coachToken ? [{ screen: "S22", params: { coachToken } }] : inviteToken ? [{ screen: "S22", params: { inviteToken } }] : [])];
   });
   const [toastText, setToastText] = useState("");
   const [toastOn, setToastOn] = useState(false);
   const timer = useRef<number>();
 
+  const open = (r: SignedRole, traineeID: string | null) => {
+    setSession({ role: r, traineeID });
+    setRole(r);
+    setTabState(HOME[r]); setStack([{ screen: HOME[r], params: {} }]); window.scrollTo(0, 0);
+  };
+
   const nav: Nav = useMemo(() => ({
-    role, tab, depth: stack.length,
+    role, roles, tab, depth: stack.length,
     go: (screen, params = {}) => { setStack((s) => [...s, { screen, params }]); window.scrollTo(0, 0); },
     replace: (screen, params = {}) => setStack((s) => [...s.slice(0, -1), { screen, params }]),
     back: () => { setStack((s) => (s.length > 1 ? s.slice(0, -1) : s)); window.scrollTo(0, 0); },
     setTab: (t) => { setTabState(t); setStack([{ screen: t, params: {} }]); window.scrollTo(0, 0); },
-    signIn: (r, traineeID) => {
-      setSession({ role: r, traineeID: traineeID ?? null });
-      setRole(r);
-      const home = r === "coach" ? "S01" : "S13";
-      setTabState(home); setStack([{ screen: home, params: {} }]);
-    },
-    signOut: () => { setSession(null); setRole(null); setTabState(null); setStack([{ screen: "S23", params: {} }]); },
+    signIn: (r, traineeID, all) => { setRoles(all?.length ? all : [r]); open(r, traineeID ?? null); },
+    switchRole: (r) => { if (roles.includes(r)) open(r, null); },
+    signOut: () => { setSession(null); setRole(null); setRoles([]); setTabState(null); setStack([{ screen: "S23", params: {} }]); },
     toast: (text) => {
       if (!text) return;
       setToastText(text); setToastOn(true);
       window.clearTimeout(timer.current);
       timer.current = window.setTimeout(() => setToastOn(false), 2400);
     },
-  }), [role, tab, stack.length]);
+  }), [role, roles, tab, stack.length]);
 
   const top = stack[stack.length - 1];
   const Current = SCREENS[top.screen] ?? S23;
