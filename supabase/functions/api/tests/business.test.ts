@@ -235,3 +235,14 @@ Deno.test("the owner reads only: manage_rewards beyond the list, and a coach out
   assertEquals(await ask(w, "M15", "progress", "get_streak", asOwner, { traineeID: T3 }), fail("NOT_ALLOWED"));
   assertEquals(await ask(w, "M15", "progress", "get_streak", asOwner, { traineeID: T2 }), ok({ streak: 0, streakGapDays: 3 }));
 });
+
+Deno.test("decision 6: an owner who is not a coach reads the business the same way, and the settings with canEdit", async () => {
+  const ownerOnly: Actor = { role: "owner", roles: ["owner"], businessID: B1, coachID: "", traineeID: null };
+  const w = world();
+  const home = await ask(w, "S24", "home", "get_owner_home", ownerOnly);
+  assertEquals([home.ok, (home.data as Record<string, unknown>).coaches, (home.data as Record<string, unknown>).incomeMonth], [true, 2, 350]);
+  assertEquals((await ask(w, "S12", "settings", "get_settings", ownerOnly)).data, { inviteValidDays: "7", streakGapDays: "3", canEdit: true });
+  // No coach of their own: a coach's screen gives nothing (no Registry row for the owner, so it is refused).
+  const none = fakeRepo({ isRegistered: async (_c, _m, _a, role) => role !== "owner" });
+  assertEquals(await handle({ caller: "S01", module: "home", action: "get_coach_home" }, ownerOnly, none.repo, MODULES), fail("ACTION_NOT_ALLOWED"));
+});
