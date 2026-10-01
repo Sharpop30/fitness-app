@@ -165,7 +165,9 @@ export function Picture({ src, size }: { src?: string; size?: "tall" | "short" }
 export function Button({ children, onClick, secondary, small, disabled, busyText = "שולח..." }: { children: ReactNode; onClick?: () => unknown; secondary?: boolean; small?: boolean; disabled?: boolean; busyText?: string }) {
   const [busy, setBusy] = useState(false);
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  // Set on every mount: in development React mounts, unmounts and mounts again (StrictMode), and a flag set false by the
+  // first unmount would keep the button "sending" for good.
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const click = async () => {
     if (busy || !onClick) return;
     const r = onClick();
