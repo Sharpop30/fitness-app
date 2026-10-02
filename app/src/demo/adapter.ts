@@ -152,6 +152,7 @@ const actions: Record<string, H> = {
     const workouts = p.workouts as D.Workout[];
     for (const w of workouts) {
       if (!w.items.length) return fail("PROGRAM_INVALID");
+      if (new Set(w.items.map((i) => i.ExerciseID)).size !== w.items.length) return fail("PROGRAM_INVALID"); // once per workout
       for (const i of w.items) if (!(i.targetSets > 0 && i.targetReps > 0 && i.targetWeight >= 0)) return fail("PROGRAM_INVALID");
     }
     prog.workouts = workouts;
@@ -159,8 +160,10 @@ const actions: Record<string, H> = {
   },
   "programs.swap_exercise": (p) => {
     const prog = activeProgram(String(p.traineeID));
-    const item = prog?.workouts.flatMap((w) => w.items).find((i) => i.WorkoutItemID === p.workoutItemID);
+    const workout = prog?.workouts.find((w) => w.items.some((i) => i.WorkoutItemID === p.workoutItemID));
+    const item = workout?.items.find((i) => i.WorkoutItemID === p.workoutItemID);
     if (!item) return fail("PROGRAM_INVALID");
+    if (workout!.items.some((i) => i !== item && i.ExerciseID === p.exerciseID)) return fail("PROGRAM_INVALID"); // once per workout
     item.ExerciseID = String(p.exerciseID); // same place in the order (Business Logic rule 2)
     return ok(item);
   },

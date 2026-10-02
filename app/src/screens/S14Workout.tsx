@@ -39,6 +39,8 @@ function Workout({ workoutID }: { workoutID: string }) {
   const nav = useNav();
   const prog = useCall("S14", "programs", "get_active_program");
   const [sets, setSets] = useState<SetT[] | null>(null);
+  // The video opens over the workout, not as a screen of its own, so the results typed so far stay (code review, 7c).
+  const [video, setVideo] = useState<string | null>(null);
   const w = prog.data?.workouts.find((x: any) => x.WorkoutID === workoutID);
 
   useEffect(() => {
@@ -49,6 +51,7 @@ function Workout({ workoutID }: { workoutID: string }) {
   if (prog.error) return <Screen eyebrow="אימון" title="אימון"><ErrorState error={prog.error} onRetry={prog.reload} /></Screen>;
   if (prog.data && !w) return <Screen eyebrow="אימון" title="אימון"><Empty title="האימון הזה כבר לא בתוכנית" sub="התוכנית עודכנה. האימונים הנוכחיים בלשונית אימון." /></Screen>;
   if (!w || !sets) return <Screen eyebrow="אימון" title="אימון"><Loading /></Screen>;
+  if (video) return <DemoVideo exerciseID={video} onBack={() => setVideo(null)} />;
 
   const upd = (i: number, k: "reps" | "weight", v: string) => { const n = [...sets]; n[i] = { ...n[i], [k]: v === "" ? NaN : +v }; setSets(n); };
   const toggle = (i: number) => { const n = [...sets]; n[i] = { ...n[i], isDone: !n[i].isDone }; setSets(n); };
@@ -64,7 +67,7 @@ function Workout({ workoutID }: { workoutID: string }) {
         const bw = it.targetWeight === 0;
         return (
           <div className="card col" key={it.WorkoutItemID}>
-            <div className="row between"><b>{it.exerciseName}</b>{it.hasVideo && <LinkButton onClick={() => nav.go("S14", { videoOf: it.ExerciseID })}>▶︎ סרטון הדגמה</LinkButton>}</div>
+            <div className="row between"><b>{it.exerciseName}</b>{it.hasVideo && <LinkButton onClick={() => setVideo(it.ExerciseID)}>▶︎ סרטון הדגמה</LinkButton>}</div>
             <div className="muted small">יעד: <span className="mono">{it.targetSets} סטים × {it.targetReps}{bw ? "" : ` · ${it.targetWeight} ק"ג`}</span></div>
             <div className="setrow muted small" aria-hidden="true"><span>סט</span><span>חזרות</span><span>{bw ? "" : "משקל"}</span><span>בוצע</span></div>
             {sets.map((s, i) => s.ExerciseID !== it.ExerciseID ? null : (
@@ -85,10 +88,10 @@ function Workout({ workoutID }: { workoutID: string }) {
 
 // The demo video of one exercise. The exercise is asked for only when there is one to show (stage 4b plan, decision 12).
 // On the Endpoint the video plays (stage 5 plan, decision 9); on demo data the placeholder stays.
-function DemoVideo({ exerciseID }: { exerciseID: string }) {
+function DemoVideo({ exerciseID, onBack }: { exerciseID: string; onBack?: () => void }) {
   const one = useCall("S14", "exercises", "get_exercise", { exerciseID });
   return (
-    <Screen eyebrow="סרטון הדגמה" title={one.data?.exerciseName ?? ""}>
+    <Screen eyebrow="סרטון הדגמה" title={one.data?.exerciseName ?? ""} onBack={onBack}>
       <Load state={one}>{(e: any) => isLive("S14") && e.videoUrl
         ? <VideoPlayer videoType={e.videoType} videoUrl={e.videoUrl} />
         : <div className="video">▶︎ {e.videoType === "youtube" ? "סרטון הדגמה מיוטיוב (קישור לדוגמה)" : "סרטון שהמאמן העלה (דוגמה)"}</div>}
