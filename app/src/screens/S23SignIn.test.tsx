@@ -67,3 +67,17 @@ test("back from the reset link, S23 asks for a new password first, says the rule
   await waitFor(() => expect(setPassword).toHaveBeenCalledWith("abcd1234"));
   vi.mocked(isRecoveryReturn).mockReturnValue(false);
 });
+
+// Stage 7c, found in the phone test: the identity service refuses a new password equal to the old one, and the screen
+// said only "something went wrong". Prototype 3.4.
+test("back from the reset link, a new password equal to the old one is refused with its own text", async () => {
+  vi.mocked(isRecoveryReturn).mockReturnValue(true);
+  vi.mocked(setPassword).mockResolvedValueOnce("same");
+  render(<NavContext.Provider value={navWith}><S23 /></NavContext.Provider>);
+  await screen.findByRole("heading", { level: 1, name: "סיסמה חדשה" });
+  fireEvent.change(document.getElementById("newPassword")!, { target: { value: "abcd1234" } });
+  fireEvent.click(screen.getByRole("button", { name: "שמירה וכניסה" }));
+  await waitFor(() => expect(toasts.at(-1)).toBe("הסיסמה החדשה צריכה להיות שונה מהקודמת"));
+  expect(screen.getByRole("heading", { level: 1, name: "סיסמה חדשה" })).toBeTruthy(); // still asking
+  vi.mocked(isRecoveryReturn).mockReturnValue(false);
+});

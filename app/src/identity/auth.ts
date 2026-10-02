@@ -7,7 +7,8 @@
 
 // ok: signed in. wrong: the service said no (a wrong password, an address already in use). unavailable: no answer (UC4 s.7).
 // "weak": a password the identity service refuses by its policy, 8 characters with letters and digits (stage 7 plan, task 12).
-export type Outcome = "ok" | "wrong" | "weak" | "unavailable";
+// "same": a new password equal to the current one (stage 7c, found in the phone test; prototype 3.4).
+export type Outcome = "ok" | "wrong" | "weak" | "same" | "unavailable";
 
 // The policy, as the identity service holds it (config.toml locally; the dashboard in the cloud), so the screen can say it first.
 // "letters_digits" counts English letters only: a password of Hebrew letters and digits is refused (checked, 02.10.2026).
@@ -79,7 +80,8 @@ export async function signUp(email: string, password: string): Promise<Outcome> 
 export async function setPassword(password: string): Promise<Outcome> {
   if (!token) return "wrong";
   const r = await ask("user", { method: "PUT", body: { password }, bearer: token });
-  return !r || r.status >= 500 ? "unavailable" : r.status < 300 ? "ok" : r.body?.error_code === "weak_password" ? "weak" : "wrong";
+  return !r || r.status >= 500 ? "unavailable" : r.status < 300 ? "ok" : r.body?.error_code === "weak_password" ? "weak"
+    : r.body?.error_code === "same_password" ? "same" : "wrong";
 }
 
 // Password reset from S23 (design review, finding 24; map v13, I01; stage 7 plan, task 14). The service mails a link

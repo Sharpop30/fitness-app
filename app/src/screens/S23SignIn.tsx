@@ -77,6 +77,7 @@ function SignIn({ live }: { live: boolean }) {
     if (!passwordOK(newPassword)) return nav.toast(`הסיסמה צריכה להיות ${PASSWORD_RULE}`);
     const outcome = await setIdentityPassword(newPassword);
     if (outcome === "weak") return nav.toast(`הסיסמה צריכה להיות ${PASSWORD_RULE}`);
+    if (outcome === "same") return nav.toast("הסיסמה החדשה צריכה להיות שונה מהקודמת"); // prototype 3.4
     if (outcome !== "ok") return nav.toast("משהו השתבש. אפשר לנסות שוב");
     setRecovering(false); nav.toast("הסיסמה נשמרה");
     await enterLive();

@@ -82,6 +82,13 @@ test("before a request, and when the network comes back, a token about to run ou
   expect(fetchMock).toHaveBeenCalledTimes(3);
 });
 
+test("a new password equal to the current one is 'same' (stage 7c)", async () => {
+  fetchMock.mockResolvedValueOnce(answer(200, tokens(1)));
+  await signInWithPassword("owner@example.com", "pw");
+  fetchMock.mockResolvedValueOnce(answer(422, { error_code: "same_password" }));
+  expect(await setPassword("abcd1234")).toBe("same");
+});
+
 test("a refresh token the service no longer takes is forgotten; with none kept there is nothing to restore", async () => {
   expect(await restoreSession()).toBe("wrong");
   expect(fetchMock).not.toHaveBeenCalled();
