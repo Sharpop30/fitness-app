@@ -170,3 +170,31 @@ test("a gateway answer that is not the Endpoint's reply (503 while the function 
   expect(r.ok).toBe(false);
   expect(r.error?.code).toBe("STORAGE_UNAVAILABLE");
 });
+
+// Stage 7b, task 16 (stage 7 plan, decision 9): a read that got no answer at all is sent once more; a write never is.
+test("a read with no answer is sent once more after a pause, and the second answer is the reply", async () => {
+  setSession({ role: "coach", traineeID: null });
+  fetchMock.mockClear();
+  fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch") as never);
+  const r = await call("S01", "home", "get_coach_home");
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(r.ok).toBe(true);
+});
+
+test("a read with no answer twice is STORAGE_UNAVAILABLE, after two tries", async () => {
+  setSession({ role: "coach", traineeID: null });
+  fetchMock.mockClear();
+  fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch") as never).mockRejectedValueOnce(new TypeError("Failed to fetch") as never);
+  const r = await call("S01", "home", "get_coach_home");
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(r.error?.code).toBe("STORAGE_UNAVAILABLE");
+});
+
+test("a write with no answer is never sent again: nothing is saved twice", async () => {
+  setSession({ role: "trainee", traineeID: "t1" });
+  fetchMock.mockClear();
+  fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch") as never);
+  const r = await call("S14", "results", "log_workout", { workoutID: "w", sets: [] });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(r.error?.code).toBe("STORAGE_UNAVAILABLE");
+});
