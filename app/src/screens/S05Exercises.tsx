@@ -24,7 +24,7 @@ function Exercises() {
       <Load state={list}>{(data: any[]) => data.length
         ? <div className="list">
           {data.map((e: any) => <Row key={e.ExerciseID} title={e.exerciseName} onClick={() => nav.go("S05", { exerciseID: e.ExerciseID })}
-            sub={e.videoType === "youtube" ? "קישור יוטיוב" : e.videoType === "upload" ? "סרטון שהועלה" : "אין סרטון"} />)}
+            sub={(e.isPrepared ? "מהרשימה המוכנה · " : "") + (e.videoType === "youtube" ? "קישור יוטיוב" : e.videoType === "upload" ? "סרטון שהועלה" : "אין סרטון")} />)}
         </div>
         : <Empty title="עוד אין תרגילים" />}
       </Load>
@@ -51,12 +51,19 @@ function NewExercise() {
   );
 }
 
+// As the prototype: 60 seconds is "עד דקה"; any other length in seconds. The size follows (map v13).
+const limitText = (seconds: number, megabytes: number) =>
+  `${seconds === 60 ? "עד דקה" : `עד ${seconds} שניות`} ועד ${megabytes} מגה-בייט`;
+
 function OneExercise({ exerciseID }: { exerciseID: string }) {
   const nav = useNav();
   const one = useCall("S05", "exercises", "get_exercise", { exerciseID });
   const [url, setUrl] = useState("");
   const [file, setFile] = useState<{ blob: File; preview: string; seconds: number } | null>(null);
   const [uploading, setUploading] = useState(false);
+  // The limits beside the upload button, from SETTINGS (map v13; design-stage gap 2, finding 19): never a fixed "minute".
+  const limits = useCall<Record<string, string>>("S05", "settings", "get_settings", { keys: ["videoMaxSeconds", "videoMaxMegabytes"] });
+  const limit = limits.data ? ` (${limitText(Number(limits.data.videoMaxSeconds), Number(limits.data.videoMaxMegabytes))})` : "";
 
   const attach = async (payload: Record<string, unknown>, done: string) => {
     const r = await call("S05", "exercises", "attach_video", { exerciseID, ...payload });
@@ -89,6 +96,18 @@ function OneExercise({ exerciseID }: { exerciseID: string }) {
     }
   };
   const live = isLive("S05");
+  // Map v13, rule 12 (usecase-10 v3, alternative f; prototype 3.2): a ready-made exercise shows its video and why there
+  // is nothing to add; its video is set at setup and shared by every coach of the business.
+  if (one.data?.isPrepared) {
+    const e = one.data;
+    return (
+      <Screen eyebrow="מהרשימה המוכנה" title={e.exerciseName}>
+        {live && e.videoUrl ? <VideoPlayer key={e.videoUrl} videoType={e.videoType} videoUrl={e.videoUrl} />
+          : e.videoType ? <div className="video">▶︎ סרטון הדגמה מיוטיוב (קישור לדוגמה)</div> : <Empty title="לתרגיל עוד אין סרטון" />}
+        <div className="muted small">התרגיל מהרשימה המוכנה, והסרטון שלו משותף לכל המאמנים בעסק. לסרטון משלך אפשר ליצור תרגיל חדש.</div>
+      </Screen>
+    );
+  }
   return (
     <Screen eyebrow="תרגיל" title={one.data?.exerciseName ?? ""}>
       <Load state={one}>{(e: any) => <>
@@ -99,14 +118,14 @@ function OneExercise({ exerciseID }: { exerciseID: string }) {
         <Field label="קישור לסרטון"><input id="videoUrl" type="url" value={url} onChange={(ev) => setUrl(ev.target.value)} placeholder="https://www.youtube.com/..." /></Field>
         <Button secondary onClick={() => attach({ kind: "link", url }, "הסרטון צורף, ומופיע בכל התוכניות")}>צירוף קישור</Button>
         {live ? <>
-          <FileButton id="videoFile" accept="video/*" onFile={choose} busy={uploading}>העלאת סרטון קצר מהטלפון</FileButton>
+          <FileButton id="videoFile" accept="video/*" onFile={choose} busy={uploading}>{`העלאת סרטון מהטלפון${limit}`}</FileButton>
           {file && <>
             <VideoPlayer key={file.preview} videoType="upload" videoUrl={file.preview} />
             <Button onClick={upload} busyText="מעלה...">שמירה</Button>
           </>}
         </> : <>
-          <Button secondary onClick={() => attach({ kind: "upload", seconds: 45 }, "הסרטון עלה (דוגמה)")} busyText="מעלה...">העלאת סרטון קצר מהטלפון</Button>
-          <LinkButton onClick={() => attach({ kind: "upload", seconds: 120 }, "")}>מה קורה בסרטון של שתי דקות?</LinkButton>
+          <Button secondary onClick={() => attach({ kind: "upload", seconds: 45 }, "הסרטון עלה (דוגמה)")} busyText="מעלה...">{`העלאת סרטון מהטלפון${limit}`}</Button>
+          <LinkButton onClick={() => attach({ kind: "upload", seconds: 120 }, "")}>מה קורה בסרטון ארוך יותר?</LinkButton>
         </>}
       </>}</Load>
     </Screen>

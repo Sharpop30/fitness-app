@@ -1,15 +1,17 @@
 // S09 weekly challenge, coach (UC8, story 5): one challenge a week, automatic completion, prize handover.
 // Design stage: marking a prize checks the reply (finding 3), loading and an error with a retry (2, 6), avatars and
 // names isolated (8). With a challenge this week, no "add" button but the day the next one can go out (team decision,
-// 30.09.2026, in the screen review; changing a challenge is gap 9, for stage 7).
+// 30.09.2026, in the screen review). Map v13, rule 11 (usecase-08 v3; prototype 3.2): "שינוי אתגר", the name and the
+// prize always, the target only while no one completed.
 import { useState } from "react";
 import { call } from "../api/client";
 import { both, useCall } from "../api/useCall";
 import { Avatar, Badge, Button, Empty, Field, Hero, Item, Load, Name, Notice, Screen, Segmented, fmtDate } from "../design/components";
 import { useNav } from "../nav";
 
-export default function S09CoachChallenge({ create }: { create?: boolean }) {
+export default function S09CoachChallenge({ create, edit }: { create?: boolean; edit?: boolean }) {
   if (create) return <NewChallenge />;
+  if (edit) return <EditChallenge />;
   return <CurrentChallenge />;
 }
 
@@ -60,6 +62,45 @@ function nextFrom(end: string | Date) {
   return `האתגר הבא אפשר לפרסם מיום ראשון, ${fmtDate(sunday)}.`;
 }
 
+// Map v13, rule 11: the type and the exercise never change; after a first completion, the target shows read only.
+function EditChallenge() {
+  const nav = useNav();
+  const ch = useCall("S09", "challenges", "get_current_challenge");
+  const done = useCall("S09", "challenges", "list_completions");
+  const state = { ...both({ ...ch, data: ch.loading || ch.error ? null : { c: ch.data } }, done) };
+  return (
+    <Screen eyebrow="אתגר השבוע" title="שינוי אתגר">
+      <Load state={state}>{([{ c }, list]: [{ c: any }, any[]]) => c
+        ? <EditForm c={c} locked={list.length > 0} onSaved={() => { nav.back(); nav.toast("האתגר עודכן"); }} />
+        : <Empty title="אין אתגר השבוע" sub="אפשר לפרסם אתגר לשבוע הזה, וכל המתאמנים משתתפים." />}</Load>
+    </Screen>
+  );
+}
+
+function EditForm({ c, locked, onSaved }: { c: any; locked: boolean; onSaved: () => void }) {
+  const nav = useNav();
+  const [name, setName] = useState<string>(c.challengeName);
+  const [prize, setPrize] = useState<string>(c.extraPrize ?? "");
+  const [target, setTarget] = useState(String(c.targetValue));
+  const save = async () => {
+    if (!name.trim()) return nav.toast("חסר שם לאתגר");
+    const r = await call("S09", "challenges", "update_challenge", { challengeName: name, extraPrize: prize, ...(locked ? {} : { targetValue: Number(target) }) });
+    if (!r.ok) return nav.toast(r.error!.message);
+    onSaved();
+  };
+  return <>
+    <Field label="שם"><input id="challengeEditName" value={name} onChange={(e) => setName(e.target.value)} /></Field>
+    <Field label="פרס נוסף (לא חובה)"><input id="challengeEditPrize" value={prize} onChange={(e) => setPrize(e.target.value)} /></Field>
+    {locked
+      ? <>
+        <div className="row between"><span className="muted">יעד</span><span className="mono">{c.challengeType === "count" ? `${c.targetValue} אימונים` : `${c.targetValue} ק"ג`}</span></div>
+        <Notice><span className="small">כבר יש מי שהשלים את האתגר, ולכן אפשר לשנות רק את השם ואת הפרס. המטבעות שכבר ניתנו נשארים.</span></Notice>
+      </>
+      : <Field label="ערך היעד"><input id="challengeEditTarget" type="number" inputMode="numeric" value={target} onChange={(e) => setTarget(e.target.value)} /></Field>}
+    <Button onClick={save}>שמירת השינוי</Button>
+  </>;
+}
+
 function CurrentChallenge() {
   const nav = useNav();
   const ch = useCall("S09", "challenges", "get_current_challenge");
@@ -86,7 +127,7 @@ function CurrentChallenge() {
           ))}</div>
           : <Empty title="עוד אף אחד לא השלים" />}
         {cur
-          ? <div className="muted small">{nextFrom(cur.end)}</div>
+          ? <><Button secondary onClick={() => nav.go("S09", { edit: true })}>שינוי אתגר</Button><div className="muted small">{nextFrom(cur.end)}</div></>
           : <Button onClick={() => nav.go("S09", { create: true })}>הוספת אתגר</Button>}
       </>}</Load>
     </Screen>

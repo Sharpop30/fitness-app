@@ -26,7 +26,7 @@ export const home: ModuleDef = {
       if (!traineeID) return fail("NOT_ALLOWED");
       const ask = (module: string, action: string, payload: Record<string, unknown> = {}) => ctx.call({ module, action, payload });
 
-      const [text, streak, balance, program, logs, classes, challenge, offerHours] = await Promise.all([
+      const [text, streak, balance, program, logs, classes, challenge, offerHours, me] = await Promise.all([
         ask("settings", "get_settings", { key: "reminderText" }),
         ask("progress", "get_streak", { traineeID }),
         ask("coins", "get_balance"),
@@ -35,6 +35,7 @@ export const home: ModuleDef = {
         ask("classes", "list_upcoming_classes"),
         ask("challenges", "get_current_challenge"),
         ask("settings", "get_settings", { key: "spotOfferHours" }),
+        ask("trainees", "get_me"), // map v13: the trainee's name for the greeting (design-stage gap 7)
       ]);
 
       // UC9 step 5 and d: the coach's text; a missing one is left empty, never written here (decision 10).
@@ -42,7 +43,7 @@ export const home: ModuleDef = {
       const s = dataOf<{ streak: number; streakGapDays: number }>(streak);
 
       // The next workout: the one after the last workout done from the active program, or its first.
-      const workouts = dataOf<{ workouts: { WorkoutID: string; workoutName: string }[] }>(program)?.workouts ?? [];
+      const workouts = dataOf<{ workouts: { WorkoutID: string; workoutName: string; items?: { exerciseName?: string }[] }[] }>(program)?.workouts ?? [];
       const done = dataOf<{ WorkoutID: string }[]>(logs) ?? [];
       const last = done.map((l) => workouts.findIndex((w) => w.WorkoutID === l.WorkoutID)).find((i) => i >= 0) ?? -1;
       const next = workouts.length ? workouts[(last + 1) % workouts.length] : null;
@@ -56,11 +57,13 @@ export const home: ModuleDef = {
       const c = dataOf<{ challengeName: string; progress: { value: number; target: number; exempt: boolean } | null } | null>(challenge);
 
       return ok({
+        traineeName: dataOf<{ fullName: string }>(me)?.fullName || null,
         reminder,
         streak: s?.streak ?? null,
         streakGapDays: s?.streakGapDays ?? null,
         coins: dataOf<{ balance: number }>(balance)?.balance ?? null,
-        nextWorkout: next && { WorkoutID: next.WorkoutID, workoutName: next.workoutName },
+        // Map v13: the exercises of the next workout, in their order, as the prototype names them (design-stage gap 7).
+        nextWorkout: next && { WorkoutID: next.WorkoutID, workoutName: next.workoutName, exercises: (next.items ?? []).map((i) => i.exerciseName ?? "").filter(Boolean) },
         nextClass: registered ? { startsAt: registered.startsAt, place: registered.place } : null,
         challenge: c?.progress ? { challengeName: c.challengeName, ...c.progress } : null,
         offers: Number.isFinite(hours)

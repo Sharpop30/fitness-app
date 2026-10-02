@@ -111,7 +111,7 @@ const awardWorkout = (w: ReturnType<typeof world>, l: WorkoutLog, caller = "M04"
 Deno.test("module map section 6, M07 example: the same eventRef twice gives one credit, then COINS_ALREADY_AWARDED", async () => {
   const l = workout(TRAINEE, [[SQUAT, 8, 60]]);
   const w = world({ logs: [l] });
-  assertEquals(await awardWorkout(w, l), ok({ coins: 10, goal: false }));
+  assertEquals(await awardWorkout(w, l), ok({ coins: 10, goal: false, goalCoins: 0 }));
   assertEquals(await awardWorkout(w, l), fail("COINS_ALREADY_AWARDED"));
   assertEquals(w.balance(TRAINEE), 10);
 });
@@ -144,7 +144,7 @@ Deno.test("execution decision 1: a reason from the wrong module, or a workout of
 Deno.test("UC8 step 8: challenges credits a completion with coinsChallenge, once", async () => {
   const w = world();
   const payload = { traineeID: TRAINEE, reason: "challenge", eventRef: U(90) };
-  assertEquals(await ask(w, trainee, "M08", "award", payload), ok({ coins: 50, goal: false }));
+  assertEquals(await ask(w, trainee, "M08", "award", payload), ok({ coins: 50, goal: false, goalCoins: 0 }));
   assertEquals(await ask(w, trainee, "M08", "award", payload), fail("COINS_ALREADY_AWARDED"));
   assertEquals(w.balance(TRAINEE), 50);
 });
@@ -153,24 +153,24 @@ Deno.test("UC7 section 13: passing the personal goal credits coinsGoal once, clo
   const hit = workout(TRAINEE, [[SQUAT, 5, 67.5]]);
   const again = workout(TRAINEE, [[SQUAT, 5, 70]]);
   const w = world({ logs: [hit, again], goal: {} });
-  assertEquals(await awardWorkout(w, hit), ok({ coins: 10, goal: true }));
+  assertEquals(await awardWorkout(w, hit), ok({ coins: 10, goal: true, goalCoins: 30 }));
   assertEquals(w.goals[0].status, "achieved");
   // Execution decision 2: the feedback shows the workout's coins; the goal's are in the balance.
   assertEquals(w.balance(TRAINEE), 40);
   // A closed goal waits for the coach to set a new one (UC7, team decision): no second goal credit.
-  assertEquals(await awardWorkout(w, again), ok({ coins: 10, goal: false }));
+  assertEquals(await awardWorkout(w, again), ok({ coins: 10, goal: false, goalCoins: 0 }));
   assertEquals(w.balance(TRAINEE), 50);
 });
 
 Deno.test("UC7 step 1: below the goal, the goal stays open; a bodyweight goal is measured in reps (decision 6)", async () => {
   const below = workout(TRAINEE, [[SQUAT, 8, 60]]);
   const w = world({ logs: [below], goal: {} });
-  assertEquals(await awardWorkout(w, below), ok({ coins: 10, goal: false }));
+  assertEquals(await awardWorkout(w, below), ok({ coins: 10, goal: false, goalCoins: 0 }));
   assertEquals(w.goals[0].status, "active");
 
   const reps = workout(TRAINEE, [[PUSHUP, 20, 0]]);
   const bw = world({ logs: [reps], goal: { ExerciseID: PUSHUP, isBodyweight: true, targetWeight: 20 } });
-  assertEquals(await awardWorkout(bw, reps), ok({ coins: 10, goal: true }));
+  assertEquals(await awardWorkout(bw, reps), ok({ coins: 10, goal: true, goalCoins: 30 }));
 });
 
 // ---- get_balance (UC7 step 6; rule 7) ----

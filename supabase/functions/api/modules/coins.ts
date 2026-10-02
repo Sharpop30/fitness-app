@@ -64,6 +64,7 @@ export const coins: ModuleDef = {
       if (!(await ctx.repo.awardCoins(traineeID, String(payload.reason), eventRef, amount))) return fail("COINS_ALREADY_AWARDED");
 
       let goal = false;
+      let goalCoins = 0; // map v13: the coins credited for the goal in this workout, for S15
       const active = log ? await ctx.repo.getActiveGoal(traineeID) : null;
       if (log && active) {
         // The top weight in the goal's exercise, or the top reps for a bodyweight one (stage 4b plan, decision 6).
@@ -71,11 +72,12 @@ export const coins: ModuleDef = {
         const best = Math.max(-1, ...done.map((s) => (active.isBodyweight ? s.reps : s.weight)));
         if (best >= active.targetWeight) {
           // The goal coins go to the balance; the feedback shows the workout's coins and marks the goal (decision 2).
-          const goalCoins = await coinsFor(ctx, "coinsGoal");
-          if (typeof goalCoins === "number") goal = await ctx.repo.achieveGoal(active.PersonalGoalID, goalCoins);
+          const forGoal = await coinsFor(ctx, "coinsGoal");
+          if (typeof forGoal === "number") goal = await ctx.repo.achieveGoal(active.PersonalGoalID, forGoal);
+          if (goal && typeof forGoal === "number") goalCoins = forGoal;
         }
       }
-      return ok({ coins: amount, goal });
+      return ok({ coins: amount, goal, goalCoins });
     },
 
     // UC7 step 6: the balance is the sum of the ledger, never stored (rule 7). With the active catalog and goal.

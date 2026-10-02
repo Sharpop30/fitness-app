@@ -45,6 +45,9 @@ function PaymentRequest({ traineeID }: { traineeID?: string }) {
   const [picked, setWho] = useState<string | undefined>(traineeID);
   const who = picked ?? people.data?.find((t: any) => t.joined)?.TraineeID ?? "";
   const [type, setType] = useState("monthly");
+  // The price beside each type, from SETTINGS (map v13; design-stage gap 1). A price not set yet shows no number.
+  const prices = useCall<Record<string, string>>("S08", "settings", "get_settings", { keys: ["priceMonthly", "pricePack10"] });
+  const price = (k: string) => (prices.data?.[k] ? ` · ${fmtMoney(Number(prices.data[k]))}` : "");
   const send = async () => {
     const r = await call("S08", "payments", "create_payment_request", { traineeID: who, paymentType: type });
     if (!r.ok) return nav.toast(r.error!.message);
@@ -58,9 +61,9 @@ function PaymentRequest({ traineeID }: { traineeID?: string }) {
         </select></Field>
       )}</Load>
       <Field label="סוג התשלום"><select id="payType" value={type} onChange={(e) => setType(e.target.value)}>
-        <option value="monthly">{payLabel.monthly}</option><option value="pack10">{payLabel.pack10}</option>
+        <option value="monthly">{payLabel.monthly + price("priceMonthly")}</option><option value="pack10">{payLabel.pack10 + price("pricePack10")}</option>
       </select></Field>
-      <div className="muted small">הסכום נקבע לפי המחיר בהגדרות. הכרטיסייה בגרסה הראשונה היא סוג תשלום בלבד, ואינה סופרת אימונים.</div>
+      <div className="muted small">{prices.error ? `${prices.error.message}. ` : "המחירים מגיעים מההגדרות. "}הכרטיסייה בגרסה הראשונה היא סוג תשלום בלבד, ואינה סופרת אימונים.</div>
       <Button onClick={send}>שליחת בקשת תשלום</Button>
     </Screen>
   );

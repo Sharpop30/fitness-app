@@ -24,6 +24,9 @@ async function inviteValidDays(ctx: ModuleContext): Promise<number | ErrorCode> 
   return Number.isInteger(days) && days > 0 ? days : "VALUE_NOT_SET";
 }
 
+// An invite token as newToken makes it: 24 random bytes in hex. Anything else is not a token (map v13, check).
+const TOKEN = /^[0-9a-f]{48}$/;
+
 function newToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
@@ -65,6 +68,16 @@ export const business: ModuleDef = {
         if (!sent.ok) return fail("INVITE_DELIVERY_FAILED"); // UC12 c: the invite stays open
       }
       return ok({ link });
+    },
+
+    // Map v13 (usecase-12 v3, step 6): S22 checks the invite when it opens, before signing up, so a link that
+    // expired leaves no identity user behind. Anyone holding the link may ask, signed in or not. Expired, used and unknown
+    // are one code, so the reply does not tell whether a token ever existed.
+    async check_coach_invite(ctx, payload) {
+      const token = typeof payload.token === "string" ? payload.token : "";
+      if (!TOKEN.test(token)) return fail("INVITE_EXPIRED");
+      const fullName = await ctx.repo.coachInviteByToken(token);
+      return fullName === null ? fail("INVITE_EXPIRED") : ok({ fullName });
     },
 
     // UC12 steps 6, 7 and alternatives a, d. Only a newcomer: signed in, not yet an owner, a coach or a trainee.

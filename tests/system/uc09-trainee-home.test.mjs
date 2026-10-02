@@ -20,7 +20,11 @@ test("normal: the home has the reminder, the streak, the coins, the next workout
   assert.equal(h.reminder, psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = \'${w.coachID}\') and "settingKey"='reminderText'`));
   assert.deepEqual([h.streak, h.streakGapDays], [1, 3]);
   assert.equal(h.coins, 0); // saved straight into the database, not through log_workout
-  assert.deepEqual(h.nextWorkout, { WorkoutID: t.workoutID, workoutName: "אימון (test)" });
+  // Map v13 (design-stage gap 7): the next workout names its exercises in order, and the home has the trainee's name.
+  const exercises = psql(`select e."exerciseName" from workout_items i join exercises e using ("ExerciseID") where i."WorkoutID" = '${t.workoutID}'
+                          order by i."sortOrder"`).split("\n").filter(Boolean);
+  assert.deepEqual(h.nextWorkout, { WorkoutID: t.workoutID, workoutName: "אימון (test)", exercises });
+  assert.equal(h.traineeName, psql(`select "fullName" from trainees where "TraineeID" = '${t.traineeID}'`));
   assert.equal(h.challenge.challengeName, "אתגר (test)");
   assert.equal(h.challenge.target, 5);
 });

@@ -4,7 +4,7 @@
 // screen stays on the demo adapter until its stage. Adding a screen is a line here, and the screen does not change.
 import { demoAdapter } from "../demo/adapter";
 import { TODAY } from "../demo/data";
-import { accessToken, signOutIdentity } from "../identity/auth";
+import { accessToken, identityConfigured, signOutIdentity } from "../identity/auth";
 
 // Stage 3: the first slice, S04 against programs (doc-module-map section 7).
 // Stage 4a: S02 and S05, whose actions are all built (stage 4a plan, decision 2).
@@ -81,7 +81,8 @@ export const endpointAdapter: Adapter = async (envelope) => {
   try {
     const res = await fetch(import.meta.env.VITE_API_URL as string, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken()}` },
+      // A visitor (map v13) sends no identity token at all.
+      headers: { "Content-Type": "application/json", ...(accessToken() ? { Authorization: `Bearer ${accessToken()}` } : {}) },
       body: JSON.stringify(envelope),
     });
     const body = await res.json();
@@ -92,6 +93,11 @@ export const endpointAdapter: Adapter = async (envelope) => {
 };
 
 export const isLive = (caller: string) => LIVE_SCREENS.has(caller) && !!import.meta.env.VITE_API_URL && accessToken() !== null;
+
+// Map v13, checking an invite before signing up: the only requests the Endpoint takes with no sign-in, from S22.
+const VISITING = new Set(["trainees.check_invite", "business.check_coach_invite", "settings.get_error_texts"]);
+const isVisiting = (caller: string, module: string, action: string) =>
+  caller === "S22" && VISITING.has(`${module}.${action}`) && identityConfigured() && !!import.meta.env.VITE_API_URL && accessToken() === null;
 
 // "Now" for a screen: the real clock on the Endpoint, and the demo's own day on demo data (stage 4c plan, decision 10).
 export const now = (caller: string): Date => (isLive(caller) ? new Date() : new Date(TODAY));
@@ -107,7 +113,7 @@ export function call<T = any>(caller: string, module: string, action: string, pa
   if (liveSession && LIVE_SCREENS.has(caller) && accessToken() === null) {
     return Promise.resolve({ ok: false, data: null, error: { code: "NOT_ALLOWED", message: errorTexts.NOT_ALLOWED ?? "אין לך גישה לזה" } });
   }
-  return (isLive(caller) ? endpointAdapter : adapter)({ caller, module, action, payload, lang: "he" }, session ?? { role: "trainee", traineeID: null }).then((r) =>
+  return (isLive(caller) || isVisiting(caller, module, action) ? endpointAdapter : adapter)({ caller, module, action, payload, lang: "he" }, session ?? { role: "trainee", traineeID: null }).then((r) =>
     r.error && !r.error.message ? { ...r, error: { ...r.error, message: errorTexts[r.error.code] ?? "משהו השתבש. אפשר לנסות שוב" } } : r);
 }
 

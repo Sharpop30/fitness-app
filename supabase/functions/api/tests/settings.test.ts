@@ -15,8 +15,10 @@ const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, tra
 const owner: Actor = { role: "owner", roles: ["owner", "coach"], businessID: COACH, coachID: COACH, traineeID: null };
 // The coach's update_settings row is out of use (0014); the owner has both rows.
 // Map v12: S12 is the owner's only; the coach's rows are out of use (0014, 0015).
+// Map v13: S05, S07, S08 and S11 read the keys they show.
 const ROWS = new Set(["S12/get_settings/owner", "S12/update_settings/owner", "S06/get_settings/coach",
-  "S22/get_error_texts/trainee"]);
+  "S22/get_error_texts/trainee", "S05/get_settings/coach", "S07/get_settings/coach", "S08/get_settings/coach",
+  "S11/get_settings/coach"]);
 
 function world(opts: { storageDown?: boolean } = {}) {
   const store: Record<string, Record<string, string>> = {
@@ -80,6 +82,30 @@ Deno.test("module map v8: S06 reads noteMaxLength from SETTINGS", async () => {
   const w = world();
   const r = await handle({ caller: "S06", module: "settings", action: "get_settings", payload: { key: "noteMaxLength" } }, coach, w.repo, { settings });
   assertEquals(r, ok({ noteMaxLength: "280" }));
+});
+
+Deno.test("map v13, rule 9: a coach's screen gets only the keys it shows, and only those", async () => {
+  const w = world();
+  const read = (caller: string, payload: Record<string, unknown>) =>
+    handle({ caller, module: "settings", action: "get_settings", payload }, coach, w.repo, { settings });
+  assertEquals(await read("S08", { keys: ["priceMonthly"] }), ok({ priceMonthly: "350" }));
+  assertEquals(await read("S06", { keys: ["noteMaxLength"] }), ok({ noteMaxLength: "280" }));
+  // Another screen's key, a key no screen shows, or no key at all: the coach does not see the table.
+  assertEquals(await read("S05", { keys: ["priceMonthly"] }), fail("NOT_ALLOWED"));
+  assertEquals(await read("S08", { keys: ["priceMonthly", "cancelHours"] }), fail("NOT_ALLOWED"));
+  assertEquals(await read("S08", {}), fail("NOT_ALLOWED"));
+  assertEquals(await read("S06", {}), fail("NOT_ALLOWED"));
+  // A key of the screen that is not set yet is "not yet", never an invented value (rule 8).
+  assertEquals(await read("S11", { keys: ["coinsAttendance"] }), fail("VALUE_NOT_SET"));
+  assertEquals(await read("S08", { keys: ["priceMonthly", "pricePack10"] }), fail("VALUE_NOT_SET"));
+});
+
+Deno.test("map v13: the owner, and the modules on a coach's behalf, still read the whole table", async () => {
+  const w = world();
+  const r = await handle({ caller: "S12", module: "settings", action: "get_settings" }, owner, w.repo, { settings });
+  assertEquals((r.data as Record<string, unknown>).cancelHours, "24");
+  const m = await settings.actions.get_settings({ actor: coach, repo: w.repo, requestID: "r", caller: "M07", call: async () => ok(null) }, {});
+  assertEquals((m.data as Record<string, unknown>).cancelHours, "24");
 });
 
 Deno.test("a database that falls returns STORAGE_UNAVAILABLE, and never throws", async () => {

@@ -2,7 +2,7 @@
 // Registry and the Audit Log, against the LOCAL stack. Writes go to a fresh coach "(test)" and new identity users only.
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { ANON, API, call, demoTokens, freshEmail, freshPassword, freshWorld, ID, psql, signUp, tokenOf } from "../system/demo-users.mjs";
+import { ANON, API, call, demoTokens, freshEmail, freshPassword, freshWorld, ID, ownExercise, psql, signUp, tokenOf } from "../system/demo-users.mjs";
 
 let t, w;
 before(async () => { t = await demoTokens(); w = await freshWorld(1); });
@@ -45,10 +45,11 @@ test("S23: get_me for the coach and for a trainee, with two Audit rows", async (
 });
 
 test("S05: prepare_upload asks settings as M02 under one requestID, and answers an address the browser reaches", async () => {
-  const r = await call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: ID.press, contentType: "video/mp4", seconds: 30, megabytes: 5 });
+  const own = await ownExercise(t.coach); // map v13, rule 12
+  const r = await call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: own, contentType: "video/mp4", seconds: 30, megabytes: 5 });
   assert.equal(r.ok, true, JSON.stringify(r.error));
   assert.ok(r.data.uploadUrl.startsWith(`${API}/storage/v1/`), r.data.uploadUrl);
-  assert.ok(r.data.path.startsWith(`${ID.coach}/${ID.press}/`));
+  assert.ok(r.data.path.startsWith(`${ID.coach}/${own}/`));
   assert.equal(requestIDs("S05", "prepare_upload"), "1");
 });
 

@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { ANON, API as STACK, call, demoTokens, freshEmail, freshPassword, freshWorld, ID, lastMailTo, paymentRequest, psql, signIn, signUp, tokenOf } from "./demo-users.mjs";
+import { ANON, API as STACK, call, demoTokens, freshEmail, freshPassword, freshWorld, ID, ownExercise, lastMailTo, paymentRequest, psql, signIn, signUp, tokenOf } from "./demo-users.mjs";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const API = join(ROOT, "supabase", "functions", "api");
@@ -60,7 +60,7 @@ test("9.3: each request through an interface leaves its audit rows under one req
     [newcomer, "S22", "settings", "get_error_texts", {}],
     [newcomer, "S22", "trainees", "accept_invite", { token: tokenOf(link) }],
     [w.coachToken, "S23", "trainees", "get_me", {}],
-    [t.coach, "S05", "exercises", "prepare_upload", { exerciseID: ID.press, contentType: "video/mp4", seconds: 20, megabytes: 3 }],
+    [t.coach, "S05", "exercises", "prepare_upload", { exerciseID: await ownExercise(t.coach), contentType: "video/mp4", seconds: 20, megabytes: 3 }],
     [a.token, "S19", "payments", "pay_demo", { paymentRequestID: paymentRequest(w.coachID, a.traineeID) }],
   ];
   for (const [token, caller, module, action, payload] of asked) {
@@ -113,16 +113,16 @@ test("I02: the trainee pays a request on S19; paid, with its demo invoice; no ca
 
 test("I04: the coach uploads a file for an exercise in a program; the trainee opens it from the workout", async () => {
   const [a] = w.trainees;
-  const prepared = await call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: ID.squat, contentType: "video/mp4", seconds: 10, megabytes: 1 });
+  // Map v13, rule 12: the coach's own exercise, swapped into the trainee's program in place of the ready-made squat.
+  const own = await ownExercise(w.coachToken);
+  const program = (await call(w.coachToken, "S04", "programs", "get_active_program", { traineeID: a.traineeID })).data;
+  const item = program.workouts[0].items[0];
+  assert.equal((await call(w.coachToken, "S04", "programs", "swap_exercise", { traineeID: a.traineeID, workoutItemID: item.WorkoutItemID, exerciseID: own })).ok, true);
+  const prepared = await call(w.coachToken, "S05", "exercises", "prepare_upload", { exerciseID: own, contentType: "video/mp4", seconds: 10, megabytes: 1 });
   assert.equal((await fetch(prepared.data.uploadUrl, { method: "PUT", headers: { "Content-Type": "video/mp4" }, body: new Uint8Array(1024).fill(3) })).ok, true);
-  const before = psql(`select "videoType" || '|' || "videoUrl" from exercises where "ExerciseID"='${ID.squat}'`).split("|");
-  try {
-    const attached = await call(t.coach, "S05", "exercises", "attach_video", { exerciseID: ID.squat, kind: "upload", path: prepared.data.path });
-    assert.equal(attached.ok, true, JSON.stringify(attached.error));
-    const seen = await call(a.token, "S14", "exercises", "get_exercise", { exerciseID: ID.squat }); // squat is in the fresh trainee's program
-    assert.equal(seen.data.videoType, "upload");
-    assert.equal((await fetch(seen.data.videoUrl)).status, 200);
-  } finally {
-    psql(`update exercises set "videoType"='${before[0]}', "videoUrl"='${before[1]}' where "ExerciseID"='${ID.squat}'`); // the demo link back
-  }
+  const attached = await call(w.coachToken, "S05", "exercises", "attach_video", { exerciseID: own, kind: "upload", path: prepared.data.path });
+  assert.equal(attached.ok, true, JSON.stringify(attached.error));
+  const seen = await call(a.token, "S14", "exercises", "get_exercise", { exerciseID: own });
+  assert.equal(seen.data.videoType, "upload");
+  assert.equal((await fetch(seen.data.videoUrl)).status, 200);
 });

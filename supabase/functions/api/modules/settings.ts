@@ -13,6 +13,16 @@ const POSITIVE = new Set([
   "videoMaxMegabytes",
 ]);
 
+// Map v13, rule 9: a coach's screen gets only the keys it shows, by name (the screens table of the map). The owner
+// and the modules still read the whole table.
+const SCREEN_KEYS: Record<string, string[]> = {
+  S05: ["videoMaxSeconds", "videoMaxMegabytes"],
+  S06: ["noteMaxLength"],
+  S07: ["coinsGoal"],
+  S08: ["priceMonthly", "pricePack10"],
+  S11: ["coinsAttendance"],
+};
+
 function isValid(key: string, value: string): boolean {
   if (WHOLE_OR_ZERO.has(key) || POSITIVE.has(key)) {
     if (!/^\d+$/.test(value)) return false;
@@ -26,8 +36,17 @@ export const settings: ModuleDef = {
   actions: {
     async get_settings(ctx, payload) {
       if (!ctx.actor.businessID) return fail("NOT_ALLOWED");
-      const values = await ctx.repo.getBusinessSettings(ctx.actor.businessID);
       const key = typeof payload.key === "string" ? payload.key : null;
+      if (ctx.actor.role === "coach" && /^S\d\d$/.test(ctx.caller)) {
+        const asked = Array.isArray(payload.keys) ? payload.keys : key === null ? [] : [key];
+        const own = SCREEN_KEYS[ctx.caller] ?? [];
+        if (!asked.length || !asked.every((k) => typeof k === "string" && own.includes(k))) return fail("NOT_ALLOWED");
+        const values = await ctx.repo.getBusinessSettings(ctx.actor.businessID);
+        // "Not yet" is its own code: a missing value is never invented (CLAUDE.md rule 8).
+        if (!asked.every((k) => k in values)) return fail("VALUE_NOT_SET");
+        return ok(Object.fromEntries(asked.map((k) => [k, values[k as string]])));
+      }
+      const values = await ctx.repo.getBusinessSettings(ctx.actor.businessID);
       // All the values, and whether this person may change them (map v11: canEdit, true for the owner).
       if (key === null) return ok({ ...values, canEdit: ctx.actor.role === "owner" });
       // "Not yet" is its own code: a missing value is never invented (CLAUDE.md rule 8).

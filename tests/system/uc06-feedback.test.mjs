@@ -22,7 +22,7 @@ test("normal: saving a workout shows the feedback at once, with the sets done an
   const r = await save(await asPlanned());
   assert.equal(r.ok, true);
   assert.deepEqual(r.data.feedback, {
-    done: 5, total: 5, records: [], coins: Number(text("coinsWorkout")), goal: false, challenge: false, text: text("feedbackFull"),
+    done: 5, total: 5, records: [], coins: Number(text("coinsWorkout")), goal: false, goalCoins: 0, challenge: false, challengeCoins: 0, text: text("feedbackFull"),
   });
 });
 

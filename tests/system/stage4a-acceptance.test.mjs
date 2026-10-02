@@ -6,7 +6,7 @@ import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { call, demoTokens, ID, psql } from "./demo-users.mjs";
+import { call, demoTokens, ID, ownExercise, psql } from "./demo-users.mjs";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const API = join(ROOT, "supabase", "functions", "api");
@@ -53,7 +53,8 @@ test("9.4: the invite validity and the longest video follow SETTINGS, with no co
     assert.equal(psql(`select round(extract(epoch from "expiresAt" - "createdAt") / 86400) from invites where token='${token}'`), "3");
 
     // From stage 5 the check is in prepare_upload, which answers with an upload address within the limit.
-    const upload = (seconds) => call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: ID.press, contentType: "video/mp4", seconds, megabytes: 10 });
+    const own = await ownExercise(t.coach); // map v13, rule 12
+    const upload = (seconds) => call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: own, contentType: "video/mp4", seconds, megabytes: 10 });
     assert.equal((await upload(120)).error.code, "VIDEO_TOO_LONG");
     setting("videoMaxSeconds", "150");
     assert.equal((await upload(120)).ok, true); // within the new limit

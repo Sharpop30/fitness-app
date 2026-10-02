@@ -200,6 +200,12 @@ nav.tabs button.on{color:var(--accent);font-weight:500}
    גרסה 3.1 (01.10.2026, אושרה בידי הצוות): מהכרעת הצוות על S12, חלופה 1: ההגדרות לבעל העסק בלבד; "הגדרות העסק (לצפייה)" יורדות מ"עוד" של המאמן.
    - בכרטיס המאמן: שם, תוכנית ורצף לכל מתאמן, בלי תוצאות והערות (הכרעה 5). לכל שיעור יש מאמן.
    - S22 משמש גם להצטרפות מאמן, באותו מבנה; באב הטיפוס מוצג רק המסלול של המתאמן.
+   גרסה 3.2 (01.10.2026, אושרה בידי הצוות): מתוכנית שלב 7, משימה 0, ומפת המודולים גרסה 13.
+   - S09: "שינוי אתגר". השם והפרס תמיד; היעד רק כל עוד אף מתאמן לא השלים; הסוג והתרגיל אינם משתנים (כלל 11).
+   - S22: הזמנה שפגה נבדקת כשהקישור נפתח, וההודעה מוצגת במקום הטופס (ממצא 15).
+   - S05: לתרגיל מהרשימה המוכנה אין "הוספת סרטון"; מאמן מצרף סרטון רק לתרגיל שלו (כלל 12). לכל שמונת התרגילים המוכנים יש סרטון.
+   - S23: "שכחתי סיסמה", ומסך סיסמה חדשה מהקישור במייל (ממצא 24). מדיניות הסיסמה: 8 תווים, אותיות וספרות.
+   - נוסחי השגיאה כמו ב-ERROR_CODES (ממצא 36): "ההזמנה כבר לא בתוקף. אפשר לבקש הזמנה חדשה", בלי "מהמאמן", כי היא משמשת גם למאמן.
    ============================================================ */
 const TODAY = new Date(2026, 8, 28, 12, 0); // יום שני, 28.09.2026 [נתוני דוגמה]
 const DAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
@@ -246,14 +252,15 @@ const ref = {
 
 /* ---- נתוני דוגמה ---- */
 const exercises = [
-  {id:'e1',name:'סקוואט',body:false,video:'youtube'},
-  {id:'e2',name:'לחיצת חזה',body:false,video:'youtube'},
-  {id:'e3',name:'חתירה בכבל',body:false,video:'youtube'},
-  {id:'e4',name:'מכרעים',body:false,video:'youtube'},
-  {id:'e5',name:'שכיבות סמיכה',body:true,video:'youtube'},
-  {id:'e6',name:'דדליפט רומני',body:false,video:'youtube'},
-  {id:'e7',name:'לחיצת כתפיים',body:false,video:null},
-  {id:'e8',name:'מתח',body:true,video:'youtube'},
+  // prep: הרשימה המוכנה, משותפת לכל המאמנים; הסרטון נקבע בהקמה (מפה גרסה 13, כלל 12)
+  {id:'e1',name:'סקוואט',body:false,video:'youtube',prep:true},
+  {id:'e2',name:'לחיצת חזה',body:false,video:'youtube',prep:true},
+  {id:'e3',name:'חתירה בכבל',body:false,video:'youtube',prep:true},
+  {id:'e4',name:'מכרעים',body:false,video:'youtube',prep:true},
+  {id:'e5',name:'שכיבות סמיכה',body:true,video:'youtube',prep:true},
+  {id:'e6',name:'דדליפט רומני',body:false,video:'youtube',prep:true},
+  {id:'e7',name:'לחיצת כתפיים',body:false,video:'youtube',prep:true},
+  {id:'e8',name:'מתח',body:true,video:'youtube',prep:true},
 ];
 const ex = id => exercises.find(e=>e.id===id);
 
@@ -384,9 +391,9 @@ const errorState=()=>`<div class="state err" role="alert"><span class="muted">${
 const tile=(lbl,n,cap='',a='',v='',p='')=>`<${a?'button':'div'} class="tile" ${a?`data-a="${a}" data-v="${v}" data-p="${p}"`:''}><div class="lbl">${lbl}</div><div class="num">${n}</div>${cap?`<div class="cap">${cap}</div>`:''}</${a?'button':'div'}>`;
 const classRow=(c,side,a='',p='')=>`<${a?'button':'div'} class="item" ${a?`data-a="${a}" data-v="classCoach" data-p="${p}"`:''}><div class="when"><div class="h">${c.time}</div><div class="d">${DAYS[c.date.getDay()]} ${fmt(c.date)}</div></div><div class="grow"><div class="t">${c.place}</div><div class="s">${c.cancelled?'בוטל':`${c.reg.length}/${c.cap} רשומים${c.wait.length?' · '+c.wait.length+' בהמתנה':''}`}</div></div>${side}</${a?'button':'div'}>`;
 
-const SCREEN_ID={signIn:'S23',joinInvite:'S22',coachHome:'S01',trainees:'S02',invite:'S02',inviteDone:'S02',traineeCard:'S03',programEdit:'S04',swap:'S04',itemTarget:'S04',exercises:'S05',exerciseNew:'S05',exercise:'S05',resultsCoach:'S06',noteAdd:'S06',goalEdit:'S07',paymentsCoach:'S08',payRequest:'S08',invoice:'S08',challengeCoach:'S09',challengeNew:'S09',rewardsCoach:'S10',classesCoach:'S11',classNew:'S11',classCoach:'S11',settings:'S12',more:'עוד',traineeHome:'S13',workoutPick:'S14',workout:'S14',exerciseView:'S14',feedback:'S15',myWorkouts:'S16',correct:'S16',classesTrainee:'S17',lateCancel:'S17',coins:'S18',paymentsTrainee:'S19',challengeTrainee:'S20',progress:'S21',me:'אני',ownerHome:'S24',coaches:'S25',coachInvite:'S25',coachCard:'S27',kpis:'S26',ownerMore:'עוד',roleChoice:'S23'};
+const SCREEN_ID={signIn:'S23',joinInvite:'S22',joinExpired:'S22',forgotPassword:'S23',newPassword:'S23',challengeEdit:'S09',coachHome:'S01',trainees:'S02',invite:'S02',inviteDone:'S02',traineeCard:'S03',programEdit:'S04',swap:'S04',itemTarget:'S04',exercises:'S05',exerciseNew:'S05',exercise:'S05',resultsCoach:'S06',noteAdd:'S06',goalEdit:'S07',paymentsCoach:'S08',payRequest:'S08',invoice:'S08',challengeCoach:'S09',challengeNew:'S09',rewardsCoach:'S10',classesCoach:'S11',classNew:'S11',classCoach:'S11',settings:'S12',more:'עוד',traineeHome:'S13',workoutPick:'S14',workout:'S14',exerciseView:'S14',feedback:'S15',myWorkouts:'S16',correct:'S16',classesTrainee:'S17',lateCancel:'S17',coins:'S18',paymentsTrainee:'S19',challengeTrainee:'S20',progress:'S21',me:'אני',ownerHome:'S24',coaches:'S25',coachInvite:'S25',coachCard:'S27',kpis:'S26',ownerMore:'עוד',roleChoice:'S23'};
 // מסכים שטוענים נתונים מהשרת: מציגים טעינה ושגיאה (ממצאים 2, 6)
-const NO_DATA=new Set(['signIn','joinInvite','invite','inviteDone','exerciseNew','noteAdd','classNew','challengeNew','feedback','more','lateCancel','coachInvite','ownerMore','roleChoice']);
+const NO_DATA=new Set(['signIn','joinInvite','joinExpired','forgotPassword','newPassword','invite','inviteDone','exerciseNew','noteAdd','classNew','challengeNew','feedback','more','lateCancel','coachInvite','ownerMore','roleChoice']);
 
 function shell(eyebrow,title,body,{backBtn=true}={}){
   const tabs = S.role==='coach'
@@ -413,11 +420,23 @@ screens.signIn=()=>shell('ביצועים, מעקב ותשלומים','כניסה
   ${field('מייל','<input type="email" autocomplete="username" placeholder="name@example.com">')}
   ${field('סיסמה','<input type="password" autocomplete="current-password">')}
   <button class="btn" data-a="signInDemo">כניסה</button>
+  <button class="link" data-a="go" data-v="forgotPassword">שכחתי סיסמה</button>
   <div class="proto-box"><div class="muted small">באב הטיפוס בלבד: בחירת תפקיד במקום מייל וסיסמה.</div>
    <button class="btn sec" data-a="role" data-v="coach">כניסה כמאמן (דוגמה)</button>
    <button class="btn sec" data-a="role" data-v="trainee">כניסה כמתאמן (דוגמה)</button>
    <button class="btn sec" data-a="go" data-v="roleChoice">כניסה כבעל העסק, שהוא גם המאמן (דוגמה)</button>
    <button class="btn sec" data-a="go" data-v="joinInvite">פתיחת הזמנה כמתאמן חדש</button></div>`,{backBtn:false});
+
+/* S23, שחזור סיסמה דרך שירות הזהות (I01; מפה גרסה 13; ממצא 24). המייל יוצא מספק המייל של הצוות */
+screens.forgotPassword=()=>shell('כניסה','שחזור סיסמה',`
+  ${field('מייל','<input id="fpMail" type="email" autocomplete="username" placeholder="name@example.com">')}
+  <button class="btn" data-a="sendReset">שליחת קישור לסיסמה חדשה</button>
+  <div class="muted small">אם המייל רשום באפליקציה, יגיע אליו קישור. הקישור תקף לזמן קצר.</div>
+  <button class="link" data-a="go" data-v="newPassword">מה רואים כשפותחים את הקישור?</button>`);
+screens.newPassword=()=>shell('כניסה','סיסמה חדשה',`
+  ${field('סיסמה חדשה','<input type="password" autocomplete="new-password">')}
+  <div class="muted small">לפחות 8 תווים, עם אותיות וספרות.</div>
+  <button class="btn" data-a="savePassword">שמירה וכניסה</button>`);
 
 /* ----- S22 הצטרפות בהזמנה (מקרה שימוש 4) ----- */
 screens.joinInvite=()=>shell('הזמנה מהמאמן','הצטרפות',`
@@ -427,7 +446,12 @@ screens.joinInvite=()=>shell('הזמנה מהמאמן','הצטרפות',`
   ${field('מייל','<input type="email" value="ron@example.com" autocomplete="username">')}
   ${field('סיסמה','<input type="password" autocomplete="new-password">')}
   <button class="btn" data-a="acceptInvite">הצטרפות</button>
-  <button class="link" data-a="expiredInvite">מה רואים כשההזמנה פגה?</button>`);
+  <button class="link" data-a="go" data-v="joinExpired">מה רואים כשההזמנה פגה?</button>`);
+/* S22, הזמנה שפגה, נוצלה או שהקישור שגוי: נבדק כשהקישור נפתח, לפני הרשמה (מפה גרסה 13; ממצא 15) */
+screens.joinExpired=()=>shell('הזמנה','הצטרפות',`
+  ${img('מתאמנים בסטודיו','short')}
+  <div class="notice">ההזמנה כבר לא בתוקף. אפשר לבקש הזמנה חדשה</div>
+  <div class="muted small">הקישור תקף לזמן מוגבל, ופעם אחת. מי ששלח אותו יכול לשלוח קישור חדש.</div>`);
 
 /* ----- S23, המשך: בחירת תפקיד, למשתמש שהוא בעל עסק וגם מאמן (הכרעה 7) ----- */
 screens.roleChoice=()=>shell('יש לך שני תפקידים','איך להמשיך?',`
@@ -538,7 +562,7 @@ screens.itemTarget=({id})=>{
 
 /* ----- S05 תרגילים וסרטונים (מקרה שימוש 10) ----- */
 screens.exercises=()=>shell('רשימת התרגילים','תרגילים',`
-  <div class="list">${exercises.map(e=>`<button class="item" data-a="go" data-v="exercise" data-p="${e.id}"><div class="grow"><div class="t">${e.name}</div><div class="s">${e.video==='youtube'?'קישור יוטיוב':e.video==='upload'?'סרטון שהועלה':'אין סרטון'}</div></div>${chev}</button>`).join('')}</div>
+  <div class="list">${exercises.map(e=>`<button class="item" data-a="go" data-v="exercise" data-p="${e.id}"><div class="grow"><div class="t">${e.name}</div><div class="s">${e.prep?'מהרשימה המוכנה · ':''}${e.video==='youtube'?'קישור יוטיוב':e.video==='upload'?'סרטון שהועלה':'אין סרטון'}</div></div>${chev}</button>`).join('')}</div>
   <button class="btn" data-a="go" data-v="exerciseNew">+ תרגיל חדש</button>`);
 
 screens.exerciseNew=()=>shell('תרגיל חדש','הוספת תרגיל',`
@@ -546,7 +570,9 @@ screens.exerciseNew=()=>shell('תרגיל חדש','הוספת תרגיל',`
   <label class="checkline" for="exBody"><input type="checkbox" id="exBody"><span style="font-size:14px;color:var(--ink)">תרגיל משקל גוף</span></label>
   <button class="btn" data-a="addExercise">שמירה</button>`);
 
-screens.exercise=({id})=>{const e=ex(id);return shell('תרגיל',e.name,`
+screens.exercise=({id})=>{const e=ex(id);if(e.prep)return shell('מהרשימה המוכנה',e.name,`
+  <div class="video">▶︎ סרטון הדגמה מיוטיוב (קישור לדוגמה)</div>
+  <div class="muted small">התרגיל מהרשימה המוכנה, והסרטון שלו משותף לכל המאמנים בעסק. לסרטון משלך אפשר ליצור תרגיל חדש.</div>`);return shell('תרגיל',e.name,`
   ${e.video?`<div class="video">▶︎ ${e.video==='youtube'?'סרטון הדגמה מיוטיוב (קישור לדוגמה)':'סרטון שהמאמן העלה (דוגמה)'}</div>`:empty('לתרגיל עוד אין סרטון','אפשר לצרף קישור או להעלות מהטלפון.')}
   <div class="muted small">הסרטון שייך לתרגיל, ומופיע בכל התוכניות שבהן התרגיל נמצא.</div>
   ${field('קישור לסרטון','<input id="vidLink" type="url" placeholder="https://www.youtube.com/...">')}
@@ -600,10 +626,19 @@ screens.invoice=({id})=>{const p=payments.find(x=>x.id===id);return shell('הד�
 
 /* ----- S09 אתגר שבועי (מקרה שימוש 8) ----- */
 screens.challengeCoach=()=>shell(`שבוע ${fmt(challenge.start)} עד ${fmt(challenge.end)}`,'אתגר שבועי',`
-  <div class="hero"><div class="sub">האתגר של השבוע</div><div class="lead" style="margin-top:4px">${challenge.name}</div><div class="sub" style="margin-top:4px">פרס: ${ref.coins.challenge} מטבעות + ${challenge.prize}</div></div>
+  <div class="hero"><div class="sub">האתגר של השבוע</div><div class="lead" style="margin-top:4px">${challenge.name}</div><div class="sub" style="margin-top:4px">פרס: ${ref.coins.challenge} מטבעות${challenge.prize?' + '+challenge.prize:''}</div></div>
   <h2>השלימו</h2>
   <div class="list">${challenge.completions.map(c=>`<div class="item"><span class="av">${ini(tname(c.tid))}</span><div class="grow t">${nm(tname(c.tid))}</div>${c.delivered?'<span class="badge ok">הפרס נמסר</span>':`<button class="btn sec small" data-a="prizeDelivered" data-p="${c.tid}">סימון מסירת פרס</button>`}</div>`).join('')||empty('עוד אף אחד לא השלים')}</div>
-  <div class="muted small">האתגר הבא אפשר לפרסם מיום ראשון, ${fmt(addDays(challenge.end,1))}.</div>`); // אתגר אחד בשבוע: בלי "הוספה" כשיש אתגר (הכרעת הצוות, 30.09.2026)
+  <button class="btn sec" data-a="go" data-v="challengeEdit">שינוי אתגר</button>
+  <div class="muted small">האתגר הבא אפשר לפרסם מיום ראשון, ${fmt(addDays(challenge.end,1))}.</div>`);
+/* S09 שינוי אתגר (מפה גרסה 13, כלל 11; usecase-08 גרסה 3): השם והפרס תמיד; היעד רק לפני השלמה ראשונה */
+screens.challengeEdit=()=>{const locked=challenge.completions.length>0;return shell('אתגר השבוע','שינוי אתגר',`
+  ${field('שם',`<input id="chEName" value="${challenge.name}">`)}
+  ${field('פרס נוסף (לא חובה)',`<input id="chEPrize" value="${challenge.prize||''}">`)}
+  ${locked?`<div class="row between"><span class="muted">יעד</span><span class="mono">${challenge.type==='count'?num(challenge.target)+' אימונים':num(challenge.target)+' ק"ג'}</span></div>
+  <div class="notice small">כבר יש מי שהשלים את האתגר, ולכן אפשר לשנות רק את השם ואת הפרס. המטבעות שכבר ניתנו נשארים.</div>`
+  :field('ערך היעד',`<input id="chETarget" type="number" inputmode="numeric" value="${challenge.target}">`)}
+  <button class="btn" data-a="saveChallenge">שמירת השינוי</button>`)}; // אתגר אחד בשבוע: בלי "הוספה" כשיש אתגר (הכרעת הצוות, 30.09.2026)
 screens.challengeNew=()=>shell('אתגר אחד בשבוע','הוספת אתגר',`
   ${field('שם','<input id="chName" value="חמישה אימונים השבוע">')}
   <div class="seg" id="chType" role="group" aria-label="סוג האתגר"><button class="on" data-a="chType" data-v="count" aria-pressed="true">מספר אימונים</button><button data-a="chType" data-v="exercise" aria-pressed="false">יעד בתרגיל</button></div>
@@ -880,7 +915,7 @@ screens.coins=()=>{const me=S.me;const bal=balance(me);const lbl={workout:'אי�
 
 /* ----- S20 אתגר שבועי למתאמן ----- */
 screens.challengeTrainee=()=>{const cp=challengeProgress(S.me);const done=!cp.exempt&&cp.value>=cp.target;return shell(`עד ${fmtDay(challenge.end)}`,'האתגר השבועי',`
-  <div class="hero row between"><div><div class="sub">${challenge.name}</div><div class="lead" style="margin-top:4px">${cp.exempt?'פטור השבוע':done?'השלמת ✓':'בדרך ליעד'}</div><div class="sub" style="margin-top:4px">פרס: ${ref.coins.challenge} מטבעות + ${challenge.prize}</div></div>
+  <div class="hero row between"><div><div class="sub">${challenge.name}</div><div class="lead" style="margin-top:4px">${cp.exempt?'פטור השבוע':done?'השלמת ✓':'בדרך ליעד'}</div><div class="sub" style="margin-top:4px">פרס: ${ref.coins.challenge} מטבעות${challenge.prize?' + '+challenge.prize:''}</div></div>
    ${cp.exempt?'':`<div style="text-align:center"><div class="num">${cp.value}/${cp.target}</div><div class="cap">${challenge.type==='count'?'אימונים':'ק"ג'}</div></div>`}</div>
   <div class="muted small">${cp.exempt?'התרגיל של האתגר אינו בתוכנית שלך, ולכן האתגר השבוע לא חל עליך.':'ההשלמה נספרת לבד מהאימונים שנשמרים. אין צורך לדווח שוב.'}</div>`)};
 
@@ -902,9 +937,10 @@ const actions={
     if(!n||!/^\S+@\S+\.\S+$/.test(m))return toast('פרט הקשר לא תקין. כדאי לבדוק ולנסות שוב');
     coaches.push({id:'k'+uid(),name:n+' (דוגמה)',joined:false,trainees:[],invite:{link:'https://example.com/fitness-app/?coach='+uid(),until:addDays(TODAY,ref.inviteValidDays)}});back();toast('ההזמנה נשלחה במייל')},
   signInDemo:()=>toast('באב הטיפוס הכניסה היא בבחירת תפקיד, למטה'),
+  sendReset:()=>{if(!/^\S+@\S+\.\S+$/.test(fpMail.value))return toast('פרט הקשר לא תקין. כדאי לבדוק ולנסות שוב');back();toast('אם המייל רשום, נשלח אליו קישור')},
+  savePassword:()=>{back();toast('הסיסמה נשמרה')},
   logout:()=>{S.role=null;S.roles=[];S.tab=null;S.stack=[];render()},
   acceptInvite:()=>{const t=trainees.find(x=>x.id==='t4');t.joined=true;S.role='trainee';S.me='t4';setTab('traineeHome');toast('הצטרפת! המאמן יבנה לך תוכנית')},
-  expiredInvite:()=>toast('ההזמנה כבר לא בתוקף. אפשר לבקש מהמאמן הזמנה חדשה'),
   sendInvite:(v)=>{const n=invName.value.trim(),m=invMail.value.trim();
     if(!n||(v==='mail'&&!/^\S+@\S+\.\S+$/.test(m)))return toast('פרט הקשר לא תקין. כדאי לבדוק ולנסות שוב');
     const t={id:'t'+uid(),name:n+' (דוגמה)',joined:false,invite:{link:'https://example.com/fitness-app/?join='+uid(),until:addDays(TODAY,ref.inviteValidDays)}};trainees.push(t);
@@ -936,6 +972,9 @@ const actions={
   prizeDelivered:(p)=>{challenge.completions.find(c=>c.tid===p).delivered=true;render();toast('סומן: הפרס נמסר')},
   chType:(v)=>{document.querySelectorAll('#chType button').forEach(b=>{b.classList.toggle('on',b.dataset.v===v);b.setAttribute('aria-pressed',b.dataset.v===v)});S.params.chType=v},
   createChallenge:()=>toast('כבר יש אתגר השבוע. אפשר ליצור את הבא בשבוע הבא'),
+  saveChallenge:()=>{const n=chEName.value.trim();if(!n)return toast('חסר שם לאתגר');
+    if(!challenge.completions.length){const t=+chETarget.value;if(!(t>0))return toast('חסר יעד לאתגר, או שמתאמן כבר השלים אותו. אחרי השלמה אפשר לשנות רק שם ופרס');challenge.target=t}
+    challenge.name=n;challenge.prize=chEPrize.value.trim()||null;back();toast('האתגר עודכן')},
   addReward:()=>{const n=rwName.value.trim(),pr=+rwPrice.value;if(!n||!(pr>0))return toast('חסר שם או מחיר');rewards.push({id:'rw'+uid(),name:n,price:pr});render();toast('התגמול נוסף לקטלוג')},
   delivered:(p)=>{redemptions.find(r=>r.id===p).status='סופק';render();toast('סומן: התגמול סופק')},
   publishClass:()=>{const cap=+clCap.value;if(!(cap>0)||!clPlace.value.trim())return toast('חסרים פרטים בשיעור. צריך להשלים ולנסות שוב');

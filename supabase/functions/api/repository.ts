@@ -47,6 +47,8 @@ export interface Exercise {
   isBodyweight: boolean;
   videoType: string | null;
   videoUrl: string | null;
+  // Map v13, rule 12: from the ready-made list (no CoachID), shared by every coach; its video is set at setup only.
+  isPrepared?: boolean;
 }
 
 export interface ProgramItem {
@@ -192,6 +194,13 @@ export interface NewChallenge {
   weekStart: string;
 }
 
+// Map v13: what update_challenge may change; the type and the exercise never change (rule 11).
+export interface ChallengeChanges {
+  challengeName: string;
+  extraPrize: string | null;
+  targetValue: number;
+}
+
 export interface ChallengeCompletion {
   TraineeID: string;
   fullName: string;
@@ -291,6 +300,8 @@ export interface Repository {
   createInvite(coachID: string, invite: NewInvite): Promise<string>;
   // UC4 step 5 (stage 5 plan, decision 3): the trainee is created and the invite closed together.
   acceptInvite(token: string, authUserID: string, fullName: string, email: string): Promise<JoinResult>;
+  // Map v13: the name of an open invite still valid, before signing up; null for any other (expired, used, unknown).
+  inviteByToken(token: string): Promise<string | null>;
   // I04 File Storage (UC10 steps 4, 5; map v9). The addresses are the ones the browser reaches. null: the store refused.
   createVideoUploadAddress(path: string): Promise<string | null>;
   // The viewing address of an uploaded file, or null when it is not in the bucket (the upload did not finish).
@@ -323,6 +334,8 @@ export interface Repository {
   // Challenges (UC8), private to M08. createChallenge is null when the week already has one (CHALLENGE_EXISTS).
   getChallengeForWeek(coachID: string, weekStart: string): Promise<Challenge | null>;
   createChallenge(coachID: string, challenge: NewChallenge): Promise<string | null>;
+  // Map v13, rule 11: the name and prize, and the target only while no one completed (M08 checks; usecase-08 v3).
+  updateChallenge(challengeID: string, changes: ChallengeChanges): Promise<void>;
   listCompletions(challengeID: string): Promise<ChallengeCompletion[]>;
   addCompletion(challengeID: string, traineeID: string): Promise<string | null>;
   markPrizeDelivered(challengeID: string, traineeID: string): Promise<boolean>;
@@ -362,6 +375,8 @@ export interface Repository {
   createCoachInvite(businessID: string, invite: NewInvite): Promise<string>;
   // UC12 step 7: the coach is created with the invite's business and the invite closed together.
   acceptCoachInvite(token: string, authUserID: string, fullName: string, email: string): Promise<CoachJoinResult>;
+  // Map v13: as inviteByToken, for a coach's invite.
+  coachInviteByToken(token: string): Promise<string | null>;
   // The business of an active trainee, through their coach; null when there is none.
   businessOfTrainee(traineeID: string): Promise<string | null>;
   // How many workouts each trainee saved since the given time: counts only, no sets (rule 5, the owner).
@@ -449,8 +464,8 @@ export function createRepository(): Repository {
 
     async listExercisesForCoach(coachID) {
       // The ready-made list (no coach) and the coach's own, active only.
-      return must(await db.from("exercises").select('"ExerciseID","exerciseName","isBodyweight","videoType","videoUrl"')
-        .eq("isActive", true).or(`CoachID.is.null,CoachID.eq.${coachID}`).order("exerciseName")) as Exercise[];
+      return (must(await db.from("exercises").select(EXERCISE_FIELDS)
+        .eq("isActive", true).or(`CoachID.is.null,CoachID.eq.${coachID}`).order("exerciseName")) as (Exercise & { CoachID: string | null })[]).map(toExercise);
     },
 
     async getActiveProgram(traineeID) {
@@ -532,19 +547,20 @@ export function createRepository(): Repository {
     },
 
     async createExercise(coachID, exerciseName, isBodyweight) {
-      return must(await db.from("exercises").insert({ CoachID: coachID, exerciseName, isBodyweight })
-        .select(EXERCISE_FIELDS).single()) as Exercise;
+      return toExercise(must(await db.from("exercises").insert({ CoachID: coachID, exerciseName, isBodyweight })
+        .select(EXERCISE_FIELDS).single()) as Exercise & { CoachID: string | null });
     },
 
     async getExerciseInReach(exerciseID, coachID) {
-      return must(await db.from("exercises").select(EXERCISE_FIELDS)
-        .eq("ExerciseID", exerciseID).eq("isActive", true).or(`CoachID.is.null,CoachID.eq.${coachID}`).maybeSingle()) as Exercise | null;
+      const row = must(await db.from("exercises").select(EXERCISE_FIELDS)
+        .eq("ExerciseID", exerciseID).eq("isActive", true).or(`CoachID.is.null,CoachID.eq.${coachID}`).maybeSingle()) as (Exercise & { CoachID: string | null }) | null;
+      return row ? toExercise(row) : null;
     },
 
     async attachVideo(exerciseID, videoType, videoUrl) {
       // One video per exercise: a new one replaces the old in every program (UC10 alternative e).
-      return must(await db.from("exercises").update({ videoType, videoUrl }).eq("ExerciseID", exerciseID)
-        .select(EXERCISE_FIELDS).single()) as Exercise;
+      return toExercise(must(await db.from("exercises").update({ videoType, videoUrl }).eq("ExerciseID", exerciseID)
+        .select(EXERCISE_FIELDS).single()) as Exercise & { CoachID: string | null });
     },
 
     async logWorkout(traineeID, workoutID, sets) {
@@ -568,7 +584,7 @@ export function createRepository(): Repository {
 
     async getExercisesByID(exerciseIDs) {
       if (exerciseIDs.length === 0) return [];
-      return must(await db.from("exercises").select(EXERCISE_FIELDS).in("ExerciseID", exerciseIDs)) as Exercise[];
+      return (must(await db.from("exercises").select(EXERCISE_FIELDS).in("ExerciseID", exerciseIDs)) as (Exercise & { CoachID: string | null })[]).map(toExercise);
     },
 
     async addCoachNote(workoutLogID, coachID, noteText) {
@@ -655,6 +671,10 @@ export function createRepository(): Repository {
     async createChallenge(coachID, challenge) {
       const res = await db.from("challenges").insert({ CoachID: coachID, ...challenge }).select('"ChallengeID"').single();
       return inserted(res) ? (res.data as { ChallengeID: string }).ChallengeID : null;
+    },
+
+    async updateChallenge(challengeID, changes) {
+      must(await db.from("challenges").update(changes).eq("ChallengeID", challengeID));
     },
 
     async listCompletions(challengeID) {
@@ -830,6 +850,18 @@ export function createRepository(): Repository {
       return row.CoachInviteID;
     },
 
+    async inviteByToken(token) {
+      const row = must(await db.from("invites").select('"inviteeName"').eq("token", token).eq("status", "open")
+        .gt("expiresAt", new Date().toISOString()).maybeSingle()) as { inviteeName: string } | null;
+      return row?.inviteeName ?? null;
+    },
+
+    async coachInviteByToken(token) {
+      const row = must(await db.from("coach_invites").select('"inviteeName"').eq("token", token).eq("status", "open")
+        .gt("expiresAt", new Date().toISOString()).maybeSingle()) as { inviteeName: string } | null;
+      return row?.inviteeName ?? null;
+    },
+
     async acceptCoachInvite(token, authUserID, fullName, email) {
       return must(await db.rpc("business_accept_coach_invite", { p_token: token, p_auth: authUserID, p_name: fullName, p_email: email })) as CoachJoinResult;
     },
@@ -922,7 +954,9 @@ function toChallenge({ exercises, ...c }: ChallengeRow): Challenge {
   return { ...c, targetValue: Number(c.targetValue), exerciseName: exercises?.exerciseName ?? null };
 }
 
-const EXERCISE_FIELDS = '"ExerciseID","exerciseName","isBodyweight","videoType","videoUrl"';
+const EXERCISE_FIELDS = '"ExerciseID","exerciseName","isBodyweight","videoType","videoUrl","CoachID"';
+// The CoachID stays in the Repository: what leaves is whether the exercise is from the ready-made list (map v13, rule 12).
+const toExercise = ({ CoachID, ...e }: Exercise & { CoachID: string | null }): Exercise => ({ ...e, isPrepared: CoachID === null });
 
 const LOG_FIELDS = '"WorkoutLogID","TraineeID","WorkoutID","performedAt",' +
   'workouts("workoutName",workout_items("ExerciseID","sortOrder")),' +

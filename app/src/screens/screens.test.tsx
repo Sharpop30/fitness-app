@@ -2,11 +2,12 @@
 // And, with LIVE_DB=1 against the LOCAL stack, the screens on the Endpoint show what the database holds
 // (stage 4a plan, task 8; stage 4b plan, task 12; stage 3 report, the content-check debt).
 import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
-import { setAdapter, setSession, type Envelope } from "../api/client";
+import { call, setAdapter, setSession, type Envelope } from "../api/client";
 import { demoAdapter } from "../demo/adapter";
 import { accessToken } from "../identity/auth";
 import { SCREENS } from "../App";
 import { NavContext, type Nav } from "../nav";
+import { greeting } from "../design/components";
 
 // No identity token by default, so every screen stays on the demo adapter; the live block below sets one.
 vi.mock("../identity/auth", async (original) => ({ ...(await original<object>()), accessToken: vi.fn(() => null) }));
@@ -20,7 +21,7 @@ const CASES: [string, "owner" | "coach" | "trainee", Record<string, unknown>, st
   ["S04", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "תוכנית אימון"], ["S05", "coach", {}, "תרגילים"], ["S06", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "אימונים שבוצעו"],
   ["S07", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "יעד אישי"], ["S08", "coach", {}, "תשלומים וחשבוניות"], ["S09", "coach", {}, "אתגר שבועי"],
   ["S10", "coach", {}, "תגמולים"], ["S11", "coach", {}, "שיעורים"], ["S12", "owner", {}, "הגדרות העסק"],
-  ["S13", "trainee", {}, "הבית שלי"], ["S14", "trainee", {}, "אימון"],
+  ["S13", "trainee", {}, `${greeting()}, נועה`], ["S14", "trainee", {}, "אימון"],
   ["S15", "trainee", { feedback: { done: 9, total: 9, records: [], coins: 10, goal: false, challenge: false, text: "כל הכבוד" } }, "כל הכבוד!"],
   ["S16", "trainee", {}, "האימונים שלי"], ["S17", "trainee", {}, "שיעורים"], ["S18", "trainee", {}, "מטבעות ותגמולים"],
   ["S19", "trainee", {}, "תשלומים"], ["S20", "trainee", {}, "האתגר השבועי"], ["S21", "trainee", {}, "גרף התקדמות"],
@@ -87,6 +88,107 @@ test("S09 with a challenge this week: no add button, the next Sunday instead, an
   render(<NavContext.Provider value={nav("coach")}><S create /></NavContext.Provider>);
   expect(await screen.findByText(/כבר יש אתגר השבוע/)).toBeTruthy();
   await waitFor(() => expect((screen.getByRole("button", { name: "פרסום האתגר" }) as HTMLButtonElement).disabled).toBe(true));
+});
+
+// ---- Stage 7a, task 2: the numbers the coach's screens show come from SETTINGS (map v13; design-stage gaps 1 to 3) ----
+const coachOpens = (id: string, params: Record<string, unknown> = {}) => {
+  setSession({ role: "coach", traineeID: null });
+  const S = SCREENS[id];
+  render(<NavContext.Provider value={nav("coach")}><S {...params} /></NavContext.Provider>);
+};
+
+test("S08: each payment type with its price from SETTINGS", async () => {
+  setAdapter(demoAdapter);
+  coachOpens("S08", { request: true });
+  expect(await screen.findByRole("option", { name: "מנוי חודשי · ₪350" })).toBeTruthy();
+  expect(screen.getByRole("option", { name: "חבילת 10 אימונים (כרטיסייה) · ₪600" })).toBeTruthy();
+  expect(screen.getByText(/המחירים מגיעים מההגדרות/)).toBeTruthy();
+});
+
+test("S05, S07 and S11: the video limit and the coins from SETTINGS, never a fixed number", async () => {
+  setAdapter(demoAdapter);
+  // The coach's own exercise: the ready-made list takes no video from a coach (map v13, rule 12).
+  setSession({ role: "coach", traineeID: null });
+  const own = (await call("S05", "exercises", "create_exercise", { name: "פרפר" })).data.ExerciseID;
+  coachOpens("S05", { exerciseID: own });
+  expect(await screen.findByRole("button", { name: "העלאת סרטון מהטלפון (עד דקה ועד 50 מגה-בייט)" })).toBeTruthy();
+  cleanup();
+  // A ready-made exercise shows its video and why there is nothing to add (usecase-10 v3, alternative f; prototype 3.2).
+  coachOpens("S05", { exerciseID: "d0000000-0000-4000-8000-000000002001" });
+  expect(await screen.findByText(/התרגיל מהרשימה המוכנה, והסרטון שלו משותף לכל המאמנים בעסק/)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "צירוף קישור" })).toBeNull();
+  cleanup();
+  coachOpens("S07", { traineeID: "d0000000-0000-4000-8000-000000001001" });
+  expect(await screen.findByText(/מתקבלים 30 מטבעות/)).toBeTruthy();
+  cleanup();
+  coachOpens("S11", { classID: "d0000000-0000-4000-8000-00000000a000" });
+  expect(await screen.findByRole("button", { name: "שמירת נוכחות (מי שסומן מקבל 5 מטבעות)" })).toBeTruthy();
+});
+
+test("rule 8: a value not set yet shows no number, and S08 says it is not set", async () => {
+  setAdapter((e, sess) => e.action === "get_settings" ? Promise.resolve({ ok: false, data: null, error: { code: "VALUE_NOT_SET", message: "הערך עוד לא הוגדר בהגדרות" } }) : demoAdapter(e, sess));
+  coachOpens("S08", { request: true });
+  expect(await screen.findByText(/הערך עוד לא הוגדר בהגדרות/)).toBeTruthy();
+  expect(screen.getByRole("option", { name: "מנוי חודשי" })).toBeTruthy();
+  cleanup();
+  coachOpens("S07", { traineeID: "d0000000-0000-4000-8000-000000001001" });
+  expect(await screen.findByText("כשהמתאמן עובר את היעד מתקבלים מטבעות, והיעד נסגר עד שיוגדר יעד חדש.")).toBeTruthy();
+  setAdapter(demoAdapter);
+});
+
+// ---- Stage 7a, task 3: S15 names the goal and challenge coins from the reply (map v13; design-stage gap 3) ----
+test("S15: the goal and the challenge lines with their coins, as in the prototype", async () => {
+  const S = SCREENS.S15;
+  const feedback = { done: 9, total: 9, records: [], coins: 10, goal: true, goalCoins: 30, challenge: true, challengeCoins: 50, text: "כל הכבוד" };
+  render(<NavContext.Provider value={nav("trainee")}><S feedback={feedback} /></NavContext.Provider>);
+  expect(screen.getByText(/השגת את היעד האישי/).textContent).toBe("🎯 השגת את היעד האישי! +30 מטבעות");
+  expect(screen.getByText(/השלמת את האתגר השבועי/).textContent).toBe("⭐ השלמת את האתגר השבועי! +50 מטבעות");
+});
+
+// ---- Stage 7a, task 4: the trainee home greets by name and names the next workout's exercises (map v13; gap 7) ----
+test("S13: the greeting with the trainee's name, and the exercises of the next workout in order", async () => {
+  setAdapter(demoAdapter);
+  setSession({ role: "trainee", traineeID: "d0000000-0000-4000-8000-000000001001" });
+  const S = SCREENS.S13;
+  render(<NavContext.Provider value={nav("trainee")}><S /></NavContext.Provider>);
+  expect(await screen.findByRole("heading", { level: 1, name: `${greeting()}, נועה` })).toBeTruthy();
+  expect(screen.getByText(/ · /).textContent).toMatch(/^[^·]+( · [^·]+)+$/);
+});
+
+// ---- Stage 7a, task 5: "שינוי אתגר" on S09 (map v13, rule 11; usecase-08 v3; prototype 3.2) ----
+test("S09: the current challenge offers a change; after a completion only the name and the prize can change", async () => {
+  setAdapter(demoAdapter);
+  coachOpens("S09");
+  expect(await screen.findByRole("button", { name: "שינוי אתגר" })).toBeTruthy();
+  cleanup();
+  const toasts: string[] = [];
+  setSession({ role: "coach", traineeID: null });
+  const S = SCREENS.S09;
+  render(<NavContext.Provider value={{ ...nav("coach"), toast: (t: string) => toasts.push(t) }}><S edit /></NavContext.Provider>);
+  // The demo challenge already has one who completed it, as in the prototype: the target is read only.
+  expect(await screen.findByText(/כבר יש מי שהשלים את האתגר/)).toBeTruthy();
+  expect(document.getElementById("challengeEditTarget")).toBeNull();
+  fireEvent.change(document.getElementById("challengeEditName")!, { target: { value: "אתגר אחר (דוגמה)" } });
+  fireEvent.click(screen.getByRole("button", { name: "שמירת השינוי" }));
+  await waitFor(() => expect(toasts).toContain("האתגר עודכן"));
+  cleanup();
+  coachOpens("S09");
+  expect(await screen.findByText("אתגר אחר (דוגמה)")).toBeTruthy();
+});
+
+// ---- Stage 7a, task 6: an invite that expired shows its message instead of the form (map v13; prototype 3.2) ----
+test("S22: an expired invite shows the message and no form; the demo invite opens with the form", async () => {
+  vi.stubEnv("VITE_SUPABASE_URL", ""); // the demo: no identity service, whatever app/.env.local holds
+  setAdapter(demoAdapter);
+  setSession(null);
+  const S = SCREENS.S22;
+  render(<NavContext.Provider value={nav("trainee")}><S /></NavContext.Provider>);
+  expect(await screen.findByRole("button", { name: "הצטרפות" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "מה רואים כשההזמנה פגה?" }));
+  expect(await screen.findByText("ההזמנה כבר לא בתוקף. אפשר לבקש הזמנה חדשה")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "הצטרפות" })).toBeNull();
+  expect(document.getElementById("joinPassword")).toBeNull();
+  vi.unstubAllEnvs();
 });
 
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
@@ -311,6 +413,16 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     await shows(next.length ? new RegExp(escape(next[0][0])) : "לא נרשמת לשיעור");
   }, 30000);
 
+  test("S13 (as Noa): the greeting has her name from the database, and the next workout names its exercises (map v13)", async () => {
+    open("S13", {}, "trainee");
+    const [[name]] = rows(`select "fullName" from trainees where "TraineeID"='${NOA}'`);
+    expect(await screen.findByRole("heading", { level: 1, name: `${greeting()}, ${name.replace(/\s*\(.*\)/, "")}` }, { timeout: 8000 })).toBeTruthy();
+    const exercises = rows(`select distinct e."exerciseName" from workout_items i join workouts w using ("WorkoutID") join programs p using ("ProgramID")
+                            join exercises e using ("ExerciseID") where p."TraineeID"='${NOA}' and p."isActive"`).map(([e]) => e);
+    const line = (await screen.findAllByText(/ · /, {}, { timeout: 8000 }))[0].textContent!;
+    for (const e of line.split(" · ")) expect(exercises).toContain(e);
+  }, 30000);
+
   // ---- Stage 4d: S01, S03, S08, S12 and S19, and S06's note limit (stage 4d plan, task 11) ----
   // SETTINGS belong to the business since stage 4e (0013).
   const setting = (key: string) => psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID"='${COACH}') and "settingKey"='${key}'`);
@@ -381,6 +493,35 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
   test("S06: the note form shows the longest note from SETTINGS (stage 4b report, gap 2)", async () => {
     open("S06", { traineeID: NOA, noteFor: "d0000000-0000-4000-8000-000000006001" });
     await shows(new RegExp(`עד ${setting("noteMaxLength")} תווים`));
+  }, 30000);
+
+  // ---- Stage 7a, task 2: a change in SETTINGS shows on the coach's screens (map v13) ----
+  const withSetting = async (key: string, value: string, check: () => Promise<void>) => {
+    const was = setting(key);
+    const where = `"BusinessID" = (select "BusinessID" from coaches where "CoachID"='${COACH}') and "settingKey"='${key}'`;
+    psql(`update settings set "settingValue"='${value}' where ${where}`);
+    try { await check(); } finally { psql(`update settings set "settingValue"='${was}' where ${where}`); }
+  };
+
+  test("S08: a new price in SETTINGS is the price beside the type", async () => {
+    await withSetting("priceMonthly", "412", async () => {
+      open("S08", { request: true });
+      expect(await screen.findByRole("option", { name: "מנוי חודשי · ₪412" }, { timeout: 8000 })).toBeTruthy();
+    });
+  }, 30000);
+
+  test("S05 and S07: a new video limit and new goal coins in SETTINGS show on the screens", async () => {
+    signedIn("coach");
+    const own = (await call("S05", "exercises", "create_exercise", { name: "פרפר (test)" })).data.ExerciseID; // rule 12: the coach's own
+    await withSetting("videoMaxSeconds", "90", async () => {
+      open("S05", { exerciseID: own });
+      await shows(/העלאת סרטון מהטלפון \(עד 90 שניות ועד \d+ מגה-בייט\)/);
+    });
+    cleanup();
+    await withSetting("coinsGoal", "33", async () => {
+      open("S07", { traineeID: NOA });
+      await shows(/מתקבלים 33 מטבעות/);
+    });
   }, 30000);
 
   // ---- Stage 4e: S24 to S27, and S12 by the role on show (stage 4e plan, task 9) ----

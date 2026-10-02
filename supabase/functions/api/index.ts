@@ -54,6 +54,12 @@ async function authUser(req: Request): Promise<{ id: string; email: string } | n
 // v9; stage 5 plan, decision 3) or as a coach (map v11), and the error texts, so a failed join reads as it should (v10).
 const isJoining = (e: Envelope) => e.caller === "S22" &&
   ((e.module === "trainees" && e.action === "accept_invite") || (e.module === "business" && e.action === "accept_coach_invite") ||
+    isVisiting(e));
+
+// A visitor: not signed in. Only S22, to check the invite before signing up, and the error texts to say why not
+// (map v13, "checking an invite before signing up"; usecase-04 v4, usecase-12 v3). Every other request is NOT_ALLOWED.
+const isVisiting = (e: Envelope) => e.caller === "S22" &&
+  ((e.module === "trainees" && e.action === "check_invite") || (e.module === "business" && e.action === "check_coach_invite") ||
     (e.module === "settings" && e.action === "get_error_texts"));
 
 Deno.serve(async (req) => {
@@ -84,6 +90,7 @@ Deno.serve(async (req) => {
     const known = user ? await repo.findActorByAuthUser(user.id) : null;
     const actor: Actor | null = known ? { ...known, authUserID: user!.id, email: user!.email }
       : user && isJoining(envelope) ? { role: "trainee", roles: ["trainee"], businessID: null, coachID: "", traineeID: null, authUserID: user.id, email: user.email }
+      : !user && isVisiting(envelope) ? { role: "trainee", roles: ["trainee"], businessID: null, coachID: "", traineeID: null } // no identity user
       : null;
     if (!actor) return await refuse("NOT_ALLOWED");
     return reply(await handle(envelope, actor, repo, modules));

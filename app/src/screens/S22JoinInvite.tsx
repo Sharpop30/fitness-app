@@ -4,9 +4,11 @@
 // load before joining, so a failed join reads as it should (module map v10). On demo data, the demo join stays.
 // Stage 4e (map v11; usecase-12 steps 6, 7): a coach invite link (SITE_URL?coach=token) joins the same way, as a coach of
 // the business, through business.accept_coach_invite. The same structure; the line for a coach is stage 4e plan, decision 9.
+// Map v13 (usecase-04 v4 step 4, usecase-12 v3 step 6; prototype 3.2): the invite is checked when the screen opens, before
+// signing up, so a link that expired shows its message instead of the form and leaves no identity user; the name is filled.
 import { useEffect, useState } from "react";
 import { call, setErrorTexts } from "../api/client";
-import { Button, Field, LinkButton, Notice, Picture, Screen } from "../design/components";
+import { Button, ErrorState, Field, LinkButton, Loading, Notice, Picture, Screen } from "../design/components";
 import { accessToken, identityConfigured, setPassword, signInWithPassword, signUp, takeSessionFromAddress } from "../identity/auth";
 import { useNav } from "../nav";
 
@@ -18,8 +20,24 @@ export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken
   const [name, setName] = useState(live ? "" : asCoach ? "שירה (דוגמה)" : "רון (דוגמה)");
   const [email, setEmail] = useState(live ? "" : "ron@example.com");
   const [password, setPass] = useState("");
+  // The invite as checked on opening: "checking", "open", or the error (expired, or no answer with a retry).
+  const [check, setCheck] = useState<{ state: "checking" | "open" } | { state: "error"; error: { code: string; message: string } }>(
+    { state: live ? "checking" : "open" });
 
   useEffect(() => { if (live && takeSessionFromAddress()) setFromEmail(true); }, [live]);
+
+  const checkInvite = async (payload: Record<string, unknown> = {}) => {
+    setCheck({ state: "checking" });
+    const texts = await call("S22", "settings", "get_error_texts");
+    if (texts.ok) setErrorTexts(texts.data);
+    const r = asCoach
+      ? await call("S22", "business", "check_coach_invite", { token: coachToken, ...payload })
+      : await call("S22", "trainees", "check_invite", { token: inviteToken ?? "", ...payload });
+    if (!r.ok) return setCheck({ state: "error", error: r.error! });
+    if (live && r.data.fullName) setName(r.data.fullName);
+    setCheck({ state: "open" });
+  };
+  useEffect(() => { if (live) checkInvite(); }, [live]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const joined = (data: { TraineeID?: string }) => {
     if (asCoach) { nav.signIn("coach", undefined, ["coach"]); return nav.toast("הצטרפת לעסק כמאמן"); }
@@ -50,6 +68,17 @@ export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken
     joined(r.data);
   };
 
+  if (check.state === "checking") return <Screen eyebrow="הזמנה" title="הצטרפות"><Loading /></Screen>;
+  if (check.state === "error") {
+    return check.error.code === "INVITE_EXPIRED"
+      ? <Screen eyebrow="הזמנה" title="הצטרפות">
+          <Picture size="short" src={`${import.meta.env.BASE_URL}images/join.jpg`} />
+          <Notice>{check.error.message}</Notice>
+          <div className="muted small">הקישור תקף לזמן מוגבל, ופעם אחת. מי ששלח אותו יכול לשלוח קישור חדש.</div>
+        </Screen>
+      : <Screen eyebrow="הזמנה" title="הצטרפות"><ErrorState error={check.error} onRetry={() => checkInvite()} /></Screen>;
+  }
+
   return (
     <Screen eyebrow={asCoach ? "הזמנה מבעל העסק" : "הזמנה מהמאמן"} title="הצטרפות">
       <Picture size="short" src={`${import.meta.env.BASE_URL}images/join.jpg`} />
@@ -60,7 +89,7 @@ export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken
         ? <Field label="סיסמה"><input id="joinPassword" type="password" autoComplete="new-password" value={password} onChange={(e) => setPass(e.target.value)} /></Field>
         : <Field label="סיסמה"><input id="joinPassword" type="password" defaultValue="" placeholder="בגרסת הדוגמה אין צורך בסיסמה" /></Field>}
       <Button onClick={() => (live ? liveJoin() : demoJoin())}>הצטרפות</Button>
-      {!live && <LinkButton onClick={() => demoJoin(true)}>מה רואים כשההזמנה פגה?</LinkButton>}
+      {!live && <LinkButton onClick={() => checkInvite({ expired: true })}>מה רואים כשההזמנה פגה?</LinkButton>}
     </Screen>
   );
 }

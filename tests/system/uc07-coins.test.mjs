@@ -33,6 +33,7 @@ test("normal: passing the personal goal credits coinsGoal, the feedback says so,
   const was = await balance(t);
   const r = await saveWorkout(t, 67.5);
   assert.deepEqual([r.data.feedback.coins, r.data.feedback.goal], [setting("coinsWorkout"), true]);
+  assert.equal(r.data.feedback.goalCoins, setting("coinsGoal")); // map v13: S15 names the goal coins
   const after = (await call(t.token, "S18", "coins", "get_balance")).data;
   assert.equal(after.balance, was + setting("coinsWorkout") + setting("coinsGoal"));
   assert.equal(after.goal, null); // closed, waiting for the coach to set a new one

@@ -71,6 +71,25 @@ export const challenges: ModuleDef = {
       return created ? ok(null) : fail("CHALLENGE_EXISTS");
     },
 
+    // Map v13, rule 11 (usecase-08 v3, the change): only this week's challenge. The name and the prize always; the target
+    // only while no one completed. The type and the exercise are not in the input. Completions and coins stay as they are.
+    async update_challenge(ctx, payload) {
+      if (ctx.actor.role !== "coach") return fail("NOT_ALLOWED");
+      const c = await ctx.repo.getChallengeForWeek(ctx.actor.coachID, thisSunday());
+      if (!c) return fail("NOT_ALLOWED"); // no challenge this week, or the week closed (alternative g)
+      const name = payload.challengeName === undefined ? c.challengeName : typeof payload.challengeName === "string" ? payload.challengeName.trim() : "";
+      if (!name) return fail("CHALLENGE_INVALID");
+      const prize = payload.extraPrize === undefined ? c.extraPrize
+        : typeof payload.extraPrize === "string" && payload.extraPrize.trim() ? payload.extraPrize.trim() : null;
+      const target = payload.targetValue === undefined ? c.targetValue : payload.targetValue;
+      if (typeof target !== "number" || !Number.isFinite(target) || target <= 0 || (c.challengeType === "count" && !Number.isInteger(target))) {
+        return fail("CHALLENGE_INVALID"); // alternative e
+      }
+      if (target !== c.targetValue && (await ctx.repo.listCompletions(c.ChallengeID)).length > 0) return fail("CHALLENGE_INVALID"); // alternative f
+      await ctx.repo.updateChallenge(c.ChallengeID, { challengeName: name, extraPrize: prize, targetValue: target });
+      return ok(null);
+    },
+
     // UC8 step 4: this week's challenge of the coach, with its end and coins; for a trainee, their own progress.
     // After Saturday there is no current challenge: the week closed (alternative b).
     async get_current_challenge(ctx) {
@@ -97,8 +116,10 @@ export const challenges: ModuleDef = {
 
       const completionID = await ctx.repo.addCompletion(c.ChallengeID, traineeID);
       if (!completionID) return ok({ challenge: false }); // completed before: once only
-      await ctx.call({ module: "coins", action: "award", payload: { traineeID, reason: "challenge", eventRef: completionID } });
-      return ok({ challenge: true });
+      const awarded = await ctx.call({ module: "coins", action: "award", payload: { traineeID, reason: "challenge", eventRef: completionID } });
+      // Map v13: the coins credited for completing, for S15; a failed credit is 0, and the completion stays (alternative d).
+      const coins = awarded.ok && typeof (awarded.data as { coins?: unknown })?.coins === "number" ? (awarded.data as { coins: number }).coins : 0;
+      return ok({ challenge: true, coins });
     },
 
     // UC8 step 9: who completed this week's challenge.

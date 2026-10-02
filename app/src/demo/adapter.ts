@@ -86,6 +86,8 @@ const actions: Record<string, H> = {
     D.invites.push({ InviteID: uid(), inviteeName: name, status: "open", expiresAt: D.addDays(D.TODAY, num("inviteValidDays")), TraineeID });
     return ok({ link: `https://sharpop30.github.io/fitness-app/#join-${TraineeID} (דוגמה)` });
   },
+  // Map v13: the invite is checked when S22 opens. On demo data, Ron's open invite; "expired" shows the other answer.
+  "trainees.check_invite": (p) => (p.expired ? fail("INVITE_EXPIRED") : ok({ fullName: D.invites[0]?.inviteeName ?? "" })),
   "trainees.accept_invite": (p) => {
     if (p.expired) return fail("INVITE_EXPIRED");
     const t = D.trainees.find((x) => x.TraineeID === (p.traineeID ?? "d0000000-0000-4000-8000-000000001004"));
@@ -111,14 +113,17 @@ const actions: Record<string, H> = {
   "exercises.create_exercise": (p) => {
     const name = String(p.name ?? "").trim();
     if (!name) return fail("PROGRAM_INVALID");
-    const e = { ExerciseID: "e" + uid(), exerciseName: name, isBodyweight: !!p.isBodyweight, videoType: null, videoUrl: null };
+    const e = { ExerciseID: "e" + uid(), exerciseName: name, isBodyweight: !!p.isBodyweight, videoType: null, videoUrl: null, isPrepared: false };
     D.exercises.push(e);
     return ok(e);
   },
   // Stage 5 (map v9): on demo data there is no store; the demo upload goes through.
-  "exercises.prepare_upload": (p) => (Number(p.seconds) > num("videoMaxSeconds") ? fail("VIDEO_TOO_LONG") : ok({ uploadUrl: "demo", path: "demo" })),
+  // Map v13, rule 12, as the server: no video of a coach on the ready-made list.
+  "exercises.prepare_upload": (p) => (ex(String(p.exerciseID))?.isPrepared ? fail("NOT_ALLOWED")
+    : Number(p.seconds) > num("videoMaxSeconds") ? fail("VIDEO_TOO_LONG") : ok({ uploadUrl: "demo", path: "demo" })),
   "exercises.attach_video": (p) => {
     const e = ex(String(p.exerciseID));
+    if (e.isPrepared) return fail("NOT_ALLOWED");
     if (p.kind === "upload") {
       if (Number(p.seconds) > num("videoMaxSeconds")) return fail("VIDEO_TOO_LONG");
       e.videoType = "upload"; e.videoUrl = "upload (דוגמה)"; return ok(e);
@@ -183,16 +188,16 @@ const actions: Record<string, H> = {
     D.logs.push(log);
     // feedback, coins and challenge, as the server does through the Orchestrator (UC3 step 7, UC6, UC7, UC8)
     const coins = award(tid, "workout", log.WorkoutLogID);
-    let goal = false;
+    let goal = false, goalCoins = 0, challengeCoins = 0; // map v13: the goal and challenge coins, as the server
     const g = D.goals.find((x) => x.TraineeID === tid && x.status === "active");
-    if (g && Math.max(0, ...sets.filter((x) => x.ExerciseID === g.ExerciseID).map((x) => x.weight)) >= g.targetWeight) { g.status = "achieved"; award(tid, "goal", g.PersonalGoalID); goal = true; }
+    if (g && Math.max(0, ...sets.filter((x) => x.ExerciseID === g.ExerciseID).map((x) => x.weight)) >= g.targetWeight) { g.status = "achieved"; goalCoins = award(tid, "goal", g.PersonalGoalID); goal = true; }
     let challenge = false;
     const c = currentChallenge(), cp = challengeProgress(tid);
     if (c && cp && !cp.exempt && cp.value >= cp.target && !c.completions.some((x) => x.TraineeID === tid)) {
-      c.completions.push({ TraineeID: tid, completedAt: new Date(D.TODAY), prizeDeliveredAt: null }); award(tid, "challenge", c.ChallengeID + tid); challenge = true;
+      c.completions.push({ TraineeID: tid, completedAt: new Date(D.TODAY), prizeDeliveredAt: null }); challengeCoins = award(tid, "challenge", c.ChallengeID + tid); challenge = true;
     }
     const done = sets.filter((x) => x.isDone).length;
-    return ok({ WorkoutLogID: log.WorkoutLogID, feedback: { done, total: sets.length, records, coins, goal, challenge,
+    return ok({ WorkoutLogID: log.WorkoutLogID, feedback: { done, total: sets.length, records, coins, goal, goalCoins, challenge, challengeCoins,
       text: records.length ? D.settings.feedbackRecord : done === sets.length ? D.settings.feedbackFull : D.settings.feedbackPartial } });
   },
   "results.correct_result": (p, s) => {
@@ -268,6 +273,16 @@ const actions: Record<string, H> = {
     if (!(Number(p.targetValue) > 0)) return fail("CHALLENGE_INVALID");
     D.challenges.push({ ChallengeID: "ch" + uid(), challengeName: String(p.challengeName), challengeType: String(p.challengeType), targetValue: Number(p.targetValue),
       ExerciseID: (p.exerciseID as string) ?? null, extraPrize: (p.extraPrize as string) || "", weekStart: D.sundayOf(D.TODAY), completions: [] });
+    return ok(null);
+  },
+  // Map v13, rule 11, as the server: the name and prize always, the target only while no one completed.
+  "challenges.update_challenge": (p) => {
+    const c = currentChallenge();
+    if (!c) return fail("NOT_ALLOWED");
+    const name = p.challengeName === undefined ? c.challengeName : String(p.challengeName).trim();
+    const target = p.targetValue === undefined ? c.targetValue : Number(p.targetValue);
+    if (!name || !(target > 0) || (target !== c.targetValue && c.completions.length > 0)) return fail("CHALLENGE_INVALID");
+    Object.assign(c, { challengeName: name, targetValue: target, extraPrize: p.extraPrize === undefined ? c.extraPrize : String(p.extraPrize).trim() });
     return ok(null);
   },
   "challenges.mark_prize_delivered": (p) => { const c = currentChallenge()!.completions.find((x) => x.TraineeID === p.traineeID)!; c.prizeDeliveredAt = new Date(D.TODAY); return ok(null); },
@@ -376,8 +391,11 @@ const actions: Record<string, H> = {
     const count = D.logs.filter((l) => l.TraineeID === tid).length;
     const nextClass = D.classes.filter((k) => k.status === "active" && k.startsAt >= D.TODAY && k.regs.some((r) => r.TraineeID === tid && r.status === "registered")).sort((a, b) => +a.startsAt - +b.startsAt)[0];
     const c = currentChallenge();
-    return ok({ reminder: D.settings.reminderText, streak: streak(tid), streakGapDays: num("streakGapDays"), coins: balance(tid),
-      nextWorkout: prog?.workouts.length ? prog.workouts[count % prog.workouts.length] : null,
+    const next = prog?.workouts.length ? prog.workouts[count % prog.workouts.length] : null;
+    // Map v13, as the server: the trainee's name, and the next workout with its exercises in order.
+    return ok({ traineeName: D.trainees.find((t) => t.TraineeID === tid)?.fullName ?? null,
+      reminder: D.settings.reminderText, streak: streak(tid), streakGapDays: num("streakGapDays"), coins: balance(tid),
+      nextWorkout: next && { WorkoutID: next.WorkoutID, workoutName: next.workoutName, exercises: next.items.map((i) => ex(i.ExerciseID).exerciseName) },
       nextClass: nextClass ? { startsAt: nextClass.startsAt, place: nextClass.place } : null,
       challenge: c && { challengeName: c.challengeName, ...challengeProgress(tid)! },
       offers: D.classes.flatMap((k) => k.regs.filter((r) => r.TraineeID === tid && r.status === "offered").map(() => ({ ClassID: k.ClassID, startsAt: k.startsAt, hours: num("spotOfferHours") }))) });
@@ -408,6 +426,7 @@ const actions: Record<string, H> = {
     D.coachInvites.push({ CoachInviteID: uid(), inviteeName: name, status: "open", expiresAt: D.addDays(D.TODAY, num("inviteValidDays")) });
     return ok({ link: `https://sharpop30.github.io/fitness-app/?coach=${uid()} (דוגמה)` });
   },
+  "business.check_coach_invite": (p) => (p.expired ? fail("INVITE_EXPIRED") : ok({ fullName: D.coachInvites[0]?.inviteeName ?? "" })),
   "business.accept_coach_invite": (p) => (p.expired ? fail("INVITE_EXPIRED") : ok({ CoachID: D.coach.CoachID })),
   "business.get_coach_card": (p) => {
     if (p.coachID !== D.coach.CoachID) return fail("NOT_ALLOWED");
@@ -431,7 +450,12 @@ const actions: Record<string, H> = {
     });
   },
   // ---- M14 settings ----
-  "settings.get_settings": (_p, s) => ok({ ...D.settings, canEdit: s.role === "owner" }),
+  // As the server (map v13, rule 9): a screen that names its keys gets those keys only.
+  "settings.get_settings": (p, s) => {
+    const keys = Array.isArray(p.keys) ? (p.keys as string[]) : typeof p.key === "string" ? [p.key] : null;
+    if (!keys) return ok({ ...D.settings, canEdit: s.role === "owner" });
+    return keys.every((k) => k in D.settings) ? ok(Object.fromEntries(keys.map((k) => [k, D.settings[k]]))) : fail("VALUE_NOT_SET");
+  },
   "settings.get_error_texts": () => ok({ ...D.errorTexts }),
   "settings.update_settings": (p) => { Object.assign(D.settings, p.values as Record<string, string>); return ok(null); },
 };

@@ -86,3 +86,37 @@ test("failure: a newcomer who has not joined reaches nothing but joining", async
     assert.equal((await call(token, caller, module, action)).error?.code, "NOT_ALLOWED", `${caller} ${module}.${action}`);
   }
 });
+
+// ---- usecase-04 v4 step 4 and a: the invite is checked before signing up, with no sign-in (map v13) ----
+const check = (inviteToken) => call(null, "S22", "trainees", "check_invite", { token: inviteToken });
+const authUsers = () => psql(`select count(*) from auth.users`);
+
+test("norm, v4: a visitor with an open link gets the name in the invite, and the check is in the Audit with no identity user", async () => {
+  const inviteToken = await invite("רון מהבדיקה (test)");
+  const users = authUsers();
+  assert.deepEqual(await check(inviteToken), { ok: true, data: { fullName: "רון מהבדיקה (test)" }, error: null });
+  assert.equal(authUsers(), users);
+  assert.deepEqual(psql(`select "isOk" || ':' || coalesce("errorCode",'-') from audit_entries where "requestID" = (select "requestID" from audit_entries
+                         where caller='S22' and "actionName"='check_invite' order by "createdAt" desc limit 1) order by "createdAt"`).split("\n"), ["true:-", "true:-"]);
+});
+
+test("edge a, v4: an expired, a used or an unknown link is INVITE_EXPIRED, the same for all three, and nothing is created", async () => {
+  const expired = await invite("פג (test)");
+  psql(`update invites set "expiresAt" = now() - interval '1 minute' where "token"='${expired}'`);
+  const used = await invite("נוצל (test)");
+  const token = await signUp(freshEmail("used"), freshPassword());
+  assert.equal((await join(token, used)).ok, true);
+  const users = authUsers(), people = traineesOf();
+  for (const t of [expired, used, "f".repeat(48), "not a token"]) assert.equal((await check(t)).error.code, "INVITE_EXPIRED");
+  assert.deepEqual([authUsers(), traineesOf()], [users, people]);
+  // The visitor's error texts come too, so the message reads as it should.
+  assert.equal((await call(null, "S22", "settings", "get_error_texts")).data.INVITE_EXPIRED, "ההזמנה כבר לא בתוקף. אפשר לבקש הזמנה חדשה");
+});
+
+test("failure, v4: a visitor reaches nothing else; another screen, or joining with no sign-in, is NOT_ALLOWED and logged", async () => {
+  const inviteToken = await invite("אורח (test)");
+  assert.equal((await call(null, "S22", "trainees", "accept_invite", { token: inviteToken })).error.code, "NOT_ALLOWED");
+  assert.equal((await call(null, "S23", "settings", "get_error_texts")).error.code, "NOT_ALLOWED");
+  assert.equal((await call(null, "S02", "trainees", "check_invite", { token: inviteToken })).error.code, "NOT_ALLOWED");
+  assert.equal(psql(`select "status" from invites where "token"='${inviteToken}'`), "open");
+});

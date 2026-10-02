@@ -91,6 +91,10 @@ export async function lastMailTo(address, tries = 20) {
 // The invite token in a link to the site (SITE_URL?join=token; stage 5 plan, decision 2).
 export const tokenOf = (link) => new URL(link).searchParams.get("join");
 
+// Map v13, rule 12: a coach adds videos to their own exercises only, never to the ready-made list. A fresh one "(test)".
+export const ownExercise = async (coachToken, name = `תרגיל של המאמן (test ${Date.now()})`) =>
+  (await call(coachToken, "S05", "exercises", "create_exercise", { name })).data.ExerciseID;
+
 export const call = async (token, caller, module, action, payload = {}) => {
   const res = await fetch(ENDPOINT, {
     method: "POST",

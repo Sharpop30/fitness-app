@@ -85,6 +85,7 @@ function world(opts: { logs?: WorkoutLog[]; challenge?: Partial<Challenge>; prog
       completions.push({ ChallengeID, ChallengeCompletionID, TraineeID, fullName: "מתאמן (test)", completedAt: TODAY, prizeDeliveredAt: null });
       return ChallengeCompletionID;
     },
+    updateChallenge: async (id, changes) => { down(); Object.assign(list.find((x) => x.ChallengeID === id)!, changes); },
     markPrizeDelivered: async (id, t) => {
       down();
       const x = completions.find((y) => y.ChallengeID === id && y.TraineeID === t);
@@ -169,7 +170,7 @@ Deno.test("UC8 section 13: reaching the target marks the trainee complete and cr
   const w = world({ challenge: {}, logs: [log(TRAINEE, SUNDAY), log(TRAINEE, TODAY)] });
   assertEquals(await check(w), ok({ challenge: false }));
   w.logs.push(log(TRAINEE, TODAY));
-  assertEquals(await check(w), ok({ challenge: true }));
+  assertEquals(await check(w), ok({ challenge: true, coins: 50 }));
   assertEquals(w.completions.length, 1);
   // Execution decision 3: the credit's eventRef is the ChallengeCompletionID.
   assertEquals(w.ledger.map((x) => [x.eventType, x.eventRef, x.amount]), [["challenge", w.completions[0].ChallengeCompletionID, 50]]);
@@ -187,14 +188,14 @@ Deno.test("UC8 c: workouts of last week do not count toward this week's challeng
 Deno.test("execution decision 5: a bodyweight exercise challenge counts reps; an exempt trainee never completes", async () => {
   const w = world({ challenge: { challengeType: "exercise", ExerciseID: PUSHUP, targetValue: 20 },
     programs: [programWith(TRAINEE, [PUSHUP]), programWith(MAYA, [SQUAT])], logs: [log(TRAINEE, TODAY, [[PUSHUP, 21, 0]]), log(MAYA, TODAY, [[PUSHUP, 99, 0]])] });
-  assertEquals(await check(w), ok({ challenge: true }));
+  assertEquals(await check(w), ok({ challenge: true, coins: 50 }));
   assertEquals(await check(w, maya), ok({ challenge: false }));
 });
 
 Deno.test("UC8 d: when the credit fails, the completion is kept", async () => {
   const w = world({ challenge: {}, logs: [log(TRAINEE, TODAY), log(TRAINEE, TODAY), log(TRAINEE, TODAY)] });
   w.repo.getBusinessSettings = async () => ({}); // coinsChallenge missing: coins.award refuses
-  assertEquals(await check(w), ok({ challenge: true }));
+  assertEquals(await check(w), ok({ challenge: true, coins: 0 }));
   assertEquals([w.completions.length, w.ledger.length], [1, 0]);
 });
 
@@ -213,4 +214,36 @@ Deno.test("UC8 step 9: the coach sees who completed, and marks the extra prize d
 
 Deno.test("the database failing gives STORAGE_UNAVAILABLE, without throwing", async () => {
   assertEquals(await ask(world({ storageDown: true }), trainee, "S20", "get_current_challenge"), fail("STORAGE_UNAVAILABLE"));
+});
+
+// ---- update_challenge (map v13, rule 11; usecase-08 v3) ----
+
+const change = (w: ReturnType<typeof world>, payload: Record<string, unknown>, actor: Actor = coach) =>
+  ask(w, actor, "S09", "update_challenge", payload);
+
+Deno.test("UC8 v3: before anyone completed, the name, the prize and the target change; the type does not", async () => {
+  const w = world({ challenge: {} });
+  assertEquals(await change(w, { challengeName: " ארבעה אימונים (test) ", extraPrize: "", targetValue: 4, challengeType: "exercise" }), ok(null));
+  assertEquals([w.list[0].challengeName, w.list[0].extraPrize, w.list[0].targetValue, w.list[0].challengeType], ["ארבעה אימונים (test)", null, 4, "count"]);
+});
+
+Deno.test("UC8 f: after a completion only the name and the prize change, and the completion and coins stay", async () => {
+  const w = world({ challenge: { targetValue: 1 }, logs: [log(TRAINEE, TODAY.slice(0, 10))] });
+  assertEquals(await check(w), ok({ challenge: true, coins: 50 }));
+  assertEquals(await change(w, { targetValue: 5 }), fail("CHALLENGE_INVALID"));
+  assertEquals(w.list[0].targetValue, 1);
+  assertEquals(await change(w, { challengeName: "אתגר חדש (test)", extraPrize: "כובע (test)", targetValue: 1 }), ok(null));
+  assertEquals([w.list[0].challengeName, w.list[0].extraPrize], ["אתגר חדש (test)", "כובע (test)"]);
+  assertEquals([w.completions.length, w.ledger.length], [1, 1]);
+});
+
+Deno.test("UC8 e and g: an empty name or a bad target is CHALLENGE_INVALID; no challenge this week, or a trainee, is NOT_ALLOWED", async () => {
+  const w = world({ challenge: {} });
+  assertEquals(await change(w, { challengeName: "  " }), fail("CHALLENGE_INVALID"));
+  assertEquals(await change(w, { targetValue: 0 }), fail("CHALLENGE_INVALID"));
+  assertEquals(await change(w, { targetValue: 2.5 }), fail("CHALLENGE_INVALID")); // a count is whole
+  assertEquals(w.list[0].challengeName, "שלושה אימונים (test)");
+  assertEquals(await change(world(), { challengeName: "x" }), fail("NOT_ALLOWED"));
+  assertEquals(await change(world({ challenge: { weekStart: "2020-01-05" } }), { challengeName: "x" }), fail("NOT_ALLOWED"));
+  assertEquals(await change(w, { challengeName: "x" }, trainee), fail("NOT_ALLOWED"));
 });
