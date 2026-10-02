@@ -24,7 +24,8 @@ export default function S13TraineeHome() {
   };
 
   return (
-    <Screen eyebrow={home.data?.reminder ?? greeting()} title="הבית שלי" noBack>
+    // Map v13 (design-stage gap 7): "ערב טוב, נועה" as the prototype, the name without its "(...)" mark; no name yet, "הבית שלי".
+    <Screen eyebrow={home.data?.reminder ?? greeting()} title={home.data?.traineeName ? `${greeting()}, ${home.data.traineeName.replace(/\s*\(.*\)/, "")}` : "הבית שלי"} noBack>
       <Load state={home}>{(h: any) => {
         const c = h.challenge;
         const cText = !c ? "אין אתגר השבוע" : c.exempt ? "פטור השבוע" : c.value >= c.target ? "השלמת ✓" : `${c.value}/${c.target}`;
@@ -45,7 +46,7 @@ export default function S13TraineeHome() {
           ))}
           <SectionHead title="האימון הבא" action={h.nextWorkout ? <LinkButton onClick={() => nav.setTab("S14")}>לכל האימונים</LinkButton> : undefined} />
           {h.nextWorkout
-            ? <Row title={h.nextWorkout.workoutName} sub="ממולא לפי היעד, משנים רק מה ששונה" onClick={() => nav.go("S14", { workoutID: h.nextWorkout.WorkoutID })} />
+            ? <Row title={h.nextWorkout.workoutName} sub={h.nextWorkout.exercises?.length ? h.nextWorkout.exercises.join(" · ") : "ממולא לפי היעד, משנים רק מה ששונה"} onClick={() => nav.go("S14", { workoutID: h.nextWorkout.WorkoutID })} />
             : <Empty title="התוכנית שלך בהכנה אצל המאמן" sub="היא תופיע כאן כשתהיה מוכנה." />}
           <SectionHead title="השיעור הבא" action={<LinkButton onClick={() => nav.setTab("S17")}>לכל השיעורים</LinkButton>} />
           {h.nextClass

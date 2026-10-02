@@ -22,7 +22,9 @@ const stand = (id: string, answers: Record<string, Reply>): ModuleDef =>
 const traineeModules = (over: Modules = {}): Modules => ({
   progress: stand("M05", { get_streak: ok({ streak: 3, streakGapDays: 3 }) }),
   coins: stand("M07", { get_balance: ok({ balance: 75, history: [], rewards: [], goal: null }) }),
-  programs: stand("M03", { get_active_program: ok({ workouts: [{ WorkoutID: A, workoutName: "אימון A" }, { WorkoutID: B, workoutName: "אימון B" }] }) }),
+  programs: stand("M03", { get_active_program: ok({ workouts: [{ WorkoutID: A, workoutName: "אימון A", items: [{ exerciseName: "סקוואט" }] },
+    { WorkoutID: B, workoutName: "אימון B", items: [{ exerciseName: "מתח" }, { exerciseName: "לחיצת חזה" }] }] }) }),
+  trainees: stand("M01", { get_me: ok({ roles: ["trainee"], role: "trainee", traineeID: TRAINEE, fullName: "נועה (test)" }) }),
   results: stand("M04", { list_results: ok([{ WorkoutID: A }, { WorkoutID: B }, { WorkoutID: A }]) }), // newest first
   challenges: stand("M08", { get_current_challenge: ok({ challengeName: "שלושה אימונים (test)", progress: { value: 2, target: 3, exempt: false } }) }),
   ...over,
@@ -41,8 +43,10 @@ const coachHome = (w: ReturnType<typeof world>, modules: Modules, actor: Actor =
 Deno.test("UC9 section 13: the trainee's home has the reminder, streak, coins, next workout and challenge progress", async () => {
   const r = await traineeHome(world(), traineeModules());
   assertEquals(r, ok({
+    traineeName: "נועה (test)", // map v13
     reminder: "יום טוב (test)", streak: 3, streakGapDays: 3, coins: 75,
-    nextWorkout: { WorkoutID: B, workoutName: "אימון B" }, // the last workout done was A
+    // the last workout done was A; map v13: its exercises in order
+    nextWorkout: { WorkoutID: B, workoutName: "אימון B", exercises: ["מתח", "לחיצת חזה"] },
     nextClass: null, // no classes module in this test
     challenge: { challengeName: "שלושה אימונים (test)", value: 2, target: 3, exempt: false },
     offers: [],
@@ -53,9 +57,10 @@ Deno.test("UC9 c: an item that fails is left out, and the rest of the home still
   const r = await traineeHome(world(), traineeModules({
     progress: stand("M05", { get_streak: fail("STORAGE_UNAVAILABLE") }),
     coins: stand("M07", { get_balance: fail("VALUE_NOT_SET") }),
+    trainees: stand("M01", { get_me: fail("STORAGE_UNAVAILABLE") }),
   }));
   const d = r.data as Record<string, unknown>;
-  assertEquals([r.ok, d.streak, d.streakGapDays, d.coins], [true, null, null, null]);
+  assertEquals([r.ok, d.streak, d.streakGapDays, d.coins, d.traineeName], [true, null, null, null, null]);
   assertEquals((d.nextWorkout as { WorkoutID: string }).WorkoutID, B);
 });
 

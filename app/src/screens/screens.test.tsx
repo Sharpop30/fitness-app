@@ -7,6 +7,7 @@ import { demoAdapter } from "../demo/adapter";
 import { accessToken } from "../identity/auth";
 import { SCREENS } from "../App";
 import { NavContext, type Nav } from "../nav";
+import { greeting } from "../design/components";
 
 // No identity token by default, so every screen stays on the demo adapter; the live block below sets one.
 vi.mock("../identity/auth", async (original) => ({ ...(await original<object>()), accessToken: vi.fn(() => null) }));
@@ -20,7 +21,7 @@ const CASES: [string, "owner" | "coach" | "trainee", Record<string, unknown>, st
   ["S04", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "תוכנית אימון"], ["S05", "coach", {}, "תרגילים"], ["S06", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "אימונים שבוצעו"],
   ["S07", "coach", { traineeID: "d0000000-0000-4000-8000-000000001001" }, "יעד אישי"], ["S08", "coach", {}, "תשלומים וחשבוניות"], ["S09", "coach", {}, "אתגר שבועי"],
   ["S10", "coach", {}, "תגמולים"], ["S11", "coach", {}, "שיעורים"], ["S12", "owner", {}, "הגדרות העסק"],
-  ["S13", "trainee", {}, "הבית שלי"], ["S14", "trainee", {}, "אימון"],
+  ["S13", "trainee", {}, `${greeting()}, נועה`], ["S14", "trainee", {}, "אימון"],
   ["S15", "trainee", { feedback: { done: 9, total: 9, records: [], coins: 10, goal: false, challenge: false, text: "כל הכבוד" } }, "כל הכבוד!"],
   ["S16", "trainee", {}, "האימונים שלי"], ["S17", "trainee", {}, "שיעורים"], ["S18", "trainee", {}, "מטבעות ותגמולים"],
   ["S19", "trainee", {}, "תשלומים"], ["S20", "trainee", {}, "האתגר השבועי"], ["S21", "trainee", {}, "גרף התקדמות"],
@@ -134,6 +135,16 @@ test("S15: the goal and the challenge lines with their coins, as in the prototyp
   render(<NavContext.Provider value={nav("trainee")}><S feedback={feedback} /></NavContext.Provider>);
   expect(screen.getByText(/השגת את היעד האישי/).textContent).toBe("🎯 השגת את היעד האישי! +30 מטבעות");
   expect(screen.getByText(/השלמת את האתגר השבועי/).textContent).toBe("⭐ השלמת את האתגר השבועי! +50 מטבעות");
+});
+
+// ---- Stage 7a, task 4: the trainee home greets by name and names the next workout's exercises (map v13; gap 7) ----
+test("S13: the greeting with the trainee's name, and the exercises of the next workout in order", async () => {
+  setAdapter(demoAdapter);
+  setSession({ role: "trainee", traineeID: "d0000000-0000-4000-8000-000000001001" });
+  const S = SCREENS.S13;
+  render(<NavContext.Provider value={nav("trainee")}><S /></NavContext.Provider>);
+  expect(await screen.findByRole("heading", { level: 1, name: `${greeting()}, נועה` })).toBeTruthy();
+  expect(screen.getByText(/ · /).textContent).toMatch(/^[^·]+( · [^·]+)+$/);
 });
 
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
@@ -356,6 +367,16 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
                        where r."TraineeID"='${NOA}' and r."status"='registered' and k."status"='active' and k."startsAt" > now()
                        order by k."startsAt" limit 1`);
     await shows(next.length ? new RegExp(escape(next[0][0])) : "לא נרשמת לשיעור");
+  }, 30000);
+
+  test("S13 (as Noa): the greeting has her name from the database, and the next workout names its exercises (map v13)", async () => {
+    open("S13", {}, "trainee");
+    const [[name]] = rows(`select "fullName" from trainees where "TraineeID"='${NOA}'`);
+    expect(await screen.findByRole("heading", { level: 1, name: `${greeting()}, ${name.replace(/\s*\(.*\)/, "")}` }, { timeout: 8000 })).toBeTruthy();
+    const exercises = rows(`select distinct e."exerciseName" from workout_items i join workouts w using ("WorkoutID") join programs p using ("ProgramID")
+                            join exercises e using ("ExerciseID") where p."TraineeID"='${NOA}' and p."isActive"`).map(([e]) => e);
+    const line = (await screen.findAllByText(/ · /, {}, { timeout: 8000 }))[0].textContent!;
+    for (const e of line.split(" · ")) expect(exercises).toContain(e);
   }, 30000);
 
   // ---- Stage 4d: S01, S03, S08, S12 and S19, and S06's note limit (stage 4d plan, task 11) ----

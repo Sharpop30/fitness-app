@@ -376,8 +376,11 @@ const actions: Record<string, H> = {
     const count = D.logs.filter((l) => l.TraineeID === tid).length;
     const nextClass = D.classes.filter((k) => k.status === "active" && k.startsAt >= D.TODAY && k.regs.some((r) => r.TraineeID === tid && r.status === "registered")).sort((a, b) => +a.startsAt - +b.startsAt)[0];
     const c = currentChallenge();
-    return ok({ reminder: D.settings.reminderText, streak: streak(tid), streakGapDays: num("streakGapDays"), coins: balance(tid),
-      nextWorkout: prog?.workouts.length ? prog.workouts[count % prog.workouts.length] : null,
+    const next = prog?.workouts.length ? prog.workouts[count % prog.workouts.length] : null;
+    // Map v13, as the server: the trainee's name, and the next workout with its exercises in order.
+    return ok({ traineeName: D.trainees.find((t) => t.TraineeID === tid)?.fullName ?? null,
+      reminder: D.settings.reminderText, streak: streak(tid), streakGapDays: num("streakGapDays"), coins: balance(tid),
+      nextWorkout: next && { WorkoutID: next.WorkoutID, workoutName: next.workoutName, exercises: next.items.map((i) => ex(i.ExerciseID).exerciseName) },
       nextClass: nextClass ? { startsAt: nextClass.startsAt, place: nextClass.place } : null,
       challenge: c && { challengeName: c.challengeName, ...challengeProgress(tid)! },
       offers: D.classes.flatMap((k) => k.regs.filter((r) => r.TraineeID === tid && r.status === "offered").map(() => ({ ClassID: k.ClassID, startsAt: k.startsAt, hours: num("spotOfferHours") }))) });
