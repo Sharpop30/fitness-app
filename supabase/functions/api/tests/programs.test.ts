@@ -123,6 +123,8 @@ Deno.test("rule 3 / UC1 b: a missing or non-positive target, an empty workout or
     [{ WorkoutID: U(41), workoutName: "A", items: [item({ ExerciseID: FOREIGN })] }],
     [{ WorkoutID: U(41), workoutName: "A", items: [] }],
     [],
+    // An exercise once per workout (code review, 7c): its sets are numbered per exercise.
+    [{ WorkoutID: U(41), workoutName: "A", items: [item({}), item({ WorkoutItemID: "new-2" })] }],
   ];
   for (const workouts of bad) {
     assertEquals(await ask(repo, coach, "S04", "save_program", { traineeID: TRAINEE, workouts }), fail("PROGRAM_INVALID"));
@@ -145,6 +147,15 @@ Deno.test("swap_exercise: an item outside the program or a foreign exercise is P
   const { repo } = world();
   assertEquals(await ask(repo, coach, "S04", "swap_exercise", { traineeID: TRAINEE, workoutItemID: "new-1", exerciseID: LUNGE }), fail("PROGRAM_INVALID"));
   assertEquals(await ask(repo, coach, "S04", "swap_exercise", { traineeID: TRAINEE, workoutItemID: U(51), exerciseID: FOREIGN }), fail("PROGRAM_INVALID"));
+});
+
+Deno.test("swap_exercise: an exercise another item of the same workout holds is PROGRAM_INVALID, and nothing changes", async () => {
+  const { repo, rows } = world();
+  const before = structuredClone(rows[0].workouts);
+  assertEquals(await ask(repo, coach, "S04", "swap_exercise", { traineeID: TRAINEE, workoutItemID: U(51), exerciseID: BENCH }), fail("PROGRAM_INVALID"));
+  assertEquals(rows[0].workouts, before);
+  // The same exercise in its own item is not a duplicate.
+  assertEquals((await ask(repo, coach, "S04", "swap_exercise", { traineeID: TRAINEE, workoutItemID: U(51), exerciseID: SQUAT })).ok, true);
 });
 
 Deno.test("rule 1 / UC1 e: a new program makes the previous one inactive, and it is kept", async () => {

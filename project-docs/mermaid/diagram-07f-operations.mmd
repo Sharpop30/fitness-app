@@ -11,6 +11,8 @@ erDiagram
         text actionName
         boolean isOk
         text errorCode "רשות"
+        uuid authUserID "רשות; מי ביקש, משתמש הזהות המאומת. גרסה 3"
+        uuid BusinessID "רשות; העסק שלו. בלי קשר, היומן נשאר. גרסה 3"
         timestamptz createdAt
     }
     SETTINGS {

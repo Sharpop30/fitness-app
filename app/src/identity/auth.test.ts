@@ -1,6 +1,6 @@
 // I01 Identity Connector, browser side, against its contract (stage 5 plan, task 6, decision 6; UC4 step 4, section 7).
 // Synthetic values, no network: the identity service is a stand-in.
-import { accessToken, renew, restoreSession, setPassword, signInWithPassword, signOutIdentity, signUp, takeSessionFromAddress } from "./auth";
+import { accessToken, ensureFresh, renew, RENEW_RETRY_MS, restoreSession, setPassword, signInWithPassword, signOutIdentity, signUp, takeSessionFromAddress } from "./auth";
 
 const KEY = "fitness-app.identity";
 const tokens = (n: number) => ({ access_token: `access-${n}`, refresh_token: `refresh-${n}`, expires_in: 3600 });
@@ -47,6 +47,39 @@ test("decision 6: a visit after reload is signed in again from the kept refresh 
   await vi.advanceTimersByTimeAsync(60_000); // a minute before the two minutes run out
   expect(accessToken()).toBe("access-3");
   expect(localStorage.getItem(KEY)).toBe("refresh-3");
+});
+
+// Code review in 7c, finding 3: the network drops while the token is renewed.
+test("a renewal with no answer keeps the sign-in and is tried again, and the token is renewed once the network is back", async () => {
+  localStorage.setItem(KEY, "refresh-1");
+  fetchMock.mockResolvedValueOnce(answer(200, { ...tokens(2), expires_in: 120 }));
+  vi.useFakeTimers();
+  expect(await restoreSession()).toBe("ok");
+  fetchMock.mockRejectedValueOnce(new TypeError("network down"));
+  await vi.advanceTimersByTimeAsync(60_000); // the timed renewal finds no network
+  expect([accessToken(), localStorage.getItem(KEY)]).toEqual(["access-2", "refresh-2"]); // still signed in
+  fetchMock.mockResolvedValueOnce(answer(200, tokens(3)));
+  await vi.advanceTimersByTimeAsync(RENEW_RETRY_MS); // tried again
+  expect(accessToken()).toBe("access-3");
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+});
+
+test("before a request, and when the network comes back, a token about to run out is renewed once; a fresh one is left alone", async () => {
+  localStorage.setItem(KEY, "refresh-1");
+  fetchMock.mockResolvedValueOnce(answer(200, tokens(2)));
+  expect(await restoreSession()).toBe("ok");
+  await ensureFresh(); // an hour left: nothing to do
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+
+  // The phone held the timer back: the token is about to run out when the site comes back.
+  fetchMock.mockResolvedValueOnce(answer(200, { ...tokens(3), expires_in: 30 }));
+  localStorage.setItem(KEY, "refresh-2");
+  expect(await renew()).toBe("ok"); // now 30 seconds left, under the minute
+  fetchMock.mockResolvedValue(answer(200, tokens(4)));
+  window.dispatchEvent(new Event("online"));
+  await Promise.all([ensureFresh(), ensureFresh()]); // and a request at the same moment: one renewal, not three
+  expect(accessToken()).toBe("access-4");
+  expect(fetchMock).toHaveBeenCalledTimes(3);
 });
 
 test("a refresh token the service no longer takes is forgotten; with none kept there is nothing to restore", async () => {

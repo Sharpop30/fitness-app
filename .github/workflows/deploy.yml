@@ -44,6 +44,15 @@ jobs:
           if grep -rlE 'service_role|sb_secret_|sbp_[A-Za-z0-9]{20,}' dist; then
             echo "A secret key pattern is in the built site" && exit 1
           fi
+          # A JWT key is base64, so its role is not in plain text: decode every one, and only "anon" may be there
+          # (stage 7c: the pattern above would miss a service_role JWT pasted by mistake).
+          grep -rhoE 'eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+' dist | sort -u | node -e '
+            const keys = require("fs").readFileSync(0, "utf8").split(/\s+/).filter(Boolean);
+            for (const k of keys) {
+              const role = JSON.parse(Buffer.from(k.split(".")[1], "base64url").toString()).role;
+              if (role !== "anon") { console.log(`A key with role "${role}" is in the built site`); process.exit(1); }
+            }
+            console.log(`${keys.length} key(s) in the built site, all anon`);'
       - uses: actions/upload-pages-artifact@v3
         with:
           path: app/dist

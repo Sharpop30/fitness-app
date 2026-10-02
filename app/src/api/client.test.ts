@@ -2,11 +2,11 @@
 // the screens in LIVE_SCREENS go to the one Endpoint once signed in with the identity service; every other screen stays
 // on the demo adapter.
 // Synthetic values, no network.
-import { accessToken, identityConfigured } from "../identity/auth";
+import { accessToken, ensureFresh, identityConfigured } from "../identity/auth";
 import { call, LIVE_SCREENS, now, setAdapter, setErrorTexts, setSession, uploadFile, type Envelope } from "./client";
 
 // identityConfigured: no identity service unless a test says so (map v13, the visitor's invite check).
-vi.mock("../identity/auth", () => ({ accessToken: vi.fn(() => "test-token"), signOutIdentity: vi.fn(), identityConfigured: vi.fn(() => false) }));
+vi.mock("../identity/auth", () => ({ accessToken: vi.fn(() => "test-token"), signOutIdentity: vi.fn(), identityConfigured: vi.fn(() => false), ensureFresh: vi.fn(async () => {}) }));
 
 const demoSeen: Envelope[] = [];
 const fetchMock = vi.fn(async (_url: string, init: RequestInit) => ({
@@ -23,6 +23,20 @@ beforeEach(() => {
   setSession({ role: "coach", traineeID: null });
 });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
+
+// Code review in 7c, finding 3: a token about to run out is renewed before the request leaves, not after a refusal, so
+// a write is never sent twice.
+test("a request to the Endpoint waits for the renewal of a token about to run out, then carries the new token", async () => {
+  let release!: () => void;
+  vi.mocked(ensureFresh).mockImplementationOnce(() => new Promise<void>((r) => { release = () => { vi.mocked(accessToken).mockReturnValue("renewed-token"); r(); }; }));
+  const pending = call("S04", "programs", "save_program", { traineeID: "x", workouts: [] });
+  await Promise.resolve();
+  expect(fetchMock).not.toHaveBeenCalled();
+  release();
+  await pending;
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect((fetchMock.mock.calls[0][1].headers as Record<string, string>).Authorization).toBe("Bearer renewed-token");
+});
 
 test("stage 4e puts all 27 screens on the Endpoint, the owner's S24 to S27 too", () => {
   expect([...LIVE_SCREENS].sort()).toEqual(Array.from({ length: 27 }, (_, i) => `S${String(i + 1).padStart(2, "0")}`));

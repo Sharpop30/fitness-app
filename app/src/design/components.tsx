@@ -53,7 +53,8 @@ function ThemeButton() {
 
 // The demo bar (finding 1, design stage decision 2): with the identity service, real data, and only payments are a demo;
 // on demo data, everything is sample data.
-export function Screen({ eyebrow, title, children, noBack }: { eyebrow: ReactNode; title: ReactNode; children: ReactNode; noBack?: boolean }) {
+// onBack: a view opened over the screen below it, in the same screen (S14's video), closes itself instead of leaving.
+export function Screen({ eyebrow, title, children, noBack, onBack }: { eyebrow: ReactNode; title: ReactNode; children: ReactNode; noBack?: boolean; onBack?: () => void }) {
   const nav = useNav();
   const tabs = nav.role === "coach" ? COACH_TABS : nav.role === "trainee" ? TRAINEE_TABS : nav.role === "owner" ? OWNER_TABS : [];
   return (
@@ -61,7 +62,7 @@ export function Screen({ eyebrow, title, children, noBack }: { eyebrow: ReactNod
       <div className="demo-bar">{identityConfigured() ? "תשלומים וחשבוניות הם הדגמה בלבד." : "גרסת דוגמה. כל הנתונים הם נתוני דוגמה, ותשלומים וחשבוניות הם הדגמה בלבד."}</div>
       <header className="hd">
         <div className="hd-top">
-          {nav.depth > 1 && !noBack ? <button className="back" onClick={nav.back}>{ICONS.back}<span>חזרה</span></button> : <span />}
+          {onBack || (nav.depth > 1 && !noBack) ? <button className="back" onClick={onBack ?? nav.back}>{ICONS.back}<span>חזרה</span></button> : <span />}
           <ThemeButton />
         </div>
         <div className="eyebrow">{eyebrow}</div>

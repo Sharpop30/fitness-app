@@ -34,7 +34,7 @@ export async function handle(
   const moduleName = envelope.module ?? "-";
   const actionName = envelope.action ?? "-";
   const record = (isOk: boolean, errorCode: string | null) =>
-    audit(repo, { requestID, caller, moduleName, actionName, isOk, errorCode });
+    audit(repo, { requestID, caller, moduleName, actionName, isOk, errorCode, authUserID: actor.authUserID ?? null, BusinessID: actor.businessID ?? null });
 
   // A request that could not be logged is not routed.
   if (!(await record(true, null))) return fail("AUDIT_FAILED");

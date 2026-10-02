@@ -4,7 +4,7 @@
 // screen stays on the demo adapter until its stage. Adding a screen is a line here, and the screen does not change.
 import { demoAdapter } from "../demo/adapter";
 import { TODAY } from "../demo/data";
-import { accessToken, identityConfigured, signOutIdentity } from "../identity/auth";
+import { accessToken, ensureFresh, identityConfigured, signOutIdentity } from "../identity/auth";
 
 // Stage 3: the first slice, S04 against programs (doc-module-map section 7).
 // Stage 4a: S02 and S05, whose actions are all built (stage 4a plan, decision 2).
@@ -84,6 +84,7 @@ const isRead = (action: string) => /^(get|list|check)_/.test(action);
 // all is sent once more after a short pause; a write never is, so nothing is saved twice.
 export const RETRY_MS = 800;
 export const endpointAdapter: Adapter = async (envelope) => {
+  await ensureFresh(); // a token about to run out is renewed first, so the request is not refused (code review, 7c)
   const once = await reach(envelope);
   if (once !== "no answer") return once;
   if (!isRead(envelope.action)) return { ok: false, data: null, error: { code: "STORAGE_UNAVAILABLE", message: "" } };

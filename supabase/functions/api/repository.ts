@@ -39,6 +39,9 @@ export interface AuditRecord {
   actionName: string;
   isOk: boolean;
   errorCode: string | null;
+  // Who asked (stage 7c, ERD v3): the verified identity user and their business; null when not known.
+  authUserID: string | null;
+  BusinessID: string | null;
 }
 
 export interface Exercise {

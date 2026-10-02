@@ -62,7 +62,8 @@ export default function S04ProgramBuilder({ traineeID, name }: { traineeID: stri
       <Screen eyebrow="החלפת תרגיל" title={exName(it)} noBack>
         <div className="muted">התרגיל החדש ייכנס לאותו מקום בסדר. התוצאות של התרגיל הקודם נשארות בהיסטוריה.</div>
         <div className="list">
-          {exs.data.filter((e: any) => e.ExerciseID !== it.ExerciseID).map((e: any) =>
+          {/* Once per workout (code review, 7c): not the exercise itself, nor one another item of this workout holds. */}
+          {exs.data.filter((e: any) => !workouts[view.w].items.some((x) => x.ExerciseID === e.ExerciseID)).map((e: any) =>
             <Row key={e.ExerciseID} title={e.exerciseName} sub={e.videoType ? "יש סרטון" : "אין סרטון"} onClick={() => pick(e.ExerciseID)} />)}
         </div>
         <Button secondary onClick={() => nav.go("S05", { create: true })}>+ תרגיל חדש משלי</Button>
@@ -97,8 +98,11 @@ export default function S04ProgramBuilder({ traineeID, name }: { traineeID: stri
     nav.toast("התוכנית נשמרה, והמתאמן כבר רואה אותה");
   };
   const addItem = (w: number) => {
+    // Starts at the first exercise not yet in this workout, as an exercise appears once per workout (code review, 7c).
+    const free = exs.data.find((e: any) => !workouts[w].items.some((x) => x.ExerciseID === e.ExerciseID));
+    if (!free) return;
     const next = structuredClone(workouts);
-    next[w].items.push({ WorkoutItemID: "new" + newId(), ExerciseID: exs.data[0].ExerciseID, targetSets: 3, targetReps: 10, targetWeight: 0 });
+    next[w].items.push({ WorkoutItemID: "new" + newId(), ExerciseID: free.ExerciseID, targetSets: 3, targetReps: 10, targetWeight: 0 });
     setWorkouts(next); setView({ kind: "swap", w, i: next[w].items.length - 1 });
   };
   const addWorkout = () => setWorkouts([...workouts, { WorkoutID: "w" + newId(), workoutName: "אימון " + "ABCDEFG"[workouts.length], items: [] }]);

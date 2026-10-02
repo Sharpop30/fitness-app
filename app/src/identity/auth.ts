@@ -18,9 +18,12 @@ interface Tokens { access_token: string; refresh_token: string; expires_in: numb
 
 const KEY = "fitness-app.identity";
 const EARLY_MS = 60_000; // renew a minute before the access token runs out
+export const RENEW_RETRY_MS = 15_000; // a renewal with no answer (the network) is tried again (code review, 7c)
 
 let token: string | null = null;
+let expiresAt = 0; // when the access token runs out, by this device's clock
 let timer: ReturnType<typeof setTimeout> | undefined;
+let renewing: Promise<Outcome> | null = null; // one renewal at a time: the refresh token is used once
 
 const env = () => ({ url: import.meta.env.VITE_SUPABASE_URL as string | undefined, key: import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined });
 
@@ -35,6 +38,7 @@ const store = {
 
 function keep(t: Tokens) {
   token = t.access_token;
+  expiresAt = Date.now() + t.expires_in * 1000;
   store.set(t.refresh_token);
   clearTimeout(timer);
   timer = setTimeout(() => { void renew(); }, Math.max(t.expires_in * 1000 - EARLY_MS, 5_000));
@@ -102,12 +106,29 @@ export function takeSessionFromAddress(): boolean {
 }
 
 // A new access token from the kept refresh token. "wrong" forgets a refresh token the service no longer accepts.
-export async function renew(): Promise<Outcome> {
-  const refresh = store.get();
-  if (!refresh) return "wrong";
-  const outcome = session(await ask("token?grant_type=refresh_token", { method: "POST", body: { refresh_token: refresh } }));
-  if (outcome === "wrong") signOutIdentity();
-  return outcome;
+// "unavailable" (no answer, code review in 7c) keeps the sign-in and tries again in a while, so a network that drops
+// during the renewal does not leave the site holding a token that runs out.
+export function renew(): Promise<Outcome> {
+  renewing ??= (async () => {
+    const refresh = store.get();
+    if (!refresh) return "wrong";
+    const outcome = session(await ask("token?grant_type=refresh_token", { method: "POST", body: { refresh_token: refresh } }));
+    if (outcome === "wrong") signOutIdentity();
+    if (outcome === "unavailable") { clearTimeout(timer); timer = setTimeout(() => { void renew(); }, RENEW_RETRY_MS); }
+    return outcome;
+  })().finally(() => { renewing = null; });
+  return renewing;
+}
+
+// Before a request, and when the network or the screen comes back: a token about to run out, or lost to a renewal with
+// no answer, is renewed first. A phone holds timers back while the site is in the background, so the timer alone is not
+// enough (code review, 7c).
+export async function ensureFresh(): Promise<void> {
+  if (store.get() && (!token || Date.now() > expiresAt - EARLY_MS)) await renew();
+}
+if (typeof window !== "undefined") {
+  window.addEventListener("online", () => { void ensureFresh(); });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") void ensureFresh(); });
 }
 
 // On opening the site: signed in already, from the last visit? (decision 6)
@@ -118,6 +139,7 @@ export const accessToken = () => token;
 export function signOutIdentity() {
   const was = token;
   token = null;
+  expiresAt = 0;
   clearTimeout(timer);
   store.clear();
   if (was) void ask("logout", { method: "POST", bearer: was }); // the service forgets it too; best effort

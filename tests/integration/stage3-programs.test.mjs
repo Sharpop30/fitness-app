@@ -16,7 +16,10 @@ test("every programs action and exercises.list_exercises passes the envelope and
 
   const list = await call(w.coachToken, "S04", "exercises", "list_exercises");
   assert.equal(list.ok, true);
-  assert.equal(list.data.filter((e) => e.isPrepared).length, 8); // the ready-made list; tests add exercises of the coach (map v13.1)
+  // The whole ready-made list; tests add exercises of the coach (map v13.1). Locally that is the demo eight and the real
+  // eight of 0018 (stage 7 plan, execution decision 2).
+  assert.equal(list.data.filter((e) => e.isPrepared).length, Number(psql(`select count(*) from exercises where "CoachID" is null`)));
+  assert.equal(list.data.filter((e) => e.isPrepared).length, 16);
   assert.deepEqual(lastAudit("S04", "list_exercises"), ["true:-", "true:-"]);
 
   const save = await call(w.coachToken, "S04", "programs", "save_program", { traineeID: a.traineeID, workouts: program.data.workouts });

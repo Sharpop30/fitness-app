@@ -65,6 +65,20 @@ Deno.test("allowed request is routed and leaves two audit rows with one requestI
   assertEquals(audits[1].isOk, true);
 });
 
+// Stage 7c (ERD v3, from the security review): both rows say who asked, the verified identity user and the business,
+// for a refused request too; with no identity user (a visitor) they stay empty.
+Deno.test("both audit rows carry the identity user and the business of the request, refused or not", async () => {
+  const { repo, audits } = fakeRepo({ rows: ["S12|settings|get_settings|coach"] });
+  const signedIn: Actor = { ...coach, authUserID: "user-1" };
+  await handle({ caller: "S12", module: "settings", action: "get_settings" }, signedIn, repo, modules);
+  await handle({ caller: "S12", module: "settings", action: "update_settings" }, signedIn, repo, modules); // no Registry row
+  assertEquals(audits.map((a) => [a.authUserID, a.BusinessID, a.isOk]),
+    [["user-1", "coach-1", true], ["user-1", "coach-1", true], ["user-1", "coach-1", true], ["user-1", "coach-1", false]]);
+  audits.length = 0;
+  await handle({ caller: "S12", module: "settings", action: "get_settings" }, { ...coach, businessID: null }, repo, modules);
+  assertEquals(audits.map((a) => [a.authUserID, a.BusinessID]), [[null, null], [null, null]]);
+});
+
 Deno.test("check order: missing caller, then invalid caller, then Registry", async () => {
   const { repo } = fakeRepo();
   assertEquals(await handle({ module: "settings", action: "get_settings" }, coach, repo, modules), fail("CALLER_MISSING"));
