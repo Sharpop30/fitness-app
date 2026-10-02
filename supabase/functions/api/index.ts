@@ -71,8 +71,10 @@ Deno.serve(async (req) => {
 
   const repo = createRepository();
   // Rejected before the Orchestrator, and still logged: request and reply share one requestID.
-  const refuse = async (code: "NOT_ALLOWED" | "CALLER_INVALID") => {
-    const entry = { requestID: crypto.randomUUID(), caller: envelope.caller ?? "-", moduleName: envelope.module ?? "-", actionName: envelope.action ?? "-" };
+  // authUserID: the verified identity user, when the refusal comes after it is known (a user with no role here).
+  const refuse = async (code: "NOT_ALLOWED" | "CALLER_INVALID", authUserID: string | null = null) => {
+    const entry = { requestID: crypto.randomUUID(), caller: envelope.caller ?? "-", moduleName: envelope.module ?? "-", actionName: envelope.action ?? "-",
+      authUserID, BusinessID: null };
     if (!(await audit(repo, { ...entry, isOk: true, errorCode: null }))) return reply(fail("AUDIT_FAILED"));
     await audit(repo, { ...entry, isOk: false, errorCode: code });
     return reply(fail(code));
@@ -89,7 +91,7 @@ Deno.serve(async (req) => {
       : user && isJoining(envelope) ? { role: "trainee", roles: ["trainee"], businessID: null, coachID: "", traineeID: null, authUserID: user.id, email: user.email }
       : !user && isVisiting(envelope) ? { role: "trainee", roles: ["trainee"], businessID: null, coachID: "", traineeID: null } // no identity user
       : null;
-    if (!actor) return await refuse("NOT_ALLOWED");
+    if (!actor) return await refuse("NOT_ALLOWED", user?.id ?? null);
     return reply(await handle(envelope, actor, repo, modules));
   } catch (e) {
     return reply(fail(e instanceof StorageUnavailable ? "STORAGE_UNAVAILABLE" : "UNEXPECTED_ERROR"));
