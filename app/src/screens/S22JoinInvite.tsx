@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { call, setErrorTexts } from "../api/client";
 import { Button, ErrorState, Field, LinkButton, Loading, Notice, Picture, Screen } from "../design/components";
-import { accessToken, identityConfigured, setPassword, signInWithPassword, signUp, takeSessionFromAddress } from "../identity/auth";
+import { accessToken, identityConfigured, PASSWORD_RULE, passwordOK, setPassword, signInWithPassword, signUp, takeSessionFromAddress } from "../identity/auth";
 import { useNav } from "../nav";
 
 export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken?: string; coachToken?: string }) {
@@ -55,11 +55,13 @@ export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken
   };
 
   const liveJoin = async () => {
+    // The password policy, said before anything is sent (stage 7 plan, task 12): no identity user for a password refused.
+    if (!passwordOK(password)) return nav.toast(`הסיסמה צריכה להיות ${PASSWORD_RULE}`);
     // Signed in already (from the email, or a try that failed after signing up): only the password. Otherwise sign up;
     // an address already signed up earlier signs in with its password instead.
     const outcome = fromEmail || accessToken() ? await setPassword(password)
       : await signUp(email.trim(), password).then((o) => (o === "wrong" ? signInWithPassword(email.trim(), password) : o));
-    if (outcome !== "ok") return nav.toast(outcome === "wrong" ? "המייל או הסיסמה לא נכונים" : "משהו השתבש. אפשר לנסות שוב");
+    if (outcome !== "ok") return nav.toast(outcome === "wrong" ? "המייל או הסיסמה לא נכונים" : outcome === "weak" ? `הסיסמה צריכה להיות ${PASSWORD_RULE}` : "משהו השתבש. אפשר לנסות שוב");
     const texts = await call("S22", "settings", "get_error_texts");
     if (texts.ok) setErrorTexts(texts.data);
     const r = await accept({ fullName: name });
@@ -86,7 +88,8 @@ export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken
       <Field label="שם"><input id="joinName" value={name} onChange={(e) => setName(e.target.value)} /></Field>
       {!fromEmail && <Field label="מייל"><input id="joinEmail" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>}
       {live
-        ? <Field label="סיסמה"><input id="joinPassword" type="password" autoComplete="new-password" value={password} onChange={(e) => setPass(e.target.value)} /></Field>
+        ? <><Field label="סיסמה"><input id="joinPassword" type="password" autoComplete="new-password" value={password} onChange={(e) => setPass(e.target.value)} /></Field>
+          <div className="muted small">{PASSWORD_RULE}</div></>
         : <Field label="סיסמה"><input id="joinPassword" type="password" defaultValue="" placeholder="בגרסת הדוגמה אין צורך בסיסמה" /></Field>}
       <Button onClick={() => (live ? liveJoin() : demoJoin())}>הצטרפות</Button>
       {!live && <LinkButton onClick={() => checkInvite({ expired: true })}>מה רואים כשההזמנה פגה?</LinkButton>}

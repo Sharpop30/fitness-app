@@ -6,7 +6,13 @@
 // Signing out forgets both.
 
 // ok: signed in. wrong: the service said no (a wrong password, an address already in use). unavailable: no answer (UC4 s.7).
-export type Outcome = "ok" | "wrong" | "unavailable";
+// "weak": a password the identity service refuses by its policy, 8 characters with letters and digits (stage 7 plan, task 12).
+export type Outcome = "ok" | "wrong" | "weak" | "unavailable";
+
+// The policy, as the identity service holds it (config.toml locally; the dashboard in the cloud), so the screen can say it first.
+// "letters_digits" counts English letters only: a password of Hebrew letters and digits is refused (checked, 02.10.2026).
+export const PASSWORD_RULE = "לפחות 8 תווים, עם אותיות באנגלית וספרות.";
+export const passwordOK = (p: string) => p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p);
 
 interface Tokens { access_token: string; refresh_token: string; expires_in: number }
 
@@ -53,7 +59,7 @@ const session = (r: { status: number; body: any } | null): Outcome => {
   if (!r) return "unavailable";
   if (r.status >= 500) return "unavailable";
   if (r.status < 300 && typeof r.body?.access_token === "string") { keep(r.body); return "ok"; }
-  return "wrong";
+  return r.body?.error_code === "weak_password" ? "weak" : "wrong";
 };
 
 export async function signInWithPassword(email: string, password: string): Promise<Outcome> {
@@ -69,7 +75,7 @@ export async function signUp(email: string, password: string): Promise<Outcome> 
 export async function setPassword(password: string): Promise<Outcome> {
   if (!token) return "wrong";
   const r = await ask("user", { method: "PUT", body: { password }, bearer: token });
-  return !r || r.status >= 500 ? "unavailable" : r.status < 300 ? "ok" : "wrong";
+  return !r || r.status >= 500 ? "unavailable" : r.status < 300 ? "ok" : r.body?.error_code === "weak_password" ? "weak" : "wrong";
 }
 
 // The invite email returns to the site signed in, with the tokens after the # (stage 5 plan, decision 2). Takes them, and
