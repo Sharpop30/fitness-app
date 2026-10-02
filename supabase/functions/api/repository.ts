@@ -192,6 +192,13 @@ export interface NewChallenge {
   weekStart: string;
 }
 
+// Map v13: what update_challenge may change; the type and the exercise never change (rule 11).
+export interface ChallengeChanges {
+  challengeName: string;
+  extraPrize: string | null;
+  targetValue: number;
+}
+
 export interface ChallengeCompletion {
   TraineeID: string;
   fullName: string;
@@ -323,6 +330,8 @@ export interface Repository {
   // Challenges (UC8), private to M08. createChallenge is null when the week already has one (CHALLENGE_EXISTS).
   getChallengeForWeek(coachID: string, weekStart: string): Promise<Challenge | null>;
   createChallenge(coachID: string, challenge: NewChallenge): Promise<string | null>;
+  // Map v13, rule 11: the name and prize, and the target only while no one completed (M08 checks; usecase-08 v3).
+  updateChallenge(challengeID: string, changes: ChallengeChanges): Promise<void>;
   listCompletions(challengeID: string): Promise<ChallengeCompletion[]>;
   addCompletion(challengeID: string, traineeID: string): Promise<string | null>;
   markPrizeDelivered(challengeID: string, traineeID: string): Promise<boolean>;
@@ -655,6 +664,10 @@ export function createRepository(): Repository {
     async createChallenge(coachID, challenge) {
       const res = await db.from("challenges").insert({ CoachID: coachID, ...challenge }).select('"ChallengeID"').single();
       return inserted(res) ? (res.data as { ChallengeID: string }).ChallengeID : null;
+    },
+
+    async updateChallenge(challengeID, changes) {
+      must(await db.from("challenges").update(changes).eq("ChallengeID", challengeID));
     },
 
     async listCompletions(challengeID) {

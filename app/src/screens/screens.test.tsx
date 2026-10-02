@@ -147,6 +147,27 @@ test("S13: the greeting with the trainee's name, and the exercises of the next w
   expect(screen.getByText(/ · /).textContent).toMatch(/^[^·]+( · [^·]+)+$/);
 });
 
+// ---- Stage 7a, task 5: "שינוי אתגר" on S09 (map v13, rule 11; usecase-08 v3; prototype 3.2) ----
+test("S09: the current challenge offers a change; after a completion only the name and the prize can change", async () => {
+  setAdapter(demoAdapter);
+  coachOpens("S09");
+  expect(await screen.findByRole("button", { name: "שינוי אתגר" })).toBeTruthy();
+  cleanup();
+  const toasts: string[] = [];
+  setSession({ role: "coach", traineeID: null });
+  const S = SCREENS.S09;
+  render(<NavContext.Provider value={{ ...nav("coach"), toast: (t: string) => toasts.push(t) }}><S edit /></NavContext.Provider>);
+  // The demo challenge already has one who completed it, as in the prototype: the target is read only.
+  expect(await screen.findByText(/כבר יש מי שהשלים את האתגר/)).toBeTruthy();
+  expect(document.getElementById("challengeEditTarget")).toBeNull();
+  fireEvent.change(document.getElementById("challengeEditName")!, { target: { value: "אתגר אחר (דוגמה)" } });
+  fireEvent.click(screen.getByRole("button", { name: "שמירת השינוי" }));
+  await waitFor(() => expect(toasts).toContain("האתגר עודכן"));
+  cleanup();
+  coachOpens("S09");
+  expect(await screen.findByText("אתגר אחר (דוגמה)")).toBeTruthy();
+});
+
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
 // Stage 4a: S02 and S05. Stage 4b: S04 (the stage 3 debt), and every screen that moved in stage 4b (plan, task 12).
 // Stage 4c: S11, S13 and S17. Stage 4d: S01, S03, S08, S12 and S19, and the note limit on S06.

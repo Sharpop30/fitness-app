@@ -270,6 +270,16 @@ const actions: Record<string, H> = {
       ExerciseID: (p.exerciseID as string) ?? null, extraPrize: (p.extraPrize as string) || "", weekStart: D.sundayOf(D.TODAY), completions: [] });
     return ok(null);
   },
+  // Map v13, rule 11, as the server: the name and prize always, the target only while no one completed.
+  "challenges.update_challenge": (p) => {
+    const c = currentChallenge();
+    if (!c) return fail("NOT_ALLOWED");
+    const name = p.challengeName === undefined ? c.challengeName : String(p.challengeName).trim();
+    const target = p.targetValue === undefined ? c.targetValue : Number(p.targetValue);
+    if (!name || !(target > 0) || (target !== c.targetValue && c.completions.length > 0)) return fail("CHALLENGE_INVALID");
+    Object.assign(c, { challengeName: name, targetValue: target, extraPrize: p.extraPrize === undefined ? c.extraPrize : String(p.extraPrize).trim() });
+    return ok(null);
+  },
   "challenges.mark_prize_delivered": (p) => { const c = currentChallenge()!.completions.find((x) => x.TraineeID === p.traineeID)!; c.prizeDeliveredAt = new Date(D.TODAY); return ok(null); },
   // ---- M09 payments, M10 invoices (demo: no card data anywhere) ----
   "payments.list_payments": (p, s) => {

@@ -86,3 +86,39 @@ test("edge b: a challenge of last week is closed: there is no current challenge"
   assert.equal((await call(past.trainees[0].token, "S20", "challenges", "get_current_challenge")).data, null);
   assert.equal((await saveWorkout(past.trainees[0])).data.feedback.challenge, false);
 });
+
+// ---- usecase-08 v3: changing this week's challenge (map v13, rule 11) ----
+const change = (token, payload) => call(token, "S09", "challenges", "update_challenge", payload);
+const current = (token) => call(token, "S09", "challenges", "get_current_challenge").then((r) => r.data);
+
+test("normal, v3: before anyone completed, the coach changes the name, the prize and the target, and trainees see it", async () => {
+  const x = await freshWorld(1);
+  assert.equal((await create(x.coachToken)).ok, true);
+  assert.equal((await change(x.coachToken, { challengeName: "שלושה אימונים (test)", extraPrize: "", targetValue: 3 })).ok, true);
+  const c = (await call(x.trainees[0].token, "S20", "challenges", "get_current_challenge")).data;
+  assert.deepEqual([c.challengeName, c.extraPrize, c.progress.target], ["שלושה אימונים (test)", null, 3]);
+});
+
+test("edge f, v3: after a completion only the name and prize change; the completion and the coins stay", async () => {
+  const x = await freshWorld(1);
+  assert.equal((await create(x.coachToken, { targetValue: 1 })).ok, true);
+  const [t] = x.trainees;
+  assert.equal((await saveWorkout(t)).data.feedback.challenge, true);
+  const coinsBefore = (await call(t.token, "S18", "coins", "get_balance")).data.balance;
+  const refused = await change(x.coachToken, { targetValue: 5 });
+  assert.equal(refused.error.code, "CHALLENGE_INVALID");
+  assert.equal((await change(x.coachToken, { challengeName: "אתגר מעודכן (test)", extraPrize: "כובע (test)" })).ok, true);
+  const c = await current(x.coachToken);
+  assert.deepEqual([c.challengeName, c.extraPrize, c.targetValue], ["אתגר מעודכן (test)", "כובע (test)", 1]);
+  assert.equal((await call(x.coachToken, "S09", "challenges", "list_completions")).data.length, 1);
+  assert.equal((await call(t.token, "S18", "coins", "get_balance")).data.balance, coinsBefore);
+});
+
+test("failure g, v3: no challenge this week, or a trainee asking, is refused, and nothing changes", async () => {
+  const x = await freshWorld(1);
+  assert.equal((await change(x.coachToken, { challengeName: "x (test)" })).error.code, "NOT_ALLOWED");
+  assert.equal((await create(x.coachToken)).ok, true);
+  assert.equal((await change(x.trainees[0].token, { challengeName: "x (test)" })).error.code, "ACTION_NOT_ALLOWED"); // no Registry row for a trainee
+  assert.equal((await change(x.coachToken, { targetValue: 0 })).error.code, "CHALLENGE_INVALID");
+  assert.equal((await current(x.coachToken)).challengeName, "שני אימונים (test)");
+});
