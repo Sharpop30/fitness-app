@@ -1,6 +1,6 @@
 # מפת המודולים: אפליקציית ניהול מאמן כושר
 
-**מעמד**: מאושר, 02.10.2026, גרסה 13.1 (מדוח שלב 7א, פער 3). גרסה 13, 01.10.2026: מתוכנית שלב 7, משימה 0 (הכרעות 2 עד 7). גרסה 12 אושרה 01.10.2026; גרסה 11 (בעל העסק) אושרה 30.09.2026. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
+**מעמד**: מאושר, 03.10.2026, גרסה 13.2 (מדוח שלב 7ג, פער 2). גרסה 13.1, 02.10.2026 (מדוח שלב 7א, פער 3). גרסה 13, 01.10.2026: מתוכנית שלב 7, משימה 0 (הכרעות 2 עד 7). גרסה 12 אושרה 01.10.2026; גרסה 11 (בעל העסק) אושרה 30.09.2026. לפי התבנית template-module-map (פריט 47), חלק ב, ופרומפט צעד 27; מתודולוגיית הכוכב (פריט 45); מנגנון הבנייה (פריט 46). ממלאת את סעיפים 14 עד 16 ב-PRD.
 
 ## 1. פתיח
 
@@ -10,7 +10,7 @@
 | השאלה האסטרטגית | **ליבה חדשה**. אין מערכת ארגונית קיימת להתחבר אליה. קוד FORM הוא מקור השראה בלבד (doc-work-plan, הכרעה 3.2) |
 | יעד ההרצה | **Deployment לענן**. מסד, זהות ואחסון קבצים ב-Supabase; השרת כ-Endpoint יחיד ב-Supabase Edge Function; האפליקציה כאתר נייד (PWA). אחסון האתר: **GitHub Pages** (הכרעת הצוות) |
 | המקורות | PRD גרסה 1.19; doc-mlp-scope גרסה 2; 12 סיפורי משתמש ו-12 מקרי שימוש (usecase-01 עד 12); doc-erd-conceptual ו-doc-erd-logical, גרסה 2; prototype-fitness-app גרסה 3.2; doc-stage-7-plan |
-| גרסה ותאריך | 13.1, 02.10.2026 |
+| גרסה ותאריך | 13.2, 03.10.2026 |
 
 ## 2. הליבה
 
@@ -39,6 +39,7 @@
 10. משתמש זהות אחד יכול להיות בעל עסק ומאמן באותו עסק, ועובר בין התפקידים בלי כניסה חוזרת.
 11. אתגר השבוע משתנה רק בשבוע שלו. השם והפרס הנוסף משתנים תמיד; ערך היעד משתנה רק כל עוד אף מתאמן לא השלים; הסוג והתרגיל אינם משתנים. מטבעות והשלמות שכבר נרשמו אינם משתנים (גרסה 13).
 12. תרגיל ברשימה המוכנה (בלי CoachID) משותף לכל המאמנים, והסרטון שלו נקבע בהקמה בלבד. מאמן מצרף סרטון רק לתרגיל שלו (גרסה 13).
+13. תרגיל מופיע פעם אחת לכל היותר באימון אחד, כי הסטים שלו ממוספרים לפי תרגיל. אותו תרגיל מותר באימונים שונים. שמירת תוכנית או החלפה שיוצרות כפילות מחזירות PROGRAM_INVALID (גרסה 13.2).
 
 ## 3. המודולים
 
@@ -105,7 +106,7 @@
 | :-- | :-- | :-- | :-- |
 | trainees | invite_trainee, check_invite, accept_invite, list_trainees, get_trainee_card, get_me | UC4, UC12 | מאמן; check_invite: כל מי שמחזיק בקישור, גם בלי כניסה, מ-S22 בלבד (גרסה 13); accept: בעל ההזמנה, משתמש מזוהה שעוד אינו מאמן או מתאמן; get_me: בעל עסק, מאמן ומתאמן, ו-home בשם המתאמן (גרסה 13); list_trainees: גם business, בשם בעל העסק. get_trainee_card מרכיב את הכרטיס דרך ה-Orchestrator מ-programs.get_active_program, coins.get_balance, payments.list_payments ו-progress.get_streak |
 | exercises | list_exercises, create_exercise, prepare_upload, attach_video, get_exercise | UC1, UC10 | מאמן; get: גם מתאמן. prepare_upload ו-attach_video: רק לתרגיל של המאמן, ולא לרשימה המוכנה (כלל 12, גרסה 13) |
-| programs | get_active_program, save_program, swap_exercise, start_new_program | UC1 | מאמן; get: גם המתאמן שלו |
+| programs | get_active_program, save_program, swap_exercise, start_new_program | UC1 | מאמן; get: גם המתאמן שלו. save_program ו-swap_exercise: תרגיל פעם אחת באימון (כלל 13, גרסה 13.2) |
 | results | log_workout, correct_result, list_results | UC3 | מתאמן (שלו); list: גם המאמן; list מ-business: ספירת אימונים לפי מתאמן בלבד, בלי הסטים (כלל 5) |
 | progress | get_progress_chart, detect_personal_records, get_streak | UC5, UC6, UC9 | מאמן, מתאמן (שלו); detect: feedback בלבד; get_streak: trainees, home, business בלבד |
 | feedback | build_feedback, add_coach_note, get_workout_notes | UC6 | build: results בלבד; note: מאמן |
@@ -375,3 +376,4 @@ done ו-total מחושבים ב-results. פנייה שנכשלה מחזירה א
 | 12 | 01.10.2026 | מדוח שלב 4ה, פערים 2 ו-4: שורת Registry אחת, M15 מול settings.get_settings; הקלט והתשובה של list_trainees, list_payments, list_upcoming_classes, manage_rewards, get_streak, list_completions ו-list_results כשבעל העסק פונה אליהן. ומהכרעת הצוות 01.10.2026: S12 לבעל העסק בלבד, כלל 9, והשורה של המאמן מול get_settings ב-S12 יוצאת משימוש. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, רשימת קודי השגיאה (28) וסדר הבנייה | הצוות |
 | 13 | 01.10.2026 | מתוכנית שלב 7, הכרעות 2 עד 7: כללים 11 (שינוי אתגר) ו-12 (סרטון ברשימה המוכנה), ותוספת לכלל 9 (המאמן מקבל רק את המפתחות של המסך); הפעולות challenges.update_challenge, trainees.check_invite ו-business.check_coach_invite; שבע שורות Registry (S05, S07, S08 ו-S11 מול settings.get_settings, S09 מול update_challenge, ו-S22 מול שתי פעולות הבדיקה) ועוד אחת, M13 מול trainees.get_me; בדיקת הזמנה לפני הרשמה, הבקשות היחידות בלי כניסה; goalCoins ו-challengeCoins בתשובת log_workout; traineeName ושמות התרגילים בבית המתאמן; NOT_ALLOWED על סרטון לתרגיל מוכן; שחזור סיסמה ב-I01; נוסחי ההסבר לבני אדם לפי אב הטיפוס 3.2; שלב 7 בשלושה תתי שלבים; ספק המייל ותוכן הרשימה המוכנה הוכרעו. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הטבלאות ורשימת קודי השגיאה (28) | הצוות |
 | 13.1 | 02.10.2026 | מדוח שלב 7א, פער 3: השדה isPrepared במבנה התשובה של exercises. מה לא השתנה: כל השאר | הצוות |
+| 13.2 | 03.10.2026 | מדוח שלב 7ג, פער 2 (סקירת הקוד, ממצא 2; הצוות בחר במניעה): כלל 13, תרגיל פעם אחת באימון, ב-save_program וב-swap_exercise, בקוד הקיים PROGRAM_INVALID. מה לא השתנה: הליבה, מבנה המעטפה, המודולים, הפעולות, הטבלאות, שורות ה-Registry ורשימת קודי השגיאה (28) | הצוות |
