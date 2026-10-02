@@ -1,0 +1,63 @@
+# The site to GitHub Pages (CLAUDE.md sections 3 and 5; stage 7 plan, tasks 17 and 24).
+# On every push to main: Node 20, npm ci, Vitest, the build with the three public values from Secrets, and a check that
+# no secret key reached the built files (CLAUDE.md section 9, test 8). The deploy job runs only once the team has
+# approved deploying and turned Pages on: the repository variable PAGES_ENABLED is "true" (stage 7c). Until then the
+# workflow only builds.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Vitest
+        run: npx vitest run
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+      - name: No secret key in the built files
+        run: |
+          if grep -rlE 'service_role|sb_secret_|sbp_[A-Za-z0-9]{20,}' dist; then
+            echo "A secret key pattern is in the built site" && exit 1
+          fi
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/dist
+
+  deploy:
+    needs: build
+    if: vars.PAGES_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
