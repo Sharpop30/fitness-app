@@ -262,9 +262,14 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
 
   test("S07: with no goal given, the exercise starts at the first one in the list, not a fixed demo ID", async () => {
     open("S07", { traineeID: NOA });
-    const [[first]] = rows(`select "ExerciseID" from exercises where "isActive" and not "isBodyweight" and ("CoachID" is null or "CoachID"='${COACH}')
+    // By name: locally the demo list and the real list of 0018 share names (stage 7 plan, execution decision 2).
+    const [[first]] = rows(`select "exerciseName" from exercises where "isActive" and not "isBodyweight" and ("CoachID" is null or "CoachID"='${COACH}')
                             order by "exerciseName" limit 1`);
-    await waitFor(() => expect((document.getElementById("goalExercise") as HTMLSelectElement).value).toBe(first), { timeout: 8000 });
+    await waitFor(() => {
+      const select = document.getElementById("goalExercise") as HTMLSelectElement;
+      expect(select.value).toBeTruthy();
+      expect(select.selectedOptions[0].textContent).toBe(first);
+    }, { timeout: 8000 });
   }, 30000);
 
   test("S09: this week's challenge and who completed it; a new exercise challenge lists the exercises", async () => {
@@ -342,14 +347,28 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
     const label: Record<string, string> = { youtube: "קישור יוטיוב", upload: "סרטון שהועלה", "": "אין סרטון" };
     const list = rows(`select "exerciseName", coalesce("videoType", ''), "ExerciseID" from exercises
                        where "isActive" and ("CoachID" is null or "CoachID" = '${COACH}')`);
-    for (const [name, type] of list) expect(await lineOf(name)).toContain(label[type]);
+    // Locally the demo list and the real list of 0018 share names (stage 7 plan, execution decision 2), so each name is
+    // checked against all its lines.
+    const lines = async (name: string) => (await screen.findAllByText(name, {}, { timeout: 8000 }))
+      .map((el) => (el.closest(".item, .tile, .side, .card") ?? el.parentElement!).textContent ?? "");
+    for (const [name, type] of list) expect((await lines(name)).some((line) => line.includes(label[type]))).toBe(true);
     cleanup();
-    const [name, , id] = list.find(([, type]) => type === "youtube")!;
+    const [name, , id] = list.find(([, type, id]) => type === "youtube" && id.startsWith("d0000000"))!;
     open("S05", { exerciseID: id });
     expect(await screen.findByRole("heading", { level: 1, name }, { timeout: 8000 })).toBeTruthy();
     // Stage 5: on the Endpoint the video plays. The demo links hold no video ("https://www.youtube.com/ (דוגמה)"),
-    // so the screen says it is not available (UC10 d); the real links come in stage 7.
+    // so the screen says it is not available (UC10 d).
     expect(await screen.findByText("הסרטון אינו זמין כרגע", {}, { timeout: 8000 })).toBeTruthy();
+    cleanup();
+    // Stage 7, task 20: every real link of the ready-made list (0018) plays in the player.
+    for (const [realName, , realID] of list.filter(([, type, id]) => type === "youtube" && id.startsWith("e7000000"))) {
+      open("S05", { exerciseID: realID });
+      expect(await screen.findByRole("heading", { level: 1, name: realName }, { timeout: 8000 })).toBeTruthy();
+      const [[url]] = rows(`select "videoUrl" from exercises where "ExerciseID" = '${realID}'`);
+      const frame = await screen.findByTitle("סרטון הדגמה", {}, { timeout: 8000 });
+      expect(frame.getAttribute("src")).toBe(`https://www.youtube-nocookie.com/embed/${new URL(url).searchParams.get("v")}`);
+      cleanup();
+    }
   }, 30000);
 
   // ---- Stage 5: an uploaded video plays on S05 and on S14 (stage 5 plan, task 7) ----
