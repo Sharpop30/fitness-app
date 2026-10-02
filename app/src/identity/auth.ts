@@ -78,6 +78,18 @@ export async function setPassword(password: string): Promise<Outcome> {
   return !r || r.status >= 500 ? "unavailable" : r.status < 300 ? "ok" : r.body?.error_code === "weak_password" ? "weak" : "wrong";
 }
 
+// Password reset from S23 (design review, finding 24; map v13, I01; stage 7 plan, task 14). The service mails a link
+// that returns here signed in, with "type=recovery" after the #. Any answer but an outage is "ok", and the screen says
+// "if the email is registered": the reply never tells whether an address has a user.
+export async function requestPasswordReset(email: string): Promise<Outcome> {
+  const back = `${window.location.origin}${import.meta.env.BASE_URL}`;
+  const r = await ask(`recover?redirect_to=${encodeURIComponent(back)}`, { method: "POST", body: { email } });
+  return !r || r.status >= 500 || r.status === 429 ? "unavailable" : "ok";
+}
+
+// The reset link brought the person back: S23 asks for the new password before anything else.
+export const isRecoveryReturn = () => new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery";
+
 // The invite email returns to the site signed in, with the tokens after the # (stage 5 plan, decision 2). Takes them, and
 // clears them from the address bar. True when there was a sign-in there.
 export function takeSessionFromAddress(): boolean {
