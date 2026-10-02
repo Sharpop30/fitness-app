@@ -1,5 +1,5 @@
 -- 0018: the real ready-made list (stage 7 plan, task 20; decision 10; module map section 8, "the ready-made list and its
--- YouTube links"). The eight exercises of the prototype, CoachID null, each with a YouTube link the team approves.
+-- YouTube links"). The eight exercises of the prototype, CoachID null, each with a YouTube link the team approved (02.10.2026).
 -- Own IDs (prefix e7000000), not marked "(דוגמה)", so demo.unload() leaves them. Locally they load beside the demo
 -- list (execution decision 2). Watch links only: the player in components.tsx reads watch?v=, youtu.be and embed.
 
