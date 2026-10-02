@@ -124,7 +124,17 @@ Deno.test("decision 6 / UC3 section 7: when feedback, coins and challenges fail,
   const r = await logWorkout(w, asPlanned());
   assertEquals(r.ok, true);
   assertEquals(w.logs.length, 1);
-  assertEquals(feedbackOf(r), { done: 3, total: 3, records: [], coins: 0, goal: false, challenge: false, text: "" });
+  assertEquals(feedbackOf(r), { done: 3, total: 3, records: [], coins: 0, goal: false, goalCoins: 0, challenge: false, challengeCoins: 0, text: "" });
+});
+
+Deno.test("map v13: the coins for the goal and for the challenge reach S15 in the feedback", async () => {
+  const w = world();
+  const r = await logWorkout(w, asPlanned(), WORKOUT, {
+    feedback: answering("M06", "build_feedback", ok({ records: [], text: "כל הכבוד" })),
+    coins: answering("M07", "award", ok({ coins: 10, goal: true, goalCoins: 30 })),
+    challenges: answering("M08", "check_progress", ok({ challenge: true, coins: 50 })),
+  });
+  assertEquals(feedbackOf(r), { done: 3, total: 3, records: [], coins: 10, goal: true, goalCoins: 30, challenge: true, challengeCoins: 50, text: "כל הכבוד" });
 });
 
 Deno.test("UC3 step 7: what feedback, coins and challenges answer reaches the trainee; one failing does not hide the others", async () => {
@@ -132,9 +142,9 @@ Deno.test("UC3 step 7: what feedback, coins and challenges answer reaches the tr
   const r = await logWorkout(w, asPlanned(), WORKOUT, {
     feedback: answering("M06", "build_feedback", ok({ records: ["סקוואט"], text: "שיא חדש" })),
     coins: answering("M07", "award", fail("STORAGE_UNAVAILABLE")),
-    challenges: answering("M08", "check_progress", ok({ challenge: true })),
+    challenges: answering("M08", "check_progress", ok({ challenge: true, coins: 50 })),
   });
-  assertEquals(feedbackOf(r), { done: 3, total: 3, records: ["סקוואט"], coins: 0, goal: false, challenge: true, text: "שיא חדש" });
+  assertEquals(feedbackOf(r), { done: 3, total: 3, records: ["סקוואט"], coins: 0, goal: false, goalCoins: 0, challenge: true, challengeCoins: 50, text: "שיא חדש" });
   assertEquals(w.logs.length, 1);
 });
 

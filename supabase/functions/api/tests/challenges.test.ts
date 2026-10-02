@@ -169,7 +169,7 @@ Deno.test("UC8 section 13: reaching the target marks the trainee complete and cr
   const w = world({ challenge: {}, logs: [log(TRAINEE, SUNDAY), log(TRAINEE, TODAY)] });
   assertEquals(await check(w), ok({ challenge: false }));
   w.logs.push(log(TRAINEE, TODAY));
-  assertEquals(await check(w), ok({ challenge: true }));
+  assertEquals(await check(w), ok({ challenge: true, coins: 50 }));
   assertEquals(w.completions.length, 1);
   // Execution decision 3: the credit's eventRef is the ChallengeCompletionID.
   assertEquals(w.ledger.map((x) => [x.eventType, x.eventRef, x.amount]), [["challenge", w.completions[0].ChallengeCompletionID, 50]]);
@@ -187,14 +187,14 @@ Deno.test("UC8 c: workouts of last week do not count toward this week's challeng
 Deno.test("execution decision 5: a bodyweight exercise challenge counts reps; an exempt trainee never completes", async () => {
   const w = world({ challenge: { challengeType: "exercise", ExerciseID: PUSHUP, targetValue: 20 },
     programs: [programWith(TRAINEE, [PUSHUP]), programWith(MAYA, [SQUAT])], logs: [log(TRAINEE, TODAY, [[PUSHUP, 21, 0]]), log(MAYA, TODAY, [[PUSHUP, 99, 0]])] });
-  assertEquals(await check(w), ok({ challenge: true }));
+  assertEquals(await check(w), ok({ challenge: true, coins: 50 }));
   assertEquals(await check(w, maya), ok({ challenge: false }));
 });
 
 Deno.test("UC8 d: when the credit fails, the completion is kept", async () => {
   const w = world({ challenge: {}, logs: [log(TRAINEE, TODAY), log(TRAINEE, TODAY), log(TRAINEE, TODAY)] });
   w.repo.getBusinessSettings = async () => ({}); // coinsChallenge missing: coins.award refuses
-  assertEquals(await check(w), ok({ challenge: true }));
+  assertEquals(await check(w), ok({ challenge: true, coins: 0 }));
   assertEquals([w.completions.length, w.ledger.length], [1, 0]);
 });
 

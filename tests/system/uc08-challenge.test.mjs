@@ -43,6 +43,8 @@ test("normal: reaching the target marks the trainee complete and credits coins, 
   assert.equal(first.data.feedback.challenge, false);
   const second = await saveWorkout(t);
   assert.equal(second.data.feedback.challenge, true);
+  // Map v13: S15 names the challenge coins, from SETTINGS.
+  assert.equal(second.data.feedback.challengeCoins, Number(psql(`select "settingValue" from settings where "BusinessID" = (select "BusinessID" from coaches where "CoachID" = '${w.coachID}') and "settingKey"='coinsChallenge'`)));
   const history = (await call(t.token, "S18", "coins", "get_balance")).data.history;
   assert.equal(history.filter((h) => h.eventType === "challenge").length, 1);
   // Once only: a third workout adds no completion and no credit.

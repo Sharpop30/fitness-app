@@ -183,16 +183,16 @@ const actions: Record<string, H> = {
     D.logs.push(log);
     // feedback, coins and challenge, as the server does through the Orchestrator (UC3 step 7, UC6, UC7, UC8)
     const coins = award(tid, "workout", log.WorkoutLogID);
-    let goal = false;
+    let goal = false, goalCoins = 0, challengeCoins = 0; // map v13: the goal and challenge coins, as the server
     const g = D.goals.find((x) => x.TraineeID === tid && x.status === "active");
-    if (g && Math.max(0, ...sets.filter((x) => x.ExerciseID === g.ExerciseID).map((x) => x.weight)) >= g.targetWeight) { g.status = "achieved"; award(tid, "goal", g.PersonalGoalID); goal = true; }
+    if (g && Math.max(0, ...sets.filter((x) => x.ExerciseID === g.ExerciseID).map((x) => x.weight)) >= g.targetWeight) { g.status = "achieved"; goalCoins = award(tid, "goal", g.PersonalGoalID); goal = true; }
     let challenge = false;
     const c = currentChallenge(), cp = challengeProgress(tid);
     if (c && cp && !cp.exempt && cp.value >= cp.target && !c.completions.some((x) => x.TraineeID === tid)) {
-      c.completions.push({ TraineeID: tid, completedAt: new Date(D.TODAY), prizeDeliveredAt: null }); award(tid, "challenge", c.ChallengeID + tid); challenge = true;
+      c.completions.push({ TraineeID: tid, completedAt: new Date(D.TODAY), prizeDeliveredAt: null }); challengeCoins = award(tid, "challenge", c.ChallengeID + tid); challenge = true;
     }
     const done = sets.filter((x) => x.isDone).length;
-    return ok({ WorkoutLogID: log.WorkoutLogID, feedback: { done, total: sets.length, records, coins, goal, challenge,
+    return ok({ WorkoutLogID: log.WorkoutLogID, feedback: { done, total: sets.length, records, coins, goal, goalCoins, challenge, challengeCoins,
       text: records.length ? D.settings.feedbackRecord : done === sets.length ? D.settings.feedbackFull : D.settings.feedbackPartial } });
   },
   "results.correct_result": (p, s) => {

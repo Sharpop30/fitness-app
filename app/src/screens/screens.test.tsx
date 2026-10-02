@@ -127,6 +127,15 @@ test("rule 8: a value not set yet shows no number, and S08 says it is not set", 
   setAdapter(demoAdapter);
 });
 
+// ---- Stage 7a, task 3: S15 names the goal and challenge coins from the reply (map v13; design-stage gap 3) ----
+test("S15: the goal and the challenge lines with their coins, as in the prototype", async () => {
+  const S = SCREENS.S15;
+  const feedback = { done: 9, total: 9, records: [], coins: 10, goal: true, goalCoins: 30, challenge: true, challengeCoins: 50, text: "כל הכבוד" };
+  render(<NavContext.Provider value={nav("trainee")}><S feedback={feedback} /></NavContext.Provider>);
+  expect(screen.getByText(/השגת את היעד האישי/).textContent).toBe("🎯 השגת את היעד האישי! +30 מטבעות");
+  expect(screen.getByText(/השלמת את האתגר השבועי/).textContent).toBe("⭐ השלמת את האתגר השבועי! +50 מטבעות");
+});
+
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
 // Stage 4a: S02 and S05. Stage 4b: S04 (the stage 3 debt), and every screen that moved in stage 4b (plan, task 12).
 // Stage 4c: S11, S13 and S17. Stage 4d: S01, S03, S08, S12 and S19, and the note limit on S06.
