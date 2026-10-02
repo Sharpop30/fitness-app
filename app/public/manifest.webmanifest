@@ -1,0 +1,17 @@
+{
+  "name": "אפליקציית ניהול מאמן כושר",
+  "short_name": "מאמן כושר",
+  "description": "תוכניות, תשלומים ומעקב במקום אחד, למאמן ולמתאמנים שלו.",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "/fitness-app/",
+  "scope": "/fitness-app/",
+  "display": "standalone",
+  "background_color": "#f4f4f1",
+  "theme_color": "#f4f4f1",
+  "icons": [
+    { "src": "/fitness-app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/fitness-app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/fitness-app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

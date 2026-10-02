@@ -76,21 +76,42 @@ export function setAdapter(a: Adapter) {
 // That includes an answer that is not the Endpoint's reply, like the gateway's 503 when the function is down (design
 // stage, acceptance review): the screen shows the error with a retry instead of loading forever.
 const isReply = (r: any): r is Reply => r !== null && typeof r === "object" && typeof r.ok === "boolean";
+// A read: an action that changes nothing (get_, list_, check_). Only a read is sent again (stage 7 plan, decision 9).
+const isRead = (action: string) => /^(get|list|check)_/.test(action);
+// Stage 7b, task 16: twice, the first request after a break failed in the cloud and left no Audit row, so it never
+// reached the function; a cold function answered in about a second and logged (checked 02.10.2026). The likely cause is
+// the browser: the first request after the computer wakes, before the network is back. A read that got no answer at
+// all is sent once more after a short pause; a write never is, so nothing is saved twice.
+export const RETRY_MS = 800;
 export const endpointAdapter: Adapter = async (envelope) => {
+  const once = await reach(envelope);
+  if (once !== "no answer") return once;
+  if (!isRead(envelope.action)) return { ok: false, data: null, error: { code: "STORAGE_UNAVAILABLE", message: "" } };
+  await new Promise((r) => setTimeout(r, RETRY_MS));
+  const again = await reach(envelope);
+  return again === "no answer" ? { ok: false, data: null, error: { code: "STORAGE_UNAVAILABLE", message: "" } } : again;
+};
+
+async function reach(envelope: Envelope): Promise<Reply | "no answer"> {
   const unavailable: Reply<null> = { ok: false, data: null, error: { code: "STORAGE_UNAVAILABLE", message: "" } };
+  let res: Response;
   try {
-    const res = await fetch(import.meta.env.VITE_API_URL as string, {
+    res = await fetch(import.meta.env.VITE_API_URL as string, {
       method: "POST",
       // A visitor (map v13) sends no identity token at all.
       headers: { "Content-Type": "application/json", ...(accessToken() ? { Authorization: `Bearer ${accessToken()}` } : {}) },
       body: JSON.stringify(envelope),
     });
+  } catch {
+    return "no answer"; // the network: nothing reached the Endpoint
+  }
+  try {
     const body = await res.json();
     return isReply(body) ? body : unavailable;
   } catch {
-    return unavailable;
+    return unavailable; // an answer that is not the Endpoint's reply, like the gateway's 503 (design stage)
   }
-};
+}
 
 export const isLive = (caller: string) => LIVE_SCREENS.has(caller) && !!import.meta.env.VITE_API_URL && accessToken() !== null;
 

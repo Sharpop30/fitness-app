@@ -2,26 +2,29 @@
 // the Registry and the Audit Log, against the LOCAL stack with the demo data. Read-only except one save of the same program.
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { ANON, API, call, demoTokens, ID, lastAudit, psql } from "../system/demo-users.mjs";
+import { ANON, API, call, demoTokens, freshWorld, ID, lastAudit, psql } from "../system/demo-users.mjs";
 
 let t;
 before(async () => { t = await demoTokens(); });
 
 test("every programs action and exercises.list_exercises passes the envelope and leaves two audit rows", async () => {
-  const program = await call(t.coach, "S04", "programs", "get_active_program", { traineeID: ID.noa });
+  // A fresh world "(test)" (stage 7b, task 15): Noa's demo program changes across runs of other tests on one database.
+  const w = await freshWorld(1), [a] = w.trainees;
+  const program = await call(w.coachToken, "S04", "programs", "get_active_program", { traineeID: a.traineeID });
   assert.equal(program.ok, true);
   assert.deepEqual(lastAudit("S04", "get_active_program"), ["true:-", "true:-"]);
 
-  const list = await call(t.coach, "S04", "exercises", "list_exercises");
+  const list = await call(w.coachToken, "S04", "exercises", "list_exercises");
   assert.equal(list.ok, true);
-  assert.equal(list.data.length, 8);
+  assert.equal(list.data.filter((e) => e.isPrepared).length, 8); // the ready-made list; tests add exercises of the coach (map v13.1)
   assert.deepEqual(lastAudit("S04", "list_exercises"), ["true:-", "true:-"]);
 
-  const save = await call(t.coach, "S04", "programs", "save_program", { traineeID: ID.noa, workouts: program.data.workouts });
+  const save = await call(w.coachToken, "S04", "programs", "save_program", { traineeID: a.traineeID, workouts: program.data.workouts });
   assert.deepEqual(save, { ok: true, data: null, error: null });
   assert.deepEqual(lastAudit("S04", "save_program"), ["true:-", "true:-"]);
 
-  const swap = await call(t.coach, "S04", "programs", "swap_exercise", { traineeID: ID.noa, workoutItemID: ID.noaBenchItem, exerciseID: ID.bench });
+  const second = program.data.workouts[0].items[1].WorkoutItemID; // the second item, sortOrder 1
+  const swap = await call(w.coachToken, "S04", "programs", "swap_exercise", { traineeID: a.traineeID, workoutItemID: second, exerciseID: ID.bench });
   assert.equal(swap.ok, true);
   assert.equal(swap.data.sortOrder, 1);
   assert.deepEqual(lastAudit("S04", "swap_exercise"), ["true:-", "true:-"]);

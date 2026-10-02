@@ -6,7 +6,13 @@
 // Signing out forgets both.
 
 // ok: signed in. wrong: the service said no (a wrong password, an address already in use). unavailable: no answer (UC4 s.7).
-export type Outcome = "ok" | "wrong" | "unavailable";
+// "weak": a password the identity service refuses by its policy, 8 characters with letters and digits (stage 7 plan, task 12).
+export type Outcome = "ok" | "wrong" | "weak" | "unavailable";
+
+// The policy, as the identity service holds it (config.toml locally; the dashboard in the cloud), so the screen can say it first.
+// "letters_digits" counts English letters only: a password of Hebrew letters and digits is refused (checked, 02.10.2026).
+export const PASSWORD_RULE = "לפחות 8 תווים, עם אותיות באנגלית וספרות.";
+export const passwordOK = (p: string) => p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p);
 
 interface Tokens { access_token: string; refresh_token: string; expires_in: number }
 
@@ -53,7 +59,7 @@ const session = (r: { status: number; body: any } | null): Outcome => {
   if (!r) return "unavailable";
   if (r.status >= 500) return "unavailable";
   if (r.status < 300 && typeof r.body?.access_token === "string") { keep(r.body); return "ok"; }
-  return "wrong";
+  return r.body?.error_code === "weak_password" ? "weak" : "wrong";
 };
 
 export async function signInWithPassword(email: string, password: string): Promise<Outcome> {
@@ -69,8 +75,20 @@ export async function signUp(email: string, password: string): Promise<Outcome> 
 export async function setPassword(password: string): Promise<Outcome> {
   if (!token) return "wrong";
   const r = await ask("user", { method: "PUT", body: { password }, bearer: token });
-  return !r || r.status >= 500 ? "unavailable" : r.status < 300 ? "ok" : "wrong";
+  return !r || r.status >= 500 ? "unavailable" : r.status < 300 ? "ok" : r.body?.error_code === "weak_password" ? "weak" : "wrong";
 }
+
+// Password reset from S23 (design review, finding 24; map v13, I01; stage 7 plan, task 14). The service mails a link
+// that returns here signed in, with "type=recovery" after the #. Any answer but an outage is "ok", and the screen says
+// "if the email is registered": the reply never tells whether an address has a user.
+export async function requestPasswordReset(email: string): Promise<Outcome> {
+  const back = `${window.location.origin}${import.meta.env.BASE_URL}`;
+  const r = await ask(`recover?redirect_to=${encodeURIComponent(back)}`, { method: "POST", body: { email } });
+  return !r || r.status >= 500 || r.status === 429 ? "unavailable" : "ok";
+}
+
+// The reset link brought the person back: S23 asks for the new password before anything else.
+export const isRecoveryReturn = () => new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery";
 
 // The invite email returns to the site signed in, with the tokens after the # (stage 5 plan, decision 2). Takes them, and
 // clears them from the address bar. True when there was a sign-in there.

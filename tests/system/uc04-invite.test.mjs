@@ -54,7 +54,7 @@ test("norm step 7: the coach opens the trainee card and sees program, coins, str
   const w = await freshWorld(1);
   const [a] = w.trainees;
   workoutDaysAgo(a.traineeID, a.workoutID, 0, [[ID.squat, 5, 60]]);
-  psql(`insert into coin_transactions ("TraineeID","eventType","eventRef","amount") values ('${a.traineeID}','workout','card-test',10)`);
+  psql(`insert into coin_transactions ("TraineeID","eventType","eventRef","amount") values ('${a.traineeID}','workout','card-test-${a.traineeID}',10)`);
   paymentRequest(w.coachID, a.traineeID, { paid: true, daysAgo: 5 });
   paymentRequest(w.coachID, a.traineeID);
   await call(w.coachToken, "S07", "coins", "set_personal_goal", { traineeID: a.traineeID, exerciseID: ID.squat, targetWeight: 80 });

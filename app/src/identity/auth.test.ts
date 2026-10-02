@@ -89,3 +89,11 @@ test("signing up a new address signs in at once (email confirmation off, stage 5
   expect(await signUp("new2@example.com", "pw")).toBe("wrong");
   expect(accessToken()).toBe(null);
 });
+
+// Stage 7 plan, task 12 (security review 1, finding 5): the screen says the policy before sending, as the service holds it.
+test("the password policy: 8 characters or more, with a letter and a digit", async () => {
+  const { passwordOK } = await import("./auth");
+  for (const ok of ["abcd1234", "A1b2C3d4", "סיסמה12a"]) expect(passwordOK(ok)).toBe(true);
+  // Hebrew letters are not letters to the identity service ("letters_digits" is English letters).
+  for (const weak of ["abc123", "abcdefgh", "12345678", "סיסמה12345", ""]) expect(passwordOK(weak)).toBe(false);
+});
