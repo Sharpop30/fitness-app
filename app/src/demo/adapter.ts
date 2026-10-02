@@ -86,6 +86,8 @@ const actions: Record<string, H> = {
     D.invites.push({ InviteID: uid(), inviteeName: name, status: "open", expiresAt: D.addDays(D.TODAY, num("inviteValidDays")), TraineeID });
     return ok({ link: `https://sharpop30.github.io/fitness-app/#join-${TraineeID} (דוגמה)` });
   },
+  // Map v13: the invite is checked when S22 opens. On demo data, Ron's open invite; "expired" shows the other answer.
+  "trainees.check_invite": (p) => (p.expired ? fail("INVITE_EXPIRED") : ok({ fullName: D.invites[0]?.inviteeName ?? "" })),
   "trainees.accept_invite": (p) => {
     if (p.expired) return fail("INVITE_EXPIRED");
     const t = D.trainees.find((x) => x.TraineeID === (p.traineeID ?? "d0000000-0000-4000-8000-000000001004"));
@@ -421,6 +423,7 @@ const actions: Record<string, H> = {
     D.coachInvites.push({ CoachInviteID: uid(), inviteeName: name, status: "open", expiresAt: D.addDays(D.TODAY, num("inviteValidDays")) });
     return ok({ link: `https://sharpop30.github.io/fitness-app/?coach=${uid()} (דוגמה)` });
   },
+  "business.check_coach_invite": (p) => (p.expired ? fail("INVITE_EXPIRED") : ok({ fullName: D.coachInvites[0]?.inviteeName ?? "" })),
   "business.accept_coach_invite": (p) => (p.expired ? fail("INVITE_EXPIRED") : ok({ CoachID: D.coach.CoachID })),
   "business.get_coach_card": (p) => {
     if (p.coachID !== D.coach.CoachID) return fail("NOT_ALLOWED");

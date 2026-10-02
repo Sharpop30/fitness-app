@@ -113,3 +113,16 @@ test("f: a coach who tries to change settings gets ACTION_NOT_ALLOWED, logged, a
   assert.deepEqual(lastAudit("S12", "update_settings"), ["true:-", "false:ACTION_NOT_ALLOWED"]);
   assert.equal(psql(`select "settingValue" from settings where "BusinessID"='${w.businessID}' and "settingKey"='pricePack10'`), before);
 });
+
+// ---- usecase-12 v3 step 6 and a: the coach's invite is checked before signing up, with no sign-in (map v13) ----
+test("6 and a, v3: a visitor's open coach link gives the name; an expired or a trainee's link is INVITE_EXPIRED; no identity user", async () => {
+  const check = (token) => call(null, "S22", "business", "check_coach_invite", { token });
+  const users = psql(`select count(*) from auth.users`);
+  const open = coachTokenOf((await call(w.coachToken, "S25", "business", "invite_coach", { name: "נעמה (test)", channel: "link" })).data.link);
+  assert.deepEqual((await check(open)).data, { fullName: "נעמה (test)" });
+  const late = coachTokenOf((await call(w.coachToken, "S25", "business", "invite_coach", { name: "מאוחר (test)", channel: "link" })).data.link);
+  psql(`update coach_invites set "expiresAt" = now() - interval '1 minute' where token = '${late}'`);
+  assert.equal((await check(late)).error?.code, "INVITE_EXPIRED");
+  assert.equal((await check("e".repeat(48))).error?.code, "INVITE_EXPIRED");
+  assert.equal(psql(`select count(*) from auth.users`), users);
+});

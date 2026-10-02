@@ -2,10 +2,11 @@
 // the screens in LIVE_SCREENS go to the one Endpoint once signed in with the identity service; every other screen stays
 // on the demo adapter.
 // Synthetic values, no network.
-import { accessToken } from "../identity/auth";
+import { accessToken, identityConfigured } from "../identity/auth";
 import { call, LIVE_SCREENS, now, setAdapter, setErrorTexts, setSession, uploadFile, type Envelope } from "./client";
 
-vi.mock("../identity/auth", () => ({ accessToken: vi.fn(() => "test-token"), signOutIdentity: vi.fn() }));
+// identityConfigured: no identity service unless a test says so (map v13, the visitor's invite check).
+vi.mock("../identity/auth", () => ({ accessToken: vi.fn(() => "test-token"), signOutIdentity: vi.fn(), identityConfigured: vi.fn(() => false) }));
 
 const demoSeen: Envelope[] = [];
 const fetchMock = vi.fn(async (_url: string, init: RequestInit) => ({
@@ -106,6 +107,20 @@ test("without the identity service, S22 and S23 stay on the demo adapter", async
   setSession({ role: "coach", traineeID: null }); // a demo sign-in: no token when the session opens
   for (const caller of ["S22", "S23"]) expect((await call(caller, "settings", "get_error_texts")).data.from).toBe("demo");
   expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("map v13: a visitor's invite check from S22 goes to the Endpoint with no identity token; nothing else does", async () => {
+  vi.mocked(accessToken).mockReturnValue(null);
+  vi.mocked(identityConfigured).mockReturnValue(true);
+  setSession(null);
+  fetchMock.mockResolvedValue({ json: async () => ({ ok: true, data: { fullName: "רון (test)" }, error: null }) } as never);
+  expect((await call("S22", "trainees", "check_invite", { token: "t" })).data).toEqual({ fullName: "רון (test)" });
+  expect(fetchMock.mock.calls[0][1].headers).toEqual({ "Content-Type": "application/json" }); // no Authorization at all
+  fetchMock.mockClear();
+  await call("S22", "trainees", "accept_invite", { token: "t" });
+  await call("S01", "home", "get_coach_home");
+  expect(fetchMock).not.toHaveBeenCalled();
+  vi.mocked(identityConfigured).mockReturnValue(false);
 });
 
 test("I04: a file goes straight to the upload address; a refusal or no network is UPLOAD_FAILED with its text", async () => {

@@ -168,6 +168,21 @@ test("S09: the current challenge offers a change; after a completion only the na
   expect(await screen.findByText("אתגר אחר (דוגמה)")).toBeTruthy();
 });
 
+// ---- Stage 7a, task 6: an invite that expired shows its message instead of the form (map v13; prototype 3.2) ----
+test("S22: an expired invite shows the message and no form; the demo invite opens with the form", async () => {
+  vi.stubEnv("VITE_SUPABASE_URL", ""); // the demo: no identity service, whatever app/.env.local holds
+  setAdapter(demoAdapter);
+  setSession(null);
+  const S = SCREENS.S22;
+  render(<NavContext.Provider value={nav("trainee")}><S /></NavContext.Provider>);
+  expect(await screen.findByRole("button", { name: "הצטרפות" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "מה רואים כשההזמנה פגה?" }));
+  expect(await screen.findByText("ההזמנה כבר לא בתוקף. אפשר לבקש הזמנה חדשה")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "הצטרפות" })).toBeNull();
+  expect(document.getElementById("joinPassword")).toBeNull();
+  vi.unstubAllEnvs();
+});
+
 // ---- Content against the database: the screens on the local Endpoint (run with LIVE_DB=1, local stack up) ----
 // Stage 4a: S02 and S05. Stage 4b: S04 (the stage 3 debt), and every screen that moved in stage 4b (plan, task 12).
 // Stage 4c: S11, S13 and S17. Stage 4d: S01, S03, S08, S12 and S19, and the note limit on S06.

@@ -298,6 +298,8 @@ export interface Repository {
   createInvite(coachID: string, invite: NewInvite): Promise<string>;
   // UC4 step 5 (stage 5 plan, decision 3): the trainee is created and the invite closed together.
   acceptInvite(token: string, authUserID: string, fullName: string, email: string): Promise<JoinResult>;
+  // Map v13: the name of an open invite still valid, before signing up; null for any other (expired, used, unknown).
+  inviteByToken(token: string): Promise<string | null>;
   // I04 File Storage (UC10 steps 4, 5; map v9). The addresses are the ones the browser reaches. null: the store refused.
   createVideoUploadAddress(path: string): Promise<string | null>;
   // The viewing address of an uploaded file, or null when it is not in the bucket (the upload did not finish).
@@ -371,6 +373,8 @@ export interface Repository {
   createCoachInvite(businessID: string, invite: NewInvite): Promise<string>;
   // UC12 step 7: the coach is created with the invite's business and the invite closed together.
   acceptCoachInvite(token: string, authUserID: string, fullName: string, email: string): Promise<CoachJoinResult>;
+  // Map v13: as inviteByToken, for a coach's invite.
+  coachInviteByToken(token: string): Promise<string | null>;
   // The business of an active trainee, through their coach; null when there is none.
   businessOfTrainee(traineeID: string): Promise<string | null>;
   // How many workouts each trainee saved since the given time: counts only, no sets (rule 5, the owner).
@@ -841,6 +845,18 @@ export function createRepository(): Repository {
       const row = must(await db.from("coach_invites").insert({ BusinessID: businessID, ...invite }).select('"CoachInviteID"').single()) as
         { CoachInviteID: string };
       return row.CoachInviteID;
+    },
+
+    async inviteByToken(token) {
+      const row = must(await db.from("invites").select('"inviteeName"').eq("token", token).eq("status", "open")
+        .gt("expiresAt", new Date().toISOString()).maybeSingle()) as { inviteeName: string } | null;
+      return row?.inviteeName ?? null;
+    },
+
+    async coachInviteByToken(token) {
+      const row = must(await db.from("coach_invites").select('"inviteeName"').eq("token", token).eq("status", "open")
+        .gt("expiresAt", new Date().toISOString()).maybeSingle()) as { inviteeName: string } | null;
+      return row?.inviteeName ?? null;
     },
 
     async acceptCoachInvite(token, authUserID, fullName, email) {
