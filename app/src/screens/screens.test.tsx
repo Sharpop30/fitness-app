@@ -2,7 +2,7 @@
 // And, with LIVE_DB=1 against the LOCAL stack, the screens on the Endpoint show what the database holds
 // (stage 4a plan, task 8; stage 4b plan, task 12; stage 3 report, the content-check debt).
 import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
-import { setAdapter, setSession, type Envelope } from "../api/client";
+import { call, setAdapter, setSession, type Envelope } from "../api/client";
 import { demoAdapter } from "../demo/adapter";
 import { accessToken } from "../identity/auth";
 import { SCREENS } from "../App";
@@ -107,8 +107,16 @@ test("S08: each payment type with its price from SETTINGS", async () => {
 
 test("S05, S07 and S11: the video limit and the coins from SETTINGS, never a fixed number", async () => {
   setAdapter(demoAdapter);
-  coachOpens("S05", { exerciseID: "d0000000-0000-4000-8000-000000002001" });
+  // The coach's own exercise: the ready-made list takes no video from a coach (map v13, rule 12).
+  setSession({ role: "coach", traineeID: null });
+  const own = (await call("S05", "exercises", "create_exercise", { name: "פרפר" })).data.ExerciseID;
+  coachOpens("S05", { exerciseID: own });
   expect(await screen.findByRole("button", { name: "העלאת סרטון מהטלפון (עד דקה ועד 50 מגה-בייט)" })).toBeTruthy();
+  cleanup();
+  // A ready-made exercise shows its video and why there is nothing to add (usecase-10 v3, alternative f; prototype 3.2).
+  coachOpens("S05", { exerciseID: "d0000000-0000-4000-8000-000000002001" });
+  expect(await screen.findByText(/התרגיל מהרשימה המוכנה, והסרטון שלו משותף לכל המאמנים בעסק/)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "צירוף קישור" })).toBeNull();
   cleanup();
   coachOpens("S07", { traineeID: "d0000000-0000-4000-8000-000000001001" });
   expect(await screen.findByText(/מתקבלים 30 מטבעות/)).toBeTruthy();
@@ -503,8 +511,10 @@ describe.skipIf(!process.env.LIVE_DB)("live on the local stack: the screens on t
   }, 30000);
 
   test("S05 and S07: a new video limit and new goal coins in SETTINGS show on the screens", async () => {
+    signedIn("coach");
+    const own = (await call("S05", "exercises", "create_exercise", { name: "פרפר (test)" })).data.ExerciseID; // rule 12: the coach's own
     await withSetting("videoMaxSeconds", "90", async () => {
-      open("S05", { exerciseID: "d0000000-0000-4000-8000-000000002001" });
+      open("S05", { exerciseID: own });
       await shows(/העלאת סרטון מהטלפון \(עד 90 שניות ועד \d+ מגה-בייט\)/);
     });
     cleanup();

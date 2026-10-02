@@ -24,7 +24,7 @@ function Exercises() {
       <Load state={list}>{(data: any[]) => data.length
         ? <div className="list">
           {data.map((e: any) => <Row key={e.ExerciseID} title={e.exerciseName} onClick={() => nav.go("S05", { exerciseID: e.ExerciseID })}
-            sub={e.videoType === "youtube" ? "קישור יוטיוב" : e.videoType === "upload" ? "סרטון שהועלה" : "אין סרטון"} />)}
+            sub={(e.isPrepared ? "מהרשימה המוכנה · " : "") + (e.videoType === "youtube" ? "קישור יוטיוב" : e.videoType === "upload" ? "סרטון שהועלה" : "אין סרטון")} />)}
         </div>
         : <Empty title="עוד אין תרגילים" />}
       </Load>
@@ -96,6 +96,18 @@ function OneExercise({ exerciseID }: { exerciseID: string }) {
     }
   };
   const live = isLive("S05");
+  // Map v13, rule 12 (usecase-10 v3, alternative f; prototype 3.2): a ready-made exercise shows its video and why there
+  // is nothing to add; its video is set at setup and shared by every coach of the business.
+  if (one.data?.isPrepared) {
+    const e = one.data;
+    return (
+      <Screen eyebrow="מהרשימה המוכנה" title={e.exerciseName}>
+        {live && e.videoUrl ? <VideoPlayer key={e.videoUrl} videoType={e.videoType} videoUrl={e.videoUrl} />
+          : e.videoType ? <div className="video">▶︎ סרטון הדגמה מיוטיוב (קישור לדוגמה)</div> : <Empty title="לתרגיל עוד אין סרטון" />}
+        <div className="muted small">התרגיל מהרשימה המוכנה, והסרטון שלו משותף לכל המאמנים בעסק. לסרטון משלך אפשר ליצור תרגיל חדש.</div>
+      </Screen>
+    );
+  }
   return (
     <Screen eyebrow="תרגיל" title={one.data?.exerciseName ?? ""}>
       <Load state={one}>{(e: any) => <>

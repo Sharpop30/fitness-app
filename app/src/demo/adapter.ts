@@ -113,14 +113,17 @@ const actions: Record<string, H> = {
   "exercises.create_exercise": (p) => {
     const name = String(p.name ?? "").trim();
     if (!name) return fail("PROGRAM_INVALID");
-    const e = { ExerciseID: "e" + uid(), exerciseName: name, isBodyweight: !!p.isBodyweight, videoType: null, videoUrl: null };
+    const e = { ExerciseID: "e" + uid(), exerciseName: name, isBodyweight: !!p.isBodyweight, videoType: null, videoUrl: null, isPrepared: false };
     D.exercises.push(e);
     return ok(e);
   },
   // Stage 5 (map v9): on demo data there is no store; the demo upload goes through.
-  "exercises.prepare_upload": (p) => (Number(p.seconds) > num("videoMaxSeconds") ? fail("VIDEO_TOO_LONG") : ok({ uploadUrl: "demo", path: "demo" })),
+  // Map v13, rule 12, as the server: no video of a coach on the ready-made list.
+  "exercises.prepare_upload": (p) => (ex(String(p.exerciseID))?.isPrepared ? fail("NOT_ALLOWED")
+    : Number(p.seconds) > num("videoMaxSeconds") ? fail("VIDEO_TOO_LONG") : ok({ uploadUrl: "demo", path: "demo" })),
   "exercises.attach_video": (p) => {
     const e = ex(String(p.exerciseID));
+    if (e.isPrepared) return fail("NOT_ALLOWED");
     if (p.kind === "upload") {
       if (Number(p.seconds) > num("videoMaxSeconds")) return fail("VIDEO_TOO_LONG");
       e.videoType = "upload"; e.videoUrl = "upload (דוגמה)"; return ok(e);

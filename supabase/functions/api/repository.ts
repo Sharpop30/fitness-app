@@ -47,6 +47,8 @@ export interface Exercise {
   isBodyweight: boolean;
   videoType: string | null;
   videoUrl: string | null;
+  // Map v13, rule 12: from the ready-made list (no CoachID), shared by every coach; its video is set at setup only.
+  isPrepared?: boolean;
 }
 
 export interface ProgramItem {
@@ -462,8 +464,8 @@ export function createRepository(): Repository {
 
     async listExercisesForCoach(coachID) {
       // The ready-made list (no coach) and the coach's own, active only.
-      return must(await db.from("exercises").select('"ExerciseID","exerciseName","isBodyweight","videoType","videoUrl"')
-        .eq("isActive", true).or(`CoachID.is.null,CoachID.eq.${coachID}`).order("exerciseName")) as Exercise[];
+      return (must(await db.from("exercises").select(EXERCISE_FIELDS)
+        .eq("isActive", true).or(`CoachID.is.null,CoachID.eq.${coachID}`).order("exerciseName")) as (Exercise & { CoachID: string | null })[]).map(toExercise);
     },
 
     async getActiveProgram(traineeID) {
@@ -545,19 +547,20 @@ export function createRepository(): Repository {
     },
 
     async createExercise(coachID, exerciseName, isBodyweight) {
-      return must(await db.from("exercises").insert({ CoachID: coachID, exerciseName, isBodyweight })
-        .select(EXERCISE_FIELDS).single()) as Exercise;
+      return toExercise(must(await db.from("exercises").insert({ CoachID: coachID, exerciseName, isBodyweight })
+        .select(EXERCISE_FIELDS).single()) as Exercise & { CoachID: string | null });
     },
 
     async getExerciseInReach(exerciseID, coachID) {
-      return must(await db.from("exercises").select(EXERCISE_FIELDS)
-        .eq("ExerciseID", exerciseID).eq("isActive", true).or(`CoachID.is.null,CoachID.eq.${coachID}`).maybeSingle()) as Exercise | null;
+      const row = must(await db.from("exercises").select(EXERCISE_FIELDS)
+        .eq("ExerciseID", exerciseID).eq("isActive", true).or(`CoachID.is.null,CoachID.eq.${coachID}`).maybeSingle()) as (Exercise & { CoachID: string | null }) | null;
+      return row ? toExercise(row) : null;
     },
 
     async attachVideo(exerciseID, videoType, videoUrl) {
       // One video per exercise: a new one replaces the old in every program (UC10 alternative e).
-      return must(await db.from("exercises").update({ videoType, videoUrl }).eq("ExerciseID", exerciseID)
-        .select(EXERCISE_FIELDS).single()) as Exercise;
+      return toExercise(must(await db.from("exercises").update({ videoType, videoUrl }).eq("ExerciseID", exerciseID)
+        .select(EXERCISE_FIELDS).single()) as Exercise & { CoachID: string | null });
     },
 
     async logWorkout(traineeID, workoutID, sets) {
@@ -581,7 +584,7 @@ export function createRepository(): Repository {
 
     async getExercisesByID(exerciseIDs) {
       if (exerciseIDs.length === 0) return [];
-      return must(await db.from("exercises").select(EXERCISE_FIELDS).in("ExerciseID", exerciseIDs)) as Exercise[];
+      return (must(await db.from("exercises").select(EXERCISE_FIELDS).in("ExerciseID", exerciseIDs)) as (Exercise & { CoachID: string | null })[]).map(toExercise);
     },
 
     async addCoachNote(workoutLogID, coachID, noteText) {
@@ -951,7 +954,9 @@ function toChallenge({ exercises, ...c }: ChallengeRow): Challenge {
   return { ...c, targetValue: Number(c.targetValue), exerciseName: exercises?.exerciseName ?? null };
 }
 
-const EXERCISE_FIELDS = '"ExerciseID","exerciseName","isBodyweight","videoType","videoUrl"';
+const EXERCISE_FIELDS = '"ExerciseID","exerciseName","isBodyweight","videoType","videoUrl","CoachID"';
+// The CoachID stays in the Repository: what leaves is whether the exercise is from the ready-made list (map v13, rule 12).
+const toExercise = ({ CoachID, ...e }: Exercise & { CoachID: string | null }): Exercise => ({ ...e, isPrepared: CoachID === null });
 
 const LOG_FIELDS = '"WorkoutLogID","TraineeID","WorkoutID","performedAt",' +
   'workouts("workoutName",workout_items("ExerciseID","sortOrder")),' +

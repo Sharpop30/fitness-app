@@ -11,7 +11,7 @@ import { type Actor, type Exercise, StorageUnavailable } from "../repository.ts"
 import { fakeRepo, U } from "./fake-repo.ts";
 
 const COACH = U(1), OTHER_COACH = U(2);
-const SQUAT = U(21), FOREIGN = U(24);
+const SQUAT = U(21), OWN = U(22), FOREIGN = U(24); // SQUAT is from the ready-made list; OWN is the coach's (map v13, rule 12)
 const coach: Actor = { role: "coach", businessID: COACH, coachID: COACH, traineeID: null };
 const trainee: Actor = { role: "trainee", businessID: COACH, coachID: COACH, traineeID: U(11) };
 
@@ -20,10 +20,12 @@ function world(opts: { settings?: Record<string, string>; storageDown?: boolean;
   const issued: string[] = [];        // the paths an upload address was given for
   const list: (Exercise & { coach: string | null })[] = [
     { ExerciseID: SQUAT, exerciseName: "סקוואט", isBodyweight: false, videoType: null, videoUrl: null, coach: null },
+    { ExerciseID: OWN, exerciseName: "פרפר", isBodyweight: false, videoType: null, videoUrl: null, coach: COACH },
     { ExerciseID: FOREIGN, exerciseName: "של מאמן אחר", isBodyweight: false, videoType: null, videoUrl: null, coach: OTHER_COACH },
   ];
   const down = () => { if (opts.storageDown) throw new StorageUnavailable("db down"); };
-  const strip = ({ coach: _, ...e }: Exercise & { coach: string | null }): Exercise => e;
+  // As the Repository: the coach stays inside, and only whether it is from the ready-made list leaves (map v13).
+  const strip = ({ coach, ...e }: Exercise & { coach: string | null }): Exercise => ({ ...e, isPrepared: coach === null });
   const { repo } = fakeRepo({
     getBusinessSettings: async () => (down(), opts.settings ?? { videoMaxSeconds: "60", videoMaxMegabytes: "50" }),
     createVideoUploadAddress: async (path) => opts.bucketDown ? null : (issued.push(path), `https://store.test/upload/${path}?token=t`),
@@ -64,12 +66,12 @@ Deno.test("gap 7: an exercise with no name is PROGRAM_INVALID, and nothing is sa
   const w = world();
   assertEquals(await ask(w, "create_exercise", { name: "   " }), fail("PROGRAM_INVALID"));
   assertEquals(await ask(w, "create_exercise", {}), fail("PROGRAM_INVALID"));
-  assertEquals(w.list.length, 2);
+  assertEquals(w.list.length, 3);
 });
 
 Deno.test("get_exercise: the coach and the coach's trainee get an exercise in reach; another coach's is NOT_ALLOWED", async () => {
   const w = world();
-  assertEquals((await ask(w, "get_exercise", { exerciseID: SQUAT })).data, { ExerciseID: SQUAT, exerciseName: "סקוואט", isBodyweight: false, videoType: null, videoUrl: null });
+  assertEquals((await ask(w, "get_exercise", { exerciseID: SQUAT })).data, { ExerciseID: SQUAT, exerciseName: "סקוואט", isBodyweight: false, isPrepared: true, videoType: null, videoUrl: null });
   assertEquals((await ask(w, "get_exercise", { exerciseID: SQUAT }, trainee, "S14")).ok, true);
   assertEquals(await ask(w, "get_exercise", { exerciseID: FOREIGN }), fail("NOT_ALLOWED"));
   assertEquals(await ask(w, "get_exercise", { exerciseID: "" }), fail("NOT_ALLOWED"));
@@ -77,19 +79,19 @@ Deno.test("get_exercise: the coach and the coach's trainee get an exercise in re
 
 Deno.test("UC10 step 5 / alternative e: a YouTube link is saved to the exercise, and a new one replaces it", async () => {
   const w = world();
-  const first = await ask(w, "attach_video", { exerciseID: SQUAT, kind: "link", url: "https://www.youtube.com/watch?v=abc" });
+  const first = await ask(w, "attach_video", { exerciseID: OWN, kind: "link", url: "https://www.youtube.com/watch?v=abc" });
   assertEquals([(first.data as Exercise).videoType, (first.data as Exercise).videoUrl], ["youtube", "https://www.youtube.com/watch?v=abc"]);
-  await ask(w, "attach_video", { exerciseID: SQUAT, kind: "link", url: " https://youtu.be/xyz " });
-  assertEquals(w.list[0].videoUrl, "https://youtu.be/xyz");
+  await ask(w, "attach_video", { exerciseID: OWN, kind: "link", url: " https://youtu.be/xyz " });
+  assertEquals(w.list[1].videoUrl, "https://youtu.be/xyz");
 });
 
 Deno.test("decision 8: a link that is not YouTube is VIDEO_INVALID, and the exercise is unchanged", async () => {
   const w = world();
   for (const url of ["https://vimeo.com/1", "https://youtube.com.evil.io/x", "ftp://youtube.com/x", "youtube", "", 7]) {
-    assertEquals(await ask(w, "attach_video", { exerciseID: SQUAT, kind: "link", url }), fail("VIDEO_INVALID"));
+    assertEquals(await ask(w, "attach_video", { exerciseID: OWN, kind: "link", url }), fail("VIDEO_INVALID"));
   }
-  assertEquals(await ask(w, "attach_video", { exerciseID: SQUAT, kind: "gif" }), fail("VIDEO_INVALID"));
-  assertEquals([w.list[0].videoType, w.list[0].videoUrl], [null, null]);
+  assertEquals(await ask(w, "attach_video", { exerciseID: OWN, kind: "gif" }), fail("VIDEO_INVALID"));
+  assertEquals([w.list[1].videoType, w.list[1].videoUrl], [null, null]);
 });
 
 Deno.test("rule 5: a video for another coach's exercise is NOT_ALLOWED", async () => {
@@ -98,19 +100,19 @@ Deno.test("rule 5: a video for another coach's exercise is NOT_ALLOWED", async (
   assertEquals(w.list[1].videoUrl, null);
 });
 
-const file = { exerciseID: SQUAT, contentType: "video/mp4", seconds: 45, megabytes: 12 };
+const file = { exerciseID: OWN, contentType: "video/mp4", seconds: 45, megabytes: 12 };
 
 Deno.test("UC10 steps 3-5: prepare_upload gives an address for a path of this coach and exercise, and attach_video keeps the file", async () => {
   const w = world();
   const r = await ask(w, "prepare_upload", file);
   assertEquals(r.ok, true);
   const { uploadUrl, path } = r.data as { uploadUrl: string; path: string };
-  assert(path.startsWith(`${COACH}/${SQUAT}/`) && path.endsWith(".mp4"), path);
+  assert(path.startsWith(`${COACH}/${OWN}/`) && path.endsWith(".mp4"), path);
   assertEquals(uploadUrl, `https://store.test/upload/${path}?token=t`);
   w.uploaded.add(path); // the browser sent the file
-  const a = await ask(w, "attach_video", { exerciseID: SQUAT, kind: "upload", path });
+  const a = await ask(w, "attach_video", { exerciseID: OWN, kind: "upload", path });
   assertEquals(a.ok, true);
-  assertEquals([w.list[0].videoType, w.list[0].videoUrl], ["upload", `https://store.test/public/${path}`]);
+  assertEquals([w.list[1].videoType, w.list[1].videoUrl], ["upload", `https://store.test/public/${path}`]);
 });
 
 Deno.test("UC10 a and section 7: longer than videoMaxSeconds, or larger than videoMaxMegabytes, is VIDEO_TOO_LONG, with no address", async () => {
@@ -138,23 +140,33 @@ Deno.test("UC10 c: a store that refuses, or a file that never arrived, is UPLOAD
   assertEquals(await ask(world({ bucketDown: true }), "prepare_upload", file), fail("UPLOAD_FAILED"));
   const w = world();
   const { path } = (await ask(w, "prepare_upload", file)).data as { path: string };
-  assertEquals(await ask(w, "attach_video", { exerciseID: SQUAT, kind: "upload", path }), fail("UPLOAD_FAILED"));
-  assertEquals([w.list[0].videoType, w.list[0].videoUrl], [null, null]);
+  assertEquals(await ask(w, "attach_video", { exerciseID: OWN, kind: "upload", path }), fail("UPLOAD_FAILED"));
+  assertEquals([w.list[1].videoType, w.list[1].videoUrl], [null, null]);
 });
 
 Deno.test("rule 5: an upload only to the coach's own path of this exercise, and not for another coach's exercise", async () => {
   const w = world();
-  for (const path of [undefined, `${OTHER_COACH}/${SQUAT}/a.mp4`, `${COACH}/${FOREIGN}/a.mp4`, `${COACH}/${SQUAT}/../x.mp4`]) {
+  for (const path of [undefined, `${OTHER_COACH}/${OWN}/a.mp4`, `${COACH}/${FOREIGN}/a.mp4`, `${COACH}/${OWN}/../x.mp4`]) {
     if (path) w.uploaded.add(path);
-    assertEquals(await ask(w, "attach_video", { exerciseID: SQUAT, kind: "upload", path }), fail("NOT_ALLOWED"));
+    assertEquals(await ask(w, "attach_video", { exerciseID: OWN, kind: "upload", path }), fail("NOT_ALLOWED"));
   }
   assertEquals(await ask(w, "prepare_upload", { ...file, exerciseID: FOREIGN }), fail("NOT_ALLOWED"));
-  assertEquals(w.list[0].videoUrl, null);
+  assertEquals(w.list[1].videoUrl, null);
 });
 
 Deno.test("a database that fails gives STORAGE_UNAVAILABLE, without throwing", async () => {
   const w = world({ storageDown: true });
   assertEquals(await ask(w, "create_exercise", { name: "פרפר" }), fail("STORAGE_UNAVAILABLE"));
   assertEquals(await ask(w, "get_exercise", { exerciseID: SQUAT }), fail("STORAGE_UNAVAILABLE"));
-  assertEquals(await ask(w, "attach_video", { exerciseID: SQUAT, kind: "link", url: "https://youtu.be/x" }), fail("STORAGE_UNAVAILABLE"));
+  assertEquals(await ask(w, "attach_video", { exerciseID: OWN, kind: "link", url: "https://youtu.be/x" }), fail("STORAGE_UNAVAILABLE"));
+});
+
+// ---- map v13, rule 12 (usecase-10 v3, alternative f): no video of a coach on the ready-made list ----
+Deno.test("UC10 f: a coach cannot add or upload a video to a ready-made exercise; their own exercise takes one", async () => {
+  const w = world();
+  assertEquals(await ask(w, "attach_video", { exerciseID: SQUAT, kind: "link", url: "https://youtu.be/abc" }), fail("NOT_ALLOWED"));
+  assertEquals(await ask(w, "prepare_upload", { exerciseID: SQUAT, contentType: "video/mp4", seconds: 10, megabytes: 1 }), fail("NOT_ALLOWED"));
+  assertEquals([w.list[0].videoType, w.issued.length], [null, 0]);
+  assertEquals((await ask(w, "attach_video", { exerciseID: OWN, kind: "link", url: "https://youtu.be/abc" })).ok, true);
+  assertEquals((await ask(w, "get_exercise", { exerciseID: SQUAT })).data, { ExerciseID: SQUAT, exerciseName: "סקוואט", isBodyweight: false, isPrepared: true, videoType: null, videoUrl: null });
 });

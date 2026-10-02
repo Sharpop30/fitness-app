@@ -3,7 +3,7 @@
 // It writes: two invites, one exercise (set inactive at the end, so the demo list stays at eight), and one workout for Noa.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { ANON, API, call, demoTokens, EMAIL, ID, lastAudit, psql, strangerCoachToken, tokenOf } from "../system/demo-users.mjs";
+import { ANON, API, call, demoTokens, EMAIL, ID, ownExercise, lastAudit, psql, strangerCoachToken, tokenOf } from "../system/demo-users.mjs";
 
 let t;
 let stranger;
@@ -79,9 +79,10 @@ test("S05: create_exercise, attach_video and get_exercise pass the envelope; the
 });
 
 test("S05: a link that is not YouTube is VIDEO_INVALID, and a long upload is VIDEO_TOO_LONG, against the SETTINGS value (prepare_upload from stage 5)", async () => {
-  const bad = await call(t.coach, "S05", "exercises", "attach_video", { exerciseID: ID.squat, kind: "link", url: "https://vimeo.com/1" });
+  const own = await ownExercise(t.coach); // map v13, rule 12: the ready-made list takes no video from a coach
+  const bad = await call(t.coach, "S05", "exercises", "attach_video", { exerciseID: own, kind: "link", url: "https://vimeo.com/1" });
   assert.equal(bad.error.code, "VIDEO_INVALID");
-  const long = await call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: ID.squat, contentType: "video/mp4", seconds: 120, megabytes: 10 });
+  const long = await call(t.coach, "S05", "exercises", "prepare_upload", { exerciseID: own, contentType: "video/mp4", seconds: 120, megabytes: 10 });
   assert.equal(long.error.code, "VIDEO_TOO_LONG");
   assert.deepEqual(trail("S05", "prepare_upload"), [
     "S05>exercises.prepare_upload:true:-", "M02>settings.get_settings:true:-", "M02>settings.get_settings:true:-",

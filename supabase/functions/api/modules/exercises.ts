@@ -65,7 +65,7 @@ export const exercises: ModuleDef = {
     // UC10 steps 3, 4, alternatives a, b (map v9). The screen checked the file already; this checks again.
     async prepare_upload(ctx, payload) {
       const exercise = await exerciseInReach(ctx, payload);
-      if (!exercise) return fail("NOT_ALLOWED");
+      if (!exercise || exercise.isPrepared) return fail("NOT_ALLOWED"); // map v13, rule 12: the coach's own exercise only
       const type = typeof payload.contentType === "string" ? payload.contentType.toLowerCase() : "";
       if (!/^video\/[a-z0-9.+-]+$/.test(type) || !positive(payload.seconds) || !positive(payload.megabytes)) return fail("VIDEO_INVALID");
 
@@ -83,7 +83,9 @@ export const exercises: ModuleDef = {
 
     async attach_video(ctx, payload) {
       const exercise = await exerciseInReach(ctx, payload);
-      if (!exercise) return fail("NOT_ALLOWED");
+      // Map v13, rule 12 (usecase-10 v3, alternative f): the ready-made list is shared by every coach of the business, and
+      // its videos are set at setup only. A coach who wants a video of their own makes an exercise of their own.
+      if (!exercise || exercise.isPrepared) return fail("NOT_ALLOWED");
 
       if (payload.kind === "link") {
         if (!isYouTubeLink(payload.url)) return fail("VIDEO_INVALID"); // UC10 step 2
