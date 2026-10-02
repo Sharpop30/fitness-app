@@ -1,6 +1,7 @@
 // C01 Endpoint: the single entry point. Every screen posts { caller, module, action, payload, lang }
 // here and gets { ok, data, error } back, always as JSON.
 import { audit } from "./audit.ts";
+import { corsFor } from "./cors.ts";
 import { type Envelope, fail, type Reply } from "./errors.ts";
 import { handle, type Modules } from "./orchestrator.ts";
 import { isScreenCaller } from "./registry.ts";
@@ -29,14 +30,8 @@ const modules: Modules = {
   payment_gateway, invite_channel,
 };
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, content-type, apikey, x-client-info",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-const reply = (body: Reply) =>
-  new Response(JSON.stringify(body), { headers: { ...CORS, "Content-Type": "application/json" } });
+const respond = (body: Reply, cors: Record<string, string>) =>
+  new Response(JSON.stringify(body), { headers: { ...cors, "Content-Type": "application/json" } });
 
 // I01 Identity Connector, server side: ask the identity service who owns the token.
 async function authUser(req: Request): Promise<{ id: string; email: string } | null> {
@@ -63,7 +58,9 @@ const isVisiting = (e: Envelope) => e.caller === "S22" &&
     (e.module === "settings" && e.action === "get_error_texts"));
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  const cors = corsFor(req.headers.get("Origin"), Deno.env.get("SITE_URL")); // per request: never shared
+  const reply = (body: Reply) => respond(body, cors);
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
   let envelope: Envelope;
   try {
