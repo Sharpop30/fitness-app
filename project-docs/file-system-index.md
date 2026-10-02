@@ -90,7 +90,7 @@
 | story-15-business-owner.md | project-docs | 30.09.2026 |
 | usecase-01-training-programs.md | project-docs | 28.09.2026 (גרסה 2) |
 | gap-note-library.md | project-docs | 27.09.2026 |
-| session-state.md | project-docs | 29.09.2026 |
+| session-state.md | project-docs | 03.10.2026 |
 | doc-erd-conceptual.html | project-docs | 30.09.2026 (גרסה 2) |
 | diagram-07-erd-conceptual.mmd | project-docs/mermaid | 30.09.2026 |
 | doc-erd-logical.html | project-docs | 30.09.2026 (גרסה 2, 29 טבלאות) |
@@ -108,6 +108,7 @@
 | doc-stage-4e-plan.md, findings-stage-4e.md | project-docs | 01.10.2026. שלב 4ה נסגר |
 | doc-stage-7-plan.md, findings-stage-7a.md | project-docs | 02.10.2026. תוכנית שלב 7 אושרה; שלב 7א נסגר |
 | findings-stage-7b.md | project-docs | 02.10.2026. שלב 7ב נסגר |
+| findings-stage-7c.md | project-docs | 03.10.2026. שלב 7ג: האתר באוויר, הדוח לאישור |
 | .github/workflows/deploy.yml | .github/workflows | 02.10.2026. הבנייה בכל push ל-main; הפריסה ל-GitHub Pages רק כש-PAGES_ENABLED=true |
 | doc-design-stage-plan.md, findings-design-stage.md | project-docs | 30.09.2026. שלב העיצוב (5א) נסגר |
 | findings-design-review.md, doc-design-images.md | project-docs | 30.09.2026. סקירת העיצוב, והתמונות שנבחרו |
