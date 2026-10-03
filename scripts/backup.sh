@@ -14,6 +14,9 @@
 # and in the personal Drive, never in this repository or in the shared Drive. The plain dump lives only in a temporary
 # folder that is removed on exit.
 set -euo pipefail
+# The tools (supabase, node) are in ~/bin on the team's computer (session-state, "tools"), which a new terminal may
+# not have on its PATH.
+export PATH="$HOME/bin:$PATH"
 
 DB_CONTAINER="supabase_db_fitness-app"
 SCRATCH_DB="backup_check"
