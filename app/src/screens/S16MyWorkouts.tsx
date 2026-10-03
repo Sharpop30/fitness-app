@@ -2,10 +2,11 @@
 // Design stage: each exercise by name with its sets as chips (finding 9); the correction grouped by exercise, with
 // column heads and no weight field in a bodyweight exercise (10); the day of the week (32); loading, an error with a
 // retry and "none yet" (2, 6, 30).
+// Stage 5b (prototype 4): the team's illustration when there are no workouts yet, and a note icon instead of the emoji.
 import { useEffect, useState } from "react";
 import { call } from "../api/client";
 import { both, useCall } from "../api/useCall";
-import { Badge, Button, Empty, ErrorState, ExerciseSets, LinkButton, Load, Loading, Notice, Screen, byExercise, fmtDay } from "../design/components";
+import { Art, Badge, Button, Empty, ErrorState, ExerciseSets, LinkButton, Load, Loading, Notice, Screen, byExercise, fmtDay } from "../design/components";
 import { useNav } from "../nav";
 
 export default function S16MyWorkouts({ fix }: { fix?: string }) {
@@ -20,14 +21,14 @@ function History() {
   return (
     <Screen eyebrow="היסטוריה" title="האימונים שלי">
       <Load state={both(logs, notes)}>{([ls, ns]: [any[], any[]]) => {
-        if (!ls.length) return <Empty title="עוד אין אימונים" sub="אחרי השמירה הראשונה, האימונים יופיעו כאן." />;
+        if (!ls.length) return <Empty image={<Art name="empty-workouts" />} title="עוד אין אימונים" sub="אחרי השמירה הראשונה, האימונים יופיעו כאן." />;
         const noteOf = (id: string) => ns.find((n: any) => n.WorkoutLogID === id)?.noteText;
         return ls.map((l: any) => (
           <div className="card col" key={l.WorkoutLogID}>
             <div className="row between"><b>{fmtDay(l.performedAt)} · {l.workoutName}</b><LinkButton onClick={() => nav.go("S16", { fix: l.WorkoutLogID })}>תיקון</LinkButton></div>
             {byExercise(l.sets).map((x) => <ExerciseSets key={x.id} name={x.name} bodyweight={x.bodyweight} sets={x.sets}
               extra={x.sets.some((s: any) => s.isCorrected) ? <> <Badge tone="warn">תוקן</Badge></> : undefined} />)}
-            {noteOf(l.WorkoutLogID) && <Notice><span className="small">💬 הערת המאמן: {noteOf(l.WorkoutLogID)}</span></Notice>}
+            {noteOf(l.WorkoutLogID) && <Notice icon="note"><span className="small">הערת המאמן: {noteOf(l.WorkoutLogID)}</span></Notice>}
           </div>
         ));
       }}</Load>
@@ -60,7 +61,7 @@ function Correct({ workoutLogID }: { workoutLogID: string }) {
       {byExercise(indexed).map((x) => (
         <div className="card col" key={x.id}>
           <b>{x.name}</b>
-          <div className="setrow muted small" aria-hidden="true"><span>סט</span><span>חזרות</span><span>{bodyweight[x.id] ? "" : "משקל"}</span><span /></div>
+          <div className="setrow head muted small" aria-hidden="true"><span>סט</span><span>חזרות</span><span>{bodyweight[x.id] ? "" : "משקל"}</span><span /></div>
           {x.sets.map((s: any) => (
             <div className="setrow" key={s.i}>
               <span className="mono">{s.setNumber}</span>

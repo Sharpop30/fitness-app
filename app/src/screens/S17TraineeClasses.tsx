@@ -1,9 +1,10 @@
 // S17 classes, trainee (UC11, story 30): register, waitlist, cancel up to the window, and a late-cancel request.
 // Design stage: the late request checks its reply (finding 3), each class with the time column, the weekday and a status
 // badge (32, 33), neutral wording (37), loading, an error with a retry and "none yet" (2, 6, 30).
+// Stage 5b (prototype 4): the team's group illustration when there are no classes.
 import { call } from "../api/client";
 import { useCall } from "../api/useCall";
-import { Badge, Button, Empty, Load, Screen, WarnBox, When, fmtDay, fmtTime } from "../design/components";
+import { Art, Badge, Button, Empty, Load, Screen, WarnBox, When, fmtDay, fmtTime } from "../design/components";
 import { useNav } from "../nav";
 
 export default function S17TraineeClasses({ lateFor }: { lateFor?: any }) {
@@ -73,7 +74,7 @@ function Classes() {
               );
             })}
           </div>
-          : <Empty title="אין שיעורים קרובים" sub="כשהמאמן יפרסם שיעור, הוא יופיע כאן." />}
+          : <Empty image={<Art name="empty-classes" />} title="אין שיעורים קרובים" sub="כשהמאמן יפרסם שיעור, הוא יופיע כאן." />}
         <div className="muted small">אפשר לבטל עד {d.cancelHours} שעות לפני השיעור. אחרי זה אפשר לשלוח למאמן בקשה חריגה.</div>
       </>}</Load>
     </Screen>

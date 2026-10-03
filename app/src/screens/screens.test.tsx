@@ -141,8 +141,8 @@ test("S15: the goal and the challenge lines with their coins, as in the prototyp
   const S = SCREENS.S15;
   const feedback = { done: 9, total: 9, records: [], coins: 10, goal: true, goalCoins: 30, challenge: true, challengeCoins: 50, text: "כל הכבוד" };
   render(<NavContext.Provider value={nav("trainee")}><S feedback={feedback} /></NavContext.Provider>);
-  expect(screen.getByText(/השגת את היעד האישי/).textContent).toBe("🎯 השגת את היעד האישי! +30 מטבעות");
-  expect(screen.getByText(/השלמת את האתגר השבועי/).textContent).toBe("⭐ השלמת את האתגר השבועי! +50 מטבעות");
+  expect(screen.getByText(/השגת את היעד האישי/).textContent).toBe("השגת את היעד האישי! +30 מטבעות");
+  expect(screen.getByText(/השלמת את האתגר השבועי/).textContent).toBe("השלמת את האתגר השבועי! +50 מטבעות");
 });
 
 // ---- Stage 7a, task 4: the trainee home greets by name and names the next workout's exercises (map v13; gap 7) ----

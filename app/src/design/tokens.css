@@ -137,6 +137,7 @@ button.item:hover { box-shadow: var(--shadow), 0 0 0 1px var(--line-in); }
 .ring { flex: none; }
 .ring .tr { stroke: var(--line); } .ring .fg { stroke: var(--acc); } .ring.full .fg { stroke: var(--ok); }
 .ring text { fill: var(--ink); font-family: var(--font); font-weight: 700; font-variant-numeric: tabular-nums; }
+.hero .ring .tr { stroke: var(--heroInk); stroke-opacity: .25; } .hero .ring .fg { stroke: var(--heroInk); } .hero .ring text { fill: var(--heroInk); }
 .meter { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
 .meter span { display: block; height: 100%; background: var(--acc); border-radius: 99px; transition: width .3s ease; }
 .meter.full span { background: var(--ok); }

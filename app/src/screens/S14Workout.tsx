@@ -3,10 +3,12 @@
 // Design stage: the workout list names its exercises (finding 35); each field and ✓ is named per exercise and set (18);
 // saving shows "saving" and cannot be pressed twice, so a workout is not logged twice (16); number keypads; loading and
 // an error with a retry (2, 6); neutral wording (37).
+// Stage 5b (prototype 4): "X מתוך Y סטים" with a meter on top (team approval), a done count per exercise, a set that is
+// done green and full and a set still to do dashed, and the plan's illustration when there is no program yet.
 import { useEffect, useState } from "react";
 import { call, isLive } from "../api/client";
 import { useCall } from "../api/useCall";
-import { Button, Check, Empty, ErrorState, LinkButton, Load, Loading, Row, Screen, VideoPlayer } from "../design/components";
+import { Art, Badge, Button, Card, Check, Empty, ErrorState, ICONS, LinkButton, Load, Loading, Meter, Row, Screen, VideoPlayer } from "../design/components";
 import { useNav } from "../nav";
 
 type SetT = { ExerciseID: string; setNumber: number; reps: number; weight: number; isDone: boolean; isCorrected: boolean };
@@ -23,7 +25,7 @@ function Workouts() {
   return (
     <Screen eyebrow="התוכנית שלי" title="אימון" noBack>
       {prog.error?.code === "NO_ACTIVE_PROGRAM"
-        ? <Empty title="התוכנית שלך עוד בהכנה אצל המאמן" sub="היא תופיע כאן כשתהיה מוכנה." />
+        ? <Empty image={<Art name="empty-plan" />} title="התוכנית שלך עוד בהכנה אצל המאמן" sub="היא תופיע כאן כשתהיה מוכנה." />
         : <Load state={prog}>{(p: any) => (
           <div className="list">
             {p.workouts.map((x: any) => (
@@ -61,18 +63,24 @@ function Workout({ workoutID }: { workoutID: string }) {
     nav.replace("S15", { feedback: r.data.feedback });
   };
 
+  const doneN = sets.filter((s) => s.isDone).length;
   return (
     <Screen eyebrow="ממולא לפי היעד · משנים רק מה ששונה" title={w.workoutName}>
+      <Card col>
+        <div className="row between"><b>{doneN} מתוך {sets.length} סטים</b><span className="muted small mono">{Math.round((doneN / sets.length) * 100)}%</span></div>
+        <Meter value={doneN} target={sets.length} />
+      </Card>
       {w.items.map((it: any) => {
         const bw = it.targetWeight === 0;
+        const mine = sets.filter((s) => s.ExerciseID === it.ExerciseID), d = mine.filter((s) => s.isDone).length;
         return (
           <div className="card col" key={it.WorkoutItemID}>
-            <div className="row between"><b>{it.exerciseName}</b>{it.hasVideo && <LinkButton onClick={() => setVideo(it.ExerciseID)}>▶︎ סרטון הדגמה</LinkButton>}</div>
+            <div className="row between"><div className="row"><b>{it.exerciseName}</b><Badge tone={d === mine.length ? "ok" : "acc"}>{d}/{mine.length}</Badge></div>{it.hasVideo && <LinkButton onClick={() => setVideo(it.ExerciseID)}>{ICONS.play}סרטון הדגמה</LinkButton>}</div>
             <div className="muted small">יעד: <span className="mono">{it.targetSets} סטים × {it.targetReps}{bw ? "" : ` · ${it.targetWeight} ק"ג`}</span></div>
-            <div className="setrow muted small" aria-hidden="true"><span>סט</span><span>חזרות</span><span>{bw ? "" : "משקל"}</span><span>בוצע</span></div>
+            <div className="setrow head muted small" aria-hidden="true"><span>סט</span><span>חזרות</span><span>{bw ? "" : "משקל"}</span><span>בוצע</span></div>
             {sets.map((s, i) => s.ExerciseID !== it.ExerciseID ? null : (
-              <div className="setrow" key={i}>
-                <span className="mono">{s.setNumber}</span>
+              <div className={`setrow ${s.isDone ? "done" : "todo"}`} key={i}>
+                <span className="n">{s.setNumber}</span>
                 <input aria-label={`${it.exerciseName}, סט ${s.setNumber}, חזרות`} type="number" inputMode="numeric" value={Number.isNaN(s.reps) ? "" : s.reps} onChange={(e) => upd(i, "reps", e.target.value)} />
                 {bw ? <span /> : <input aria-label={`${it.exerciseName}, סט ${s.setNumber}, משקל`} type="number" inputMode="decimal" step="2.5" value={Number.isNaN(s.weight) ? "" : s.weight} onChange={(e) => upd(i, "weight", e.target.value)} />}
                 <Check on={s.isDone} label={`${it.exerciseName}, סט ${s.setNumber} בוצע`} onClick={() => toggle(i)} />
@@ -94,7 +102,7 @@ function DemoVideo({ exerciseID, onBack }: { exerciseID: string; onBack?: () => 
     <Screen eyebrow="סרטון הדגמה" title={one.data?.exerciseName ?? ""} onBack={onBack}>
       <Load state={one}>{(e: any) => isLive("S14") && e.videoUrl
         ? <VideoPlayer videoType={e.videoType} videoUrl={e.videoUrl} />
-        : <div className="video">▶︎ {e.videoType === "youtube" ? "סרטון הדגמה מיוטיוב (קישור לדוגמה)" : "סרטון שהמאמן העלה (דוגמה)"}</div>}
+        : <div className="video">{ICONS.play} {e.videoType === "youtube" ? "סרטון הדגמה מיוטיוב (קישור לדוגמה)" : "סרטון שהמאמן העלה (דוגמה)"}</div>}
       </Load>
     </Screen>
   );
