@@ -45,8 +45,9 @@ create() {
   mkdir "$pack"
 
   echo "Reading the row counts in the cloud..."
-  supabase db query --linked "$COUNTS_SQL" 2>/dev/null \
-    | node -e 'const r = JSON.parse(require("fs").readFileSync(0, "utf8")).rows;
+  supabase db query --linked -o json "$COUNTS_SQL" 2>/dev/null \
+    | node -e 'const j = JSON.parse(require("fs").readFileSync(0, "utf8"));
+               const r = Array.isArray(j) ? j : j.rows;
                for (const x of r) console.log(`${x.t}\t${x.n}`);' > "$pack/counts.tsv"
   echo "Dumping the roles and the data..."
   supabase db dump --linked --role-only -f "$pack/roles.sql" >/dev/null
