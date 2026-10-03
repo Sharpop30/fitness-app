@@ -279,6 +279,7 @@ body.nonew .newtext{text-decoration:none}
    - S14: סט שבוצע ירוק ומלא, סט שנשאר מקווקו. S01: אריח עם 0 נחלש, ואריח שדורש פעולה מקבל צבע ואייקון.
    - איורים מהצוות (כלי AI, מותרים לשימוש), ביחס המלא: S22 מאמן ומתאמנת, S15 סיום אימון, S04 ו-S14 תכנון אימון, S16 האימון הבא, S17 אימון בקבוצה.
    - S23: תמונת 3D רכה שהצוות יצר בכלי AI (מותרת לשימוש), במקום התמונה הישנה. לכל איור גרסה בהירה וגרסה כהה מהצוות, שמתחלפות לפי מצב התצוגה.
+   - מסכי בעל העסק באותה שפה: אייקון וסוג מידע לכל אריח ב-S24 וב-S27 (משימה 4).
    - נוסח חדש אחד, אושר: "X מתוך Y סטים" בראש S14 (מסומן באב הטיפוס בקו מנוקד).
    ============================================================ */
 const TODAY = new Date(2026, 8, 28, 12, 0); // יום שני, 28.09.2026 [נתוני דוגמה]
@@ -819,10 +820,10 @@ screens.ownerHome=()=>{
   <div class="hero row between"><div><div class="sub">הכנסות החודש (הדגמה)</div><div class="num" style="margin-top:3px">₪${num(income)}</div><div class="sub" style="margin-top:3px">${paidN} תשלומים ששולמו</div></div>
    <div style="text-align:center"><div class="num">${trainees.filter(t=>t.joined).length}</div><div class="cap">מתאמנים פעילים</div></div></div>
   <div class="grid2">
-   ${tile('תשלומים פתוחים',open.length,open.length?`₪${num(openSum)} לגבייה`:'הכול שולם')}
-   ${tile('מאמנים',coaches.filter(k=>k.joined).length,coaches.some(k=>!k.joined)?'יש הזמנה פתוחה':'לרשימה','tab','coaches')}
-   ${tile('תפוסת שיעורים השבוע',cap?`${Math.round(reg/cap*100)}%`:'אין',`${reg}/${cap} מקומות`)}
-   ${tile('תגמולים לאספקה',redemptions.filter(r=>r.status==='ממתין לאספקה').length,'בידי המאמנים')}
+   ${tile('תשלומים פתוחים',open.length,open.length?`₪${num(openSum)} לגבייה`:'הכול שולם','','','','card','warn')}
+   ${tile('מאמנים',coaches.filter(k=>k.joined).length,coaches.some(k=>!k.joined)?'יש הזמנה פתוחה':'לרשימה','tab','coaches','','users','')}
+   ${tile('תפוסת שיעורים השבוע',cap?`${Math.round(reg/cap*100)}%`:'אין',`${reg}/${cap} מקומות`,'','','','cal','info')}
+   ${tile('תגמולים לאספקה',redemptions.filter(r=>r.status==='ממתין לאספקה').length,'בידי המאמנים','','','','gift','')}
   </div>`,{backBtn:false});
 };
 
@@ -840,7 +841,7 @@ screens.coachInvite=()=>shell('מאמן חדש','הזמנת מאמן',`
 screens.coachCard=({id})=>{const k=coaches.find(x=>x.id===id);
   const cls=classes.filter(c=>c.coach===id&&!c.cancelled&&c.date>=new Date(TODAY.toDateString())).length;
   return shell('כרטיס מאמן',nm(k.name),`
-  <div class="grid3">${tile('מתאמנים',k.trainees.length)}${tile('הכנסות',`₪${num(coachIncome(id))}`)}${tile('שיעורים קרובים',cls)}</div>
+  <div class="grid3">${tile('מתאמנים',k.trainees.length,'','','','','users','')}${tile('הכנסות',`₪${num(coachIncome(id))}`,'','','','','card','ok')}${tile('שיעורים קרובים',cls,'','','','','cal','info')}</div>
   <h2>המתאמנים</h2>
   <div class="list">${k.trainees.map(t=>`<div class="item"><span class="av">${ini(tname(t))}</span><div class="grow"><div class="t">${nm(tname(t))}</div><div class="s">${programs[t]?'יש תוכנית':'אין תוכנית'} · רצף ${streak(t)}</div></div></div>`).join('')||empty('עוד אין מתאמנים')}</div>`)};
 
