@@ -96,6 +96,17 @@ export async function requestPasswordReset(email: string): Promise<Outcome> {
 // The reset link brought the person back: S23 asks for the new password before anything else.
 export const isRecoveryReturn = () => new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery";
 
+// A link from the email that no longer works, already used or expired, comes back with an error after the # (for example
+// error_code=otp_expired) and no sign-in. Takes the error and clears it from the address bar (found in the cloud after
+// stage 5b: the error was ignored, and a sign-in kept from an earlier visit opened the app instead of a new password).
+export function takeLinkError(): string | null {
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  const code = hash.get("error_code") ?? hash.get("error");
+  if (!code) return null;
+  history.replaceState(null, "", window.location.pathname + window.location.search);
+  return code;
+}
+
 // The invite email returns to the site signed in, with the tokens after the # (stage 5 plan, decision 2). Takes them, and
 // clears them from the address bar. True when there was a sign-in there.
 export function takeSessionFromAddress(): boolean {
