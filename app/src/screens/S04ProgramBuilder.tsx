@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { call } from "../api/client";
 import { both, useCall } from "../api/useCall";
-import { Badge, Button, Confirm, Empty, ErrorState, Field, LinkButton, Loading, Name, Row, Screen, fmtDateYear } from "../design/components";
+import { Art, Badge, Button, Confirm, Empty, ErrorState, Field, LinkButton, Loading, Name, Row, Screen, fmtDateYear } from "../design/components";
 import { useNav } from "../nav";
 
 type ItemT = { WorkoutItemID: string; ExerciseID: string; exerciseName?: string; targetSets: number; targetReps: number; targetWeight: number };
@@ -39,7 +39,7 @@ export default function S04ProgramBuilder({ traineeID, name }: { traineeID: stri
   if (prog.error?.code === "NO_ACTIVE_PROGRAM") {
     return (
       <Screen eyebrow={eyebrow} title="בניית תוכנית">
-        <Empty title="למתאמן עוד אין תוכנית" sub="התוכנית מתחילה באימון אחד, ואפשר להוסיף עוד." />
+        <Empty image={<Art name="empty-plan" />} title="למתאמן עוד אין תוכנית" sub="התוכנית מתחילה באימון אחד, ואפשר להוסיף עוד." />
         <Button onClick={startNew}>בניית תוכנית חדשה</Button>
       </Screen>
     );

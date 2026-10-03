@@ -8,7 +8,7 @@
 // signing up, so a link that expired shows its message instead of the form and leaves no identity user; the name is filled.
 import { useEffect, useState } from "react";
 import { call, setErrorTexts } from "../api/client";
-import { Button, ErrorState, Field, LinkButton, Loading, Notice, Picture, Screen } from "../design/components";
+import { Art, Button, ErrorState, Field, LinkButton, Loading, Notice, Screen } from "../design/components";
 import { accessToken, identityConfigured, PASSWORD_RULE, passwordOK, setPassword, signInWithPassword, signUp, takeSessionFromAddress } from "../identity/auth";
 import { useNav } from "../nav";
 
@@ -74,7 +74,7 @@ export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken
   if (check.state === "error") {
     return check.error.code === "INVITE_EXPIRED"
       ? <Screen eyebrow="הזמנה" title="הצטרפות">
-          <Picture size="short" src={`${import.meta.env.BASE_URL}images/join.jpg`} />
+          <Art name="join-coach" />
           <Notice>{check.error.message}</Notice>
           <div className="muted small">הקישור תקף לזמן מוגבל, ופעם אחת. מי ששלח אותו יכול לשלוח קישור חדש.</div>
         </Screen>
@@ -83,7 +83,7 @@ export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken
 
   return (
     <Screen eyebrow={asCoach ? "הזמנה מבעל העסק" : "הזמנה מהמאמן"} title="הצטרפות">
-      <Picture size="short" src={`${import.meta.env.BASE_URL}images/join.jpg`} />
+      <Art name="join-coach" />
       <Notice>{asCoach ? "בעל העסק הזמין אותך להצטרף כמאמן. ההזמנה הגיעה בקישור או במייל." : "המאמן שלך הזמין אותך להצטרף. ההזמנה הגיעה בקישור או במייל."}</Notice>
       <Field label="שם"><input id="joinName" value={name} onChange={(e) => setName(e.target.value)} /></Field>
       {!fromEmail && <Field label="מייל"><input id="joinEmail" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>}

@@ -82,9 +82,6 @@ main { flex: 1; padding: 12px 16px 28px; display: flex; flex-direction: column; 
 .ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; flex: none; background: var(--accSoft); color: var(--accent); }
 .ic.ok { background: var(--okSoft); color: var(--ok); } .ic.info { background: var(--infoSoft); color: var(--info); }
 .ic.warn { background: var(--warnSoft); color: var(--warnC); } .ic.bad { background: var(--badSoft); color: var(--danger); }
-/* A stripe on the card's side, by the kind of information */
-.stripe { border-inline-start: 5px solid var(--sc, var(--acc)); }
-.stripe.ok { --sc: var(--ok); } .stripe.info { --sc: var(--info); } .stripe.warn { --sc: var(--warnC); } .stripe.bad { --sc: var(--danger); }
 
 /* Cards: white, a soft shadow, no border */
 .card { background: var(--card); border-radius: 20px; padding: 14px 16px; box-shadow: var(--shadow); }
@@ -104,6 +101,7 @@ main { flex: 1; padding: 12px 16px 28px; display: flex; flex-direction: column; 
 .coins { display: flex; flex-direction: column; align-items: center; padding: 8px 14px; border-radius: 16px; background: var(--accSoft); color: var(--accent); min-width: 76px; }
 .coins .num { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .coins .cap { font-size: 12px; }
+.figure { font-size: 22px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; } /* a number in a card's row, S01 */
 .tile { background: var(--card); border: 0; border-radius: 18px; padding: 12px; text-align: right; color: var(--ink); font-size: 14px; width: 100%; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 button.tile { cursor: pointer; }
 .tile .lbl { font-size: 12.5px; font-weight: 500; color: var(--ink); }
@@ -120,6 +118,9 @@ button.item:hover { box-shadow: var(--shadow), 0 0 0 1px var(--line-in); }
 .item .t { font-size: 15px; font-weight: 500; }
 .item .s { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .chev { flex: none; color: var(--muted3); display: inline-flex; }
+/* A stripe on the card's side, by the kind of information; after the cards, whose border: 0 would undo it */
+.stripe { border-inline-start: 5px solid var(--sc, var(--acc)); }
+.stripe.ok { --sc: var(--ok); } .stripe.info { --sc: var(--info); } .stripe.warn { --sc: var(--warnC); } .stripe.bad { --sc: var(--danger); }
 .when { width: 56px; flex: none; background: var(--accSoft); color: var(--accent); border-radius: 12px; padding: 6px 4px; text-align: center; }
 .when .h { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .when .d { font-size: 11px; margin-top: 1px; }
@@ -209,10 +210,7 @@ label { font-size: 12.5px; color: var(--muted2); display: block; margin-bottom: 
 .art { width: 100%; height: auto; aspect-ratio: 860 / 484; object-fit: cover; border-radius: 20px; background: var(--artBg); }
 .art.light { display: var(--artLight); } .art.dark { display: var(--artDark); }
 .state .art { border-radius: 14px; }
-/* A version 2 placeholder, kept until the screens move to the illustrations (tasks 2 and 3) */
-.img { height: 170px; border-radius: 20px; background: linear-gradient(135deg, var(--img1), var(--img2)); display: block; width: 100%; object-fit: cover; }
-.img.tall { height: 230px; }
-.img.short { height: 120px; }
+.art.sign { aspect-ratio: 860 / 498; } /* the sign-in image, a little taller */
 
 /* A moment of celebration at the end of a workout (S15; the diagnosis: "no moment of celebration") */
 .celebrate { animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); }

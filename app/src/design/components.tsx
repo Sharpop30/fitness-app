@@ -214,16 +214,10 @@ export type ArtName = "signin-hero" | "join-coach" | "feedback-done" | "empty-pl
 export function Art({ name }: { name: ArtName }) {
   const one = (n: string, mode: "light" | "dark") => {
     const base = `${import.meta.env.BASE_URL}images/${n}`;
-    return <img className={`art ${mode}`} src={`${base}.webp`} srcSet={`${base}.webp 860w, ${base}@1.5x.webp 1290w`} sizes="(max-width: 430px) 100vw, 400px" width={860} height={484} alt="" aria-hidden="true" decoding="async" />;
+    const sign = name === "signin-hero";
+    return <img className={`art ${mode}${sign ? " sign" : ""}`} src={`${base}.webp`} srcSet={`${base}.webp 860w, ${base}@1.5x.webp 1290w`} sizes="(max-width: 430px) 100vw, 400px" width={860} height={sign ? 498 : 484} alt="" aria-hidden="true" decoding="async" />;
   };
   return <>{one(name, "light")}{one(`${name}-dark`, "dark")}</>;
-}
-
-// A decorative picture (design stage, task 4). Decorative, so hidden from screen readers; until a picture is approved
-// by the team, a soft placeholder of the same size keeps the layout.
-export function Picture({ src, size }: { src?: string; size?: "tall" | "short" }) {
-  const cls = `img${size ? " " + size : ""}`;
-  return src ? <img className={cls} src={src} alt="" aria-hidden="true" /> : <div className={cls} aria-hidden="true" />;
 }
 
 // ---- Buttons ----
