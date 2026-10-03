@@ -117,8 +117,9 @@ function SignIn({ live }: { live: boolean }) {
     );
   }
 
+  // The heading until the app has a name (team decision, 03.10.2026): "fitness app", read left to right.
   return (
-    <Screen eyebrow="ביצועים, מעקב ותשלומים" title="כניסה לאפליקציה" noBack>
+    <Screen eyebrow="ביצועים, מעקב ותשלומים" title={<span className="ltr">fitness app</span>} noBack>
       <Art name="signin-hero" />
       <div className="lead-text">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו: תוכניות, תשלומים ומעקב במקום אחד.</div>
       {live ? <>

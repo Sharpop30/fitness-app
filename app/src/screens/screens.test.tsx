@@ -25,7 +25,7 @@ const CASES: [string, "owner" | "coach" | "trainee", Record<string, unknown>, st
   ["S15", "trainee", { feedback: { done: 9, total: 9, records: [], coins: 10, goal: false, challenge: false, text: "כל הכבוד" } }, "כל הכבוד!"],
   ["S16", "trainee", {}, "האימונים שלי"], ["S17", "trainee", {}, "שיעורים"], ["S18", "trainee", {}, "מטבעות ותגמולים"],
   ["S19", "trainee", {}, "תשלומים"], ["S20", "trainee", {}, "האתגר השבועי"], ["S21", "trainee", {}, "גרף התקדמות"],
-  ["S22", "trainee", {}, "הצטרפות"], ["S23", "trainee", {}, "כניסה לאפליקציה"],
+  ["S22", "trainee", {}, "הצטרפות"], ["S23", "trainee", {}, "fitness app"],
   // Stage 4e: the owner's screens (prototype version 3).
   ["S24", "owner", {}, "העסק שלי"], ["S25", "owner", {}, "מאמנים"], ["S26", "owner", {}, "מדדים"],
   ["S27", "owner", { coachID: "d0000000-0000-4000-8000-000000000001" }, "המאמן (דוגמה)"],
