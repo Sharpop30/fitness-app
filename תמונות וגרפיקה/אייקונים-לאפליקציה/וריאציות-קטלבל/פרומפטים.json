@@ -1,0 +1,41 @@
+{
+  "tool": "built-in image_gen",
+  "reference": "תמונות וגרפיקה/אייקונים-לאפליקציה/אייקון-03-קטלבל-סגול.png",
+  "jobs": [
+    {
+      "n": 1,
+      "name": "קטלבל-01-סגול-סאטן",
+      "title": "סגול סאטן",
+      "description": "קרוב לאייקון שאהבת, עם חומר חלק ומראה רך.",
+      "prompt": "Use case: style-transfer. Input image is the user's selected kettlebell app icon and is the shape and composition reference. Create ONE variant of this icon. Preserve a single upright centered kettlebell with a broad rounded handle, large clear handle opening, rounded body, compact base, and generous margins. Keep the same frontal camera and recognizable friendly silhouette. Square 1:1 full-bleed app icon artwork, no surrounding mockup, no rounded square container drawn inside the canvas. The kettlebell must be bold, legible at 48px, and stay within the central 72% of the square. No text, letters, numbers, logos, tiny details, extra objects or watermark. Variant: matte satin-clay lavender kettlebell (#9c85ff), no rough grain or speckled texture. Preserve the sculptural soft 3D style. Dark violet-black background #12111a with quiet purple halo, gentle upper-left lighting, subtle soft ground shadow. Rounded body and polished soft edges. High silhouette contrast."
+    },
+    {
+      "n": 2,
+      "name": "קטלבל-02-לבן-על-סגול",
+      "title": "לבן על סגול",
+      "description": "אייקון בהיר ובולט, עם רקע בצבע המותג.",
+      "prompt": "Use case: style-transfer. Input image is the user's selected kettlebell app icon and is the shape and composition reference. Create ONE variant of this icon. Preserve a single upright centered kettlebell with a broad rounded handle, large clear handle opening, rounded body, compact base, and generous margins. Keep the same frontal camera and recognizable friendly silhouette. Square 1:1 full-bleed app icon artwork, no surrounding mockup, no rounded square container drawn inside the canvas. The kettlebell must be bold, legible at 48px, and stay within the central 72% of the square. No text, letters, numbers, logos, tiny details, extra objects or watermark. Variant: warm ivory-white soft 3D kettlebell with very faint lavender shading on its right side and inside its handle opening. Full-bleed rich purple background #6A45F5 with a restrained soft gradient. Satin ceramic-like finish, no logos, soft upper-left studio light and a quiet purple contact shadow. Clean strong silhouette and premium friendly appearance."
+    },
+    {
+      "n": 3,
+      "name": "קטלבל-03-סגול-על-לבנדר",
+      "title": "סגול על לבנדר",
+      "description": "אפשרות קלילה ובהירה שמשתלבת בשפה הרכה של האפליקציה.",
+      "prompt": "Use case: style-transfer. Input image is the user's selected kettlebell app icon and is the shape and composition reference. Create ONE variant of this icon. Preserve a single upright centered kettlebell with a broad rounded handle, large clear handle opening, rounded body, compact base, and generous margins. Keep the same frontal camera and recognizable friendly silhouette. Square 1:1 full-bleed app icon artwork, no surrounding mockup, no rounded square container drawn inside the canvas. The kettlebell must be bold, legible at 48px, and stay within the central 72% of the square. No text, letters, numbers, logos, tiny details, extra objects or watermark. Variant: rich violet #6A45F5 kettlebell with a subtle lavender highlight on the upper-left edge. Soft matte 3D finish. Full-bleed very pale lavender background #EEEAFE, brighter than the kettlebell. Soft upper-left lighting, gentle faint lavender ground shadow. Preserve the clean substantial original kettlebell shape. No halo ring or extra elements."
+    },
+    {
+      "n": 4,
+      "name": "קטלבל-04-סמל-מינימלי",
+      "title": "סמל מינימלי",
+      "description": "קטלבל פשוט וברור שמתאים גם לאייקון קטן מאוד.",
+      "prompt": "Use case: style-transfer. Input image is the user's selected kettlebell app icon and is the shape and composition reference. Create ONE variant of this icon. Preserve a single upright centered kettlebell with a broad rounded handle, large clear handle opening, rounded body, compact base, and generous margins. Keep the same frontal camera and recognizable friendly silhouette. Square 1:1 full-bleed app icon artwork, no surrounding mockup, no rounded square container drawn inside the canvas. The kettlebell must be bold, legible at 48px, and stay within the central 72% of the square. No text, letters, numbers, logos, tiny details, extra objects or watermark. Variant: turn the reference kettlebell into a bold flat geometric ivory-white silhouette on a solid purple #6A45F5 background. A large handle opening is cut out so the purple background shows through it. One continuous filled kettlebell symbol, no outlines, texture, shadows or 3D shading. Rounded thick handle, soft broad body, flat short base. Keep optical centering and generous margins; crisp clean original brand-mark quality."
+    },
+    {
+      "n": 5,
+      "name": "קטלבל-05-גרפיט-וסגול",
+      "title": "גרפיט וסגול",
+      "description": "מראה כהה וספורטיבי, עם ידית סגולה מודגשת.",
+      "prompt": "Use case: style-transfer. Input image is the user's selected kettlebell app icon and is the shape and composition reference. Create ONE variant of this icon. Preserve a single upright centered kettlebell with a broad rounded handle, large clear handle opening, rounded body, compact base, and generous margins. Keep the same frontal camera and recognizable friendly silhouette. Square 1:1 full-bleed app icon artwork, no surrounding mockup, no rounded square container drawn inside the canvas. The kettlebell must be bold, legible at 48px, and stay within the central 72% of the square. No text, letters, numbers, logos, tiny details, extra objects or watermark. Variant: soft 3D graphite dark grey kettlebell body (#35313F) with a bold lavender handle #9c85ff and a subtle lavender highlight wrapping the left shoulder of the body. Background very dark violet-black #12111a. Soft upper-left light and restrained purple rim light on both sides keep the entire dark body clearly readable. Preserve the full broad body shape; do not reduce the body to a glowing outline. Quiet purple glow behind it, satin matte material, no metallic reflections or bright neon."
+    }
+  ]
+}

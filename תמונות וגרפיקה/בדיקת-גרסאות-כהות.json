@@ -1,0 +1,47 @@
+{
+  "tool": "built-in image_gen",
+  "prompts": "פרומפטים-לגרסאות-כהות.json",
+  "visualReview": {
+    "sameCompositionAndObjects": true,
+    "darkVioletBackground": true,
+    "subjectsReadable": true,
+    "noTextOrLogo": true,
+    "coachClothesReadable": true,
+    "highFiveSparklesPresent": true,
+    "tabletVisible": true,
+    "threeGroupCharactersPresent": true,
+    "stepAndDumbbellEdgesReadable": true
+  },
+  "outputs": [
+    {
+      "file": "איור-01-מאמן-ומתאמנת-רקע-כהה.png",
+      "width": 1672,
+      "height": 941,
+      "originalSHA256": "24122805ec3f3a25bff8f76d3aca59c1d31b1d70c0522497d323c8d0ac48285a"
+    },
+    {
+      "file": "איור-10-סיום-אימון-רקע-כהה.png",
+      "width": 1672,
+      "height": 941,
+      "originalSHA256": "a9d41cdd11cd85033aca87c1b07bfe17d6fe4f261701605f4573e024ee676f5e"
+    },
+    {
+      "file": "איור-12-תכנון-אימון-רקע-כהה.png",
+      "width": 1672,
+      "height": 941,
+      "originalSHA256": "55c8f78b8890a249e294c21a49de9ba6c2e753edb9e6608da25758a4ef64bd1e"
+    },
+    {
+      "file": "איור-09-אימון-בקבוצה-רקע-כהה.png",
+      "width": 1672,
+      "height": 941,
+      "originalSHA256": "980167e5c14c968dcb917da7a9f28b1c0ec11fefd2dfe739a5e07c734d0e1252"
+    },
+    {
+      "file": "איור-06-האימון-הבא-רקע-כהה.png",
+      "width": 1672,
+      "height": 941,
+      "originalSHA256": "301e748970902b61501bc1ec73df07e00872f568157a7657cdc76c573f559b02"
+    }
+  ]
+}
