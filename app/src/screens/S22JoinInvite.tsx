@@ -6,10 +6,13 @@
 // the business, through business.accept_coach_invite. The same structure; the line for a coach is stage 4e plan, decision 9.
 // Map v13 (usecase-04 v4 step 4, usecase-12 v3 step 6; prototype 3.2): the invite is checked when the screen opens, before
 // signing up, so a link that expired shows its message instead of the form and leaves no identity user; the name is filled.
-import { useEffect, useState } from "react";
+// After stage 5b, as in S23: an invite email whose link no longer works (used by an email scanner, or expired) returns with
+// an error after the # and no sign-in. It shows the expired invite's message (INVITE_EXPIRED, from ERROR_CODES), not the
+// sign-up form, which would fail for an address the invite already created.
+import { useEffect, useRef, useState } from "react";
 import { call, setErrorTexts } from "../api/client";
 import { Art, Button, ErrorState, Field, LinkButton, Loading, Notice, Screen } from "../design/components";
-import { accessToken, identityConfigured, PASSWORD_RULE, passwordOK, setPassword, signInWithPassword, signUp, takeSessionFromAddress } from "../identity/auth";
+import { accessToken, identityConfigured, PASSWORD_RULE, passwordOK, setPassword, signInWithPassword, signUp, takeLinkError, takeSessionFromAddress } from "../identity/auth";
 import { useNav } from "../nav";
 
 export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken?: string; coachToken?: string }) {
@@ -24,12 +27,20 @@ export default function S22JoinInvite({ inviteToken, coachToken }: { inviteToken
   const [check, setCheck] = useState<{ state: "checking" | "open" } | { state: "error"; error: { code: string; message: string } }>(
     { state: live ? "checking" : "open" });
 
-  useEffect(() => { if (live && takeSessionFromAddress()) setFromEmail(true); }, [live]);
+  // The address is read once, before the checks: an error from a dead email link, or the sign-in from a working one.
+  const deadLink = useRef<boolean | null>(null);
+  if (deadLink.current === null) deadLink.current = live && !!takeLinkError();
+  useEffect(() => { if (live && !deadLink.current && takeSessionFromAddress()) setFromEmail(true); }, [live]);
 
   const checkInvite = async (payload: Record<string, unknown> = {}) => {
     setCheck({ state: "checking" });
     const texts = await call("S22", "settings", "get_error_texts");
     if (texts.ok) setErrorTexts(texts.data);
+    if (deadLink.current) {
+      return setCheck(texts.ok && texts.data.INVITE_EXPIRED
+        ? { state: "error", error: { code: "INVITE_EXPIRED", message: texts.data.INVITE_EXPIRED } }
+        : { state: "error", error: { code: "STORAGE_UNAVAILABLE", message: "" } });
+    }
     const r = asCoach
       ? await call("S22", "business", "check_coach_invite", { token: coachToken, ...payload })
       : await call("S22", "trainees", "check_invite", { token: inviteToken ?? "", ...payload });
