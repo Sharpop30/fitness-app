@@ -18,7 +18,7 @@
   --ok:#127a4b; --okSoft:#e3f6ec; --info:#2a66d1; --infoSoft:#e6effc; --warnC:#9a5706; --warnSoft:#fcf0dc; --danger:#c22b2b; --badSoft:#fde8e8;
   --demo:#fff4c2; --demoInk:#5b4a00; --img1:#e2dcff; --img2:#b9a8ff; --imgInk:#2b1d73;
   --shadow:0 1px 2px rgba(26,24,48,.05),0 8px 24px rgba(26,24,48,.06);
-  --heroImgBg:#f2f3f9; --heroImgFilter:none; --heroImgRing:transparent; --heroLt:block; --heroDk:none;
+  --heroImgBg:#f2f3f9; --heroImgFilter:none; --heroImgRing:transparent; --heroLt:block; --heroDk:none; --artFilter:none; --artRing:transparent;
   --font:Rubik,Heebo,system-ui,sans-serif; --mono:Rubik,Heebo,system-ui,sans-serif;
   color-scheme:light;
 }
@@ -29,7 +29,7 @@
     --acc:#9c85ff; --accInk:#140f2c; --accSoft:#2a2346; --accent:#bba9ff; --lime:#9c85ff;
     --ok:#5bd19a; --okSoft:#163027; --info:#86b2ff; --infoSoft:#1a2740; --warnC:#f2b65a; --warnSoft:#33270f; --danger:#ff8f8f; --badSoft:#3a1c1f;
     --demo:#3a3410; --demoInk:#f3e39a; --img1:#2a2346; --img2:#3d3170; --imgInk:#e4dcff;
-    --shadow:0 0 0 1px #2d2b3b; --heroImgFilter:none; --heroImgRing:transparent; --heroLt:none; --heroDk:block;
+    --shadow:0 0 0 1px #2d2b3b; --heroImgFilter:none; --heroImgRing:transparent; --heroLt:none; --heroDk:block; --artFilter:brightness(.9); --artRing:#3a3849;
     color-scheme:dark;
   }
 }
@@ -39,7 +39,7 @@
   --acc:#9c85ff; --accInk:#140f2c; --accSoft:#2a2346; --accent:#bba9ff; --lime:#9c85ff;
   --ok:#5bd19a; --okSoft:#163027; --info:#86b2ff; --infoSoft:#1a2740; --warnC:#f2b65a; --warnSoft:#33270f; --danger:#ff8f8f; --badSoft:#3a1c1f;
   --demo:#3a3410; --demoInk:#f3e39a; --img1:#2a2346; --img2:#3d3170; --imgInk:#e4dcff;
-  --shadow:0 0 0 1px #2d2b3b; --heroImgFilter:none; --heroImgRing:transparent; --heroLt:none; --heroDk:block;
+  --shadow:0 0 0 1px #2d2b3b; --heroImgFilter:none; --heroImgRing:transparent; --heroLt:none; --heroDk:block; --artFilter:brightness(.9); --artRing:#3a3849;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -143,6 +143,9 @@ button.item:hover{box-shadow:var(--shadow),0 0 0 1px var(--line-in)}
 /* תמונת הכניסה (גרסה 4): 3D רך, בצבעי הכיוון, בגרסה בהירה ובגרסה כהה שמתחלפות לפי מצב התצוגה. שני גדלים (860 ו-1290) לחדות בטלפון */
 .hero-img{width:100%;height:auto;aspect-ratio:860/498;object-fit:cover;border-radius:20px;background:var(--heroImgBg);filter:var(--heroImgFilter);box-shadow:0 0 0 1px var(--heroImgRing)}
 .hero-img.lt{display:var(--heroLt)} .hero-img.dk{display:var(--heroDk)}
+/* כל האיורים (גרסה 4): ביחס המלא, בלי חיתוך. איור שעוד אין לו גרסה כהה: במצב כהה בכרטיס ממוסגר ומעט מעומעם */
+.hero-img.nodark{display:block;filter:var(--artFilter);box-shadow:0 0 0 1px var(--artRing)}
+.state .hero-img{border-radius:14px}
 
 /* תגיות בלי שבירה ובלי מתיחה (ממצא 33) */
 .badge{display:inline-block;flex:none;align-self:center;white-space:nowrap;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:600;background:var(--chip);color:var(--ink);font-variant-numeric:tabular-nums}
@@ -274,6 +277,7 @@ body.nonew .newtext{text-decoration:none}
    - אייקונים בתוכן במקום אמוג'י (🔔, 💬, 🏆, 🎯, ⭐).
    - התקדמות: טבעת לאתגר השבועי (S13, S20), מד ומונה סטים באימון (S14), טבעת סטים ורגע חגיגה במשוב (S15), גרף גדול עם שטח (S21).
    - S14: סט שבוצע ירוק ומלא, סט שנשאר מקווקו. S01: אריח עם 0 נחלש, ואריח שדורש פעולה מקבל צבע ואייקון.
+   - איורים מהצוות (כלי AI, מותרים לשימוש), ביחס המלא: S22 מאמן ומתאמנת, S15 סיום אימון, S04 ו-S14 תכנון אימון, S16 האימון הבא, S17 אימון בקבוצה.
    - S23: תמונת 3D רכה שהצוות יצר בכלי AI (מותרת לשימוש), במקום התמונה הישנה, בגרסה בהירה ובגרסה כהה.
    - נוסח חדש אחד, אושר: "X מתוך Y סטים" בראש S14 (מסומן באב הטיפוס בקו מנוקד).
    ============================================================ */
@@ -475,6 +479,10 @@ const field=(label,input)=>{ // תווית מקושרת לשדה (ממצא 18): 
   const own=input.match(/^<\w+[^>]*?\sid="([^"]+)"/); if(own)return `<div><label for="${own[1]}">${label}</label>${input}</div>`;
   const id='f'+(++fid); return `<div><label for="${id}">${label}</label>${input.replace(/^<(input|select|textarea)/,`<$1 id="${id}"`)}</div>`};
 const chev=`<span class="chev">${I.chev}</span>`;
+// איור מתיקיית האתר, בשני גדלים; עם גרסה כהה מתחלף לפי מצב התצוגה (גרסה 4)
+const IMG='../app/public/images/';
+const art=(name,dark=false)=>{const one=(n,c,h)=>`<img class="hero-img ${c}" src="${IMG}${n}.webp" srcset="${IMG}${n}.webp 860w, ${IMG}${n}@1.5x.webp 1290w" sizes="(max-width:430px) 100vw, 400px" width="860" height="${h}" alt="" decoding="async" loading="lazy">`;
+  return dark?one(name,'lt',484)+one(name+'-dark','dk',484):one(name,'nodark',484)};
 const img=(what,cls='')=>`<div class="img ${cls}" role="img" aria-label="${what}"><span>תמונה: ${what} · תיבחר במשימה 4</span></div>`;
 const empty=(t,s='',image='')=>`<div class="state">${image}<div class="t">${t}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
 const skeleton=()=>`<div class="skel" aria-hidden="true"></div><div class="skel" aria-hidden="true"></div><div class="skel" aria-hidden="true"></div><div class="muted small" role="status">טוען...</div>`;
@@ -532,7 +540,7 @@ screens.newPassword=()=>shell('כניסה','סיסמה חדשה',`
 
 /* ----- S22 הצטרפות בהזמנה (מקרה שימוש 4) ----- */
 screens.joinInvite=()=>shell('הזמנה מהמאמן','הצטרפות',`
-  ${img('מתאמנים בסטודיו','short')}
+  ${art('join-coach')}
   <div class="notice">המאמן שלך הזמין אותך להצטרף. ההזמנה הגיעה בקישור או במייל.</div>
   ${field('שם','<input value="רון (דוגמה)" autocomplete="name">')}
   ${field('מייל','<input type="email" value="ron@example.com" autocomplete="username">')}
@@ -541,7 +549,7 @@ screens.joinInvite=()=>shell('הזמנה מהמאמן','הצטרפות',`
   <button class="link" data-a="go" data-v="joinExpired">מה רואים כשההזמנה פגה?</button>`);
 /* S22, הזמנה שפגה, נוצלה או שהקישור שגוי: נבדק כשהקישור נפתח, לפני הרשמה (מפה גרסה 13; ממצא 15) */
 screens.joinExpired=()=>shell('הזמנה','הצטרפות',`
-  ${img('מתאמנים בסטודיו','short')}
+  ${art('join-coach')}
   <div class="notice">ההזמנה כבר לא בתוקף. אפשר לבקש הזמנה חדשה</div>
   <div class="muted small">הקישור תקף לזמן מוגבל, ופעם אחת. מי ששלח אותו יכול לשלוח קישור חדש.</div>`);
 
@@ -616,7 +624,7 @@ screens.traineeCard=({id})=>{
 screens.programEdit=({id})=>{
   const p=programs[id];
   if(!p) return shell(nm(tname(id)),'בניית תוכנית',`
-    ${empty('למתאמן עוד אין תוכנית','התוכנית מתחילה באימון אחד, ואפשר להוסיף עוד.',img('לוח אימון','short'))}
+    ${empty('למתאמן עוד אין תוכנית','התוכנית מתחילה באימון אחד, ואפשר להוסיף עוד.',art('empty-plan'))}
     <button class="btn" data-a="newProgram" data-p="${id}">בניית תוכנית חדשה</button>`);
   const inactive=(inactivePrograms[id]||[]);
   return shell(nm(tname(id)),'תוכנית אימון',`
@@ -890,7 +898,7 @@ screens.traineeHome=()=>{
 /* ----- S14 אימון והזנת תוצאות (מקרה שימוש 3) ----- */
 screens.workoutPick=()=>{const p=programs[S.me];return shell('התוכנית שלי','אימון',p?`
   <div class="list">${p.workouts.map(w=>`<button class="item" data-a="startWorkout" data-p="${w.id}"><div class="grow"><div class="t">${w.name}</div><div class="s">${w.items.map(i=>ex(i.ex).name).join(' · ')}</div></div>${chev}</button>`).join('')}</div>`
-  :empty('התוכנית שלך עוד בהכנה אצל המאמן','היא תופיע כאן כשתהיה מוכנה.',img('משקולות','short')),{backBtn:false})};
+  :empty('התוכנית שלך עוד בהכנה אצל המאמן','היא תופיע כאן כשתהיה מוכנה.',art('empty-plan')),{backBtn:false})};
 
 let draft=null;
 screens.workout=({id})=>{
@@ -914,7 +922,7 @@ screens.exerciseView=({id})=>{const e=ex(id);return shell('סרטון הדגמה
 
 /* ----- S15 משוב (מקרה שימוש 6) ----- */
 screens.feedback=({id})=>{const f=id;return shell('משוב','כל הכבוד!',`
-  <div class="celebrate"><span class="badgeic">${f.prs.length?svg(I.trophy.match(/<path[^>]*>/g).join(''),38):svg('<path d="M4.5 10.5l3.7 3.7L15.5 6.5"/>',38)}</span></div>
+  <div class="celebrate">${art('feedback-done')}</div>
   <div class="stat"><div class="row">${ring(f.done,f.total,64,7)}<div><div class="sub">הושלמו</div><div class="lead">${f.done}/${f.total} סטים</div></div></div><div class="coins"><span class="num">${signed(f.coins)}</span><span class="cap">מטבעות</span></div></div>
   ${f.prs.length?`<div class="notice col" style="border-color:var(--warnC)"><div class="row"><span class="ic warn">${I.trophy}</span><div><b>${ref.feedback.pr}</b><div class="small">${f.prs.join(', ')}</div></div></div></div>`:''}
   <div class="card">${f.done===f.total?ref.feedback.full:ref.feedback.partial}</div>
@@ -930,7 +938,7 @@ screens.myWorkouts=()=>{
   ${list.length?list.map(([k,w])=>`<div class="card col"><div class="row between"><b>${fmtDay(w.date)} · ${wName(w.wid)}</b><button class="link" data-a="go" data-v="correct" data-p="${k}">תיקון</button></div>
    ${w.rows.map(r=>exLine(r,r.corrected?' <span class="badge warn">תוקן</span>':'')).join('')}
    ${notes[k]?`<div class="notice small row"><span class="ic info">${I.note}</span><span>הערת המאמן: ${notes[k]}</span></div>`:''}</div>`).join('')
-   :empty('עוד אין אימונים','אחרי השמירה הראשונה, האימונים יופיעו כאן.',img('ריצה בפארק','short'))}`);
+   :empty('עוד אין אימונים','אחרי השמירה הראשונה, האימונים יופיעו כאן.',art('empty-workouts'))}`);
 };
 // תיקון מקובץ לפי תרגיל, עם כותרות עמודות, ובלי משקל בתרגיל משקל גוף (ממצא 10)
 screens.correct=({id})=>{const rows=results.filter(r=>r.tid===S.me&&(r.date.toDateString()+r.wid)===id);return shell('תיקון תוצאה',`תיקון · ${fmtDay(rows[0].date)}`,`
@@ -980,7 +988,7 @@ screens.classesTrainee=()=>{const me=S.me;const up=classes.filter(c=>c.date>=new
    r?`<button class="btn sec small" data-a="cancelReg" data-p="${c.id}">ביטול הרשמה</button>`:
    w>=0?'':
    free>0?`<button class="btn small" data-a="register" data-p="${c.id}">הרשמה</button>`:
-   `<button class="btn sec small" data-a="register" data-p="${c.id}">הצטרפות להמתנה</button>`}</div>`}).join(''):empty('אין שיעורים קרובים','כשהמאמן יפרסם שיעור, הוא יופיע כאן.',img('אימון קבוצתי','short'))}</div>
+   `<button class="btn sec small" data-a="register" data-p="${c.id}">הצטרפות להמתנה</button>`}</div>`}).join(''):empty('אין שיעורים קרובים','כשהמאמן יפרסם שיעור, הוא יופיע כאן.',art('empty-classes'))}</div>
   <div class="muted small">אפשר לבטל עד ${ref.cancelHours} שעות לפני השיעור. אחרי זה אפשר לשלוח למאמן בקשה חריגה.</div>`,{backBtn:false})};
 
 screens.lateCancel=({id})=>{const c=classes.find(x=>x.id===id);return shell('ביטול מאוחר',`${fmtDay(c.date)} · ${c.time}`,`
