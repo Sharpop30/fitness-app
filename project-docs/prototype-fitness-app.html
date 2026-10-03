@@ -18,7 +18,7 @@
   --ok:#127a4b; --okSoft:#e3f6ec; --info:#2a66d1; --infoSoft:#e6effc; --warnC:#9a5706; --warnSoft:#fcf0dc; --danger:#c22b2b; --badSoft:#fde8e8;
   --demo:#fff4c2; --demoInk:#5b4a00; --img1:#e2dcff; --img2:#b9a8ff; --imgInk:#2b1d73;
   --shadow:0 1px 2px rgba(26,24,48,.05),0 8px 24px rgba(26,24,48,.06);
-  --heroImgBg:#f2f3f9; --heroImgFilter:none; --heroImgRing:transparent;
+  --heroImgBg:#f2f3f9; --heroImgFilter:none; --heroImgRing:transparent; --heroLt:block; --heroDk:none;
   --font:Rubik,Heebo,system-ui,sans-serif; --mono:Rubik,Heebo,system-ui,sans-serif;
   color-scheme:light;
 }
@@ -29,7 +29,7 @@
     --acc:#9c85ff; --accInk:#140f2c; --accSoft:#2a2346; --accent:#bba9ff; --lime:#9c85ff;
     --ok:#5bd19a; --okSoft:#163027; --info:#86b2ff; --infoSoft:#1a2740; --warnC:#f2b65a; --warnSoft:#33270f; --danger:#ff8f8f; --badSoft:#3a1c1f;
     --demo:#3a3410; --demoInk:#f3e39a; --img1:#2a2346; --img2:#3d3170; --imgInk:#e4dcff;
-    --shadow:0 0 0 1px #2d2b3b; --heroImgFilter:brightness(.9); --heroImgRing:#3a3849;
+    --shadow:0 0 0 1px #2d2b3b; --heroImgFilter:none; --heroImgRing:transparent; --heroLt:none; --heroDk:block;
     color-scheme:dark;
   }
 }
@@ -39,7 +39,7 @@
   --acc:#9c85ff; --accInk:#140f2c; --accSoft:#2a2346; --accent:#bba9ff; --lime:#9c85ff;
   --ok:#5bd19a; --okSoft:#163027; --info:#86b2ff; --infoSoft:#1a2740; --warnC:#f2b65a; --warnSoft:#33270f; --danger:#ff8f8f; --badSoft:#3a1c1f;
   --demo:#3a3410; --demoInk:#f3e39a; --img1:#2a2346; --img2:#3d3170; --imgInk:#e4dcff;
-  --shadow:0 0 0 1px #2d2b3b; --heroImgFilter:brightness(.9); --heroImgRing:#3a3849;
+  --shadow:0 0 0 1px #2d2b3b; --heroImgFilter:none; --heroImgRing:transparent; --heroLt:none; --heroDk:block;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -140,8 +140,9 @@ button.item:hover{box-shadow:var(--shadow),0 0 0 1px var(--line-in)}
 .img{height:170px;border-radius:20px;background:linear-gradient(135deg,var(--img1),var(--img2));display:flex;align-items:flex-end;padding:12px;color:var(--imgInk);font-size:11px}
 .img.tall{height:230px}
 .img.short{height:120px}
-/* תמונת הכניסה (גרסה 4): 3D רך, בצבעי הכיוון. בלי חיתוך, ביחס שלה. במצב כהה: כרטיס בהיר ממוסגר ומעט מעומעם, עד שתגיע גרסה כהה */
-.hero-img{display:block;width:100%;height:auto;aspect-ratio:860/498;border-radius:20px;background:var(--heroImgBg);filter:var(--heroImgFilter);box-shadow:0 0 0 1px var(--heroImgRing)}
+/* תמונת הכניסה (גרסה 4): 3D רך, בצבעי הכיוון, בגרסה בהירה ובגרסה כהה שמתחלפות לפי מצב התצוגה. שני גדלים (860 ו-1290) לחדות בטלפון */
+.hero-img{width:100%;height:auto;aspect-ratio:860/498;object-fit:cover;border-radius:20px;background:var(--heroImgBg);filter:var(--heroImgFilter);box-shadow:0 0 0 1px var(--heroImgRing)}
+.hero-img.lt{display:var(--heroLt)} .hero-img.dk{display:var(--heroDk)}
 
 /* תגיות בלי שבירה ובלי מתיחה (ממצא 33) */
 .badge{display:inline-block;flex:none;align-self:center;white-space:nowrap;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:600;background:var(--chip);color:var(--ink);font-variant-numeric:tabular-nums}
@@ -273,7 +274,7 @@ body.nonew .newtext{text-decoration:none}
    - אייקונים בתוכן במקום אמוג'י (🔔, 💬, 🏆, 🎯, ⭐).
    - התקדמות: טבעת לאתגר השבועי (S13, S20), מד ומונה סטים באימון (S14), טבעת סטים ורגע חגיגה במשוב (S15), גרף גדול עם שטח (S21).
    - S14: סט שבוצע ירוק ומלא, סט שנשאר מקווקו. S01: אריח עם 0 נחלש, ואריח שדורש פעולה מקבל צבע ואייקון.
-   - S23: תמונת 3D רכה שהצוות יצר בכלי AI (מותרת לשימוש), במקום התמונה הישנה; במצב כהה בכרטיס ממוסגר.
+   - S23: תמונת 3D רכה שהצוות יצר בכלי AI (מותרת לשימוש), במקום התמונה הישנה, בגרסה בהירה ובגרסה כהה.
    - נוסח חדש אחד, אושר: "X מתוך Y סטים" בראש S14 (מסומן באב הטיפוס בקו מנוקד).
    ============================================================ */
 const TODAY = new Date(2026, 8, 28, 12, 0); // יום שני, 28.09.2026 [נתוני דוגמה]
@@ -505,7 +506,8 @@ const screens={};
 
 /* ----- S23 כניסה ----- */
 screens.signIn=()=>shell('ביצועים, מעקב ותשלומים','כניסה לאפליקציה',`
-  <img class="hero-img" src="../app/public/images/signin-hero.webp" width="860" height="498" alt="" decoding="async">
+  <img class="hero-img lt" src="../app/public/images/signin-hero.webp" srcset="../app/public/images/signin-hero.webp 860w, ../app/public/images/signin-hero@1.5x.webp 1290w" sizes="(max-width:430px) 100vw, 400px" width="860" height="498" alt="" decoding="async">
+  <img class="hero-img dk" src="../app/public/images/signin-hero-dark.webp" srcset="../app/public/images/signin-hero-dark.webp 860w, ../app/public/images/signin-hero-dark@1.5x.webp 1290w" sizes="(max-width:430px) 100vw, 400px" width="860" height="484" alt="" decoding="async">
   <div style="font-size:16px">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו: תוכניות, תשלומים ומעקב במקום אחד.</div>
   ${field('מייל','<input type="email" autocomplete="username" placeholder="name@example.com">')}
   ${field('סיסמה','<input type="password" autocomplete="current-password">')}
