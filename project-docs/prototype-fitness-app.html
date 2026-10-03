@@ -282,6 +282,7 @@ body.nonew .newtext{text-decoration:none}
    - S23: תמונת 3D רכה שהצוות יצר בכלי AI (מותרת לשימוש), במקום התמונה הישנה. לכל איור גרסה בהירה וגרסה כהה מהצוות, שמתחלפות לפי מצב התצוגה.
    - מסכי בעל העסק באותה שפה: אייקון וסוג מידע לכל אריח ב-S24 וב-S27 (משימה 4).
    - S23, אחרי 5ב: קישור לסיסמה חדשה שכבר לא בתוקף פותח את השחזור עם "הקישור לסיסמה חדשה כבר לא בתוקף. אפשר לבקש קישור חדש." (נוסח באישור הצוות), ואינו מכניס.
+   - S23: הכותרת "fitness app" במקום "כניסה לאפליקציה", עד שייבחר שם לאפליקציה (הכרעת הצוות).
    - נוסח חדש אחד, אושר: "X מתוך Y סטים" בראש S14 (מסומן באב הטיפוס בקו מנוקד).
    ============================================================ */
 const TODAY = new Date(2026, 8, 28, 12, 0); // יום שני, 28.09.2026 [נתוני דוגמה]
@@ -516,7 +517,7 @@ function shell(eyebrow,title,body,{backBtn=true}={}){
 const screens={};
 
 /* ----- S23 כניסה ----- */
-screens.signIn=()=>shell('ביצועים, מעקב ותשלומים','כניסה לאפליקציה',`
+screens.signIn=()=>shell('ביצועים, מעקב ותשלומים','<span class="ltr">fitness app</span>',`
   <img class="hero-img lt" src="../app/public/images/signin-hero.webp" srcset="../app/public/images/signin-hero.webp 860w, ../app/public/images/signin-hero@1.5x.webp 1290w" sizes="(max-width:430px) 100vw, 400px" width="860" height="498" alt="" decoding="async">
   <img class="hero-img dk" src="../app/public/images/signin-hero-dark.webp" srcset="../app/public/images/signin-hero-dark.webp 860w, ../app/public/images/signin-hero-dark@1.5x.webp 1290w" sizes="(max-width:430px) 100vw, 400px" width="860" height="484" alt="" decoding="async">
   <div style="font-size:16px">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו: תוכניות, תשלומים ומעקב במקום אחד.</div>
