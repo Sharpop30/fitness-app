@@ -5,54 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>אב טיפוס אפליקציית מאמן</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Heebo:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== מודול העיצוב (D01), גרסה 2: אסימוני FORM (reference/form/README.md), עם תיקוני סקירת העיצוב =====
-   ממצא 7: עברית בגופן המונו נופלת ל-Heebo. ממצא 17: accent ו-muted3 כהים יותר במצב בהיר (ניגודיות 4.5:1). */
+/* ===== מודול העיצוב (D01), גרסה 4: כיוון א׳, "סגול רך" (רענון העיצוב, 03.10.2026; doc-design-refresh-brief) =====
+   השראה: LEAP. רקע קריר, כרטיסים לבנים עם צל רך, סגול אחד מוביל, פס צבע בצד לפי סוג המידע, אייקוני קו.
+   המספרים באותו גופן כמו הטקסט (Rubik), עם ספרות ברוחב קבוע, ולא בגופן מונו. ניגודיות 4.5:1 לפחות בשני המצבים.
+   שמות האסימונים הישנים (accent, lime, line-in, ink) נשארים, כי מסכים משתמשים בהם. */
 :root{
-  --page:#e8e8e3; --bg:#f4f4f1; --card:#ffffff; --ink:#161916; --muted:#555a53; --muted2:#5f635c; --muted3:#6b6f68;
-  --line:#e8e8e3; --line-in:#e0e0da; --tint:#eef8d6; --tint2:#e2f5c4; --tintInk:#1d3a12; --warn:#fdf0e2; --warnInk:#8a4a0f;
-  --chip:#f0f0ec; --seg:#e6e6e0; --hero:#13261a; --heroSub:#b9c4bb; --heroNum:#c3f03f; --sel:#13261a; --selFg:#fff;
-  --accent:#237a3f; --lime:#c3f03f; --limeInk:#15260c; --orange:#d9822b; --danger:#b3261e; --demo:#fff4c2; --demoInk:#5b4a00;
-  --img1:#cfe3c0; --img2:#9fc48c;
-  --font:Geist,Heebo,system-ui,sans-serif; --mono:"Geist Mono",Heebo,ui-monospace,monospace;
+  --page:#e9e9f1; --bg:#f3f3f8; --card:#ffffff; --ink:#1a1830; --muted:#5e5b72; --muted2:#5e5b72; --muted3:#67647b;
+  --line:#e7e6ef; --line-in:#d9d8e4; --chip:#f1f0f6; --seg:#e9e8f1; --zero:#f7f7fa;
+  --acc:#6a45f5; --accInk:#ffffff; --accSoft:#eeeafe; --accent:#5230dd; --lime:#6a45f5;
+  --ok:#127a4b; --okSoft:#e3f6ec; --info:#2a66d1; --infoSoft:#e6effc; --warnC:#9a5706; --warnSoft:#fcf0dc; --danger:#c22b2b; --badSoft:#fde8e8;
+  --demo:#fff4c2; --demoInk:#5b4a00; --img1:#e2dcff; --img2:#b9a8ff; --imgInk:#2b1d73;
+  --shadow:0 1px 2px rgba(26,24,48,.05),0 8px 24px rgba(26,24,48,.06);
+  --font:Rubik,Heebo,system-ui,sans-serif; --mono:Rubik,Heebo,system-ui,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --page:#0b0d0b; --bg:#121512; --card:#1b1f1b; --ink:#eef0ea; --muted:#a3a89f; --muted2:#a3a89f; --muted3:#9a9f96;
-    --line:#2c312c; --line-in:#343a34; --tint:#1f3324; --tint2:#28432d; --tintInk:#d4f0a6; --warn:#3a2b1b; --warnInk:#f3c896;
-    --chip:#262b26; --seg:#232823; --hero:#1f3527; --sel:#c3f03f; --selFg:#15260c; --accent:#7fd08f; --danger:#f2b8b5;
-    --demo:#3a3410; --demoInk:#f3e39a; --img1:#23382a; --img2:#2f4d37;
+    --page:#0c0b12; --bg:#12111a; --card:#1c1b27; --ink:#f1f0f7; --muted:#aaa7bd; --muted2:#aaa7bd; --muted3:#a09db3;
+    --line:#2d2b3b; --line-in:#3a3849; --chip:#262433; --seg:#232130; --zero:#181722;
+    --acc:#9c85ff; --accInk:#140f2c; --accSoft:#2a2346; --accent:#bba9ff; --lime:#9c85ff;
+    --ok:#5bd19a; --okSoft:#163027; --info:#86b2ff; --infoSoft:#1a2740; --warnC:#f2b65a; --warnSoft:#33270f; --danger:#ff8f8f; --badSoft:#3a1c1f;
+    --demo:#3a3410; --demoInk:#f3e39a; --img1:#2a2346; --img2:#3d3170; --imgInk:#e4dcff;
+    --shadow:0 0 0 1px #2d2b3b;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --page:#0b0d0b; --bg:#121512; --card:#1b1f1b; --ink:#eef0ea; --muted:#a3a89f; --muted2:#a3a89f; --muted3:#9a9f96;
-  --line:#2c312c; --line-in:#343a34; --tint:#1f3324; --tint2:#28432d; --tintInk:#d4f0a6; --warn:#3a2b1b; --warnInk:#f3c896;
-  --chip:#262b26; --seg:#232823; --hero:#1f3527; --sel:#c3f03f; --selFg:#15260c; --accent:#7fd08f; --danger:#f2b8b5;
-  --demo:#3a3410; --demoInk:#f3e39a; --img1:#23382a; --img2:#2f4d37;
+  --page:#0c0b12; --bg:#12111a; --card:#1c1b27; --ink:#f1f0f7; --muted:#aaa7bd; --muted2:#aaa7bd; --muted3:#a09db3;
+  --line:#2d2b3b; --line-in:#3a3849; --chip:#262433; --seg:#232130; --zero:#181722;
+  --acc:#9c85ff; --accInk:#140f2c; --accSoft:#2a2346; --accent:#bba9ff; --lime:#9c85ff;
+  --ok:#5bd19a; --okSoft:#163027; --info:#86b2ff; --infoSoft:#1a2740; --warnC:#f2b65a; --warnSoft:#33270f; --danger:#ff8f8f; --badSoft:#3a1c1f;
+  --demo:#3a3410; --demoInk:#f3e39a; --img1:#2a2346; --img2:#3d3170; --imgInk:#e4dcff;
+  --shadow:0 0 0 1px #2d2b3b;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--page);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45}
 button,input,select,textarea{font-family:inherit}
 .app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative}
-@media (min-width:600px){.app{box-shadow:0 30px 80px rgba(20,30,20,.18);margin:16px auto;min-height:calc(100vh - 96px);border-radius:28px;overflow:hidden}}
+@media (min-width:600px){.app{box-shadow:0 30px 80px rgba(26,24,48,.16);margin:16px auto;min-height:calc(100vh - 96px);border-radius:28px;overflow:hidden}}
 
 /* פס ההדגמה בייצור (ממצא 1, הכרעה 2) */
-.demo-bar{background:var(--demo);color:var(--demoInk);font-size:12px;padding:6px 16px;text-align:center}
+.demo-bar{background:var(--demo);color:var(--demoInk);font-size:12px;padding:5px 16px;text-align:center}
 
-/* הכותרת: חזרה עם חץ ימינה (ממצא 38), מצב כהה או בהיר שנשמר (27) */
-header.hd{background:var(--card);padding:6px 20px 16px;position:relative}
-.hd-top{display:flex;align-items:center;justify-content:space-between;min-height:44px}
-.back{display:inline-flex;align-items:center;gap:4px;color:var(--accent);background:none;border:0;font-size:15px;min-height:44px;padding:0;cursor:pointer}
-.theme{background:var(--chip);border:1px solid var(--line);border-radius:999px;min-height:32px;padding:0 12px;font-size:12px;cursor:pointer;color:var(--ink)}
-.eyebrow{font-size:11px;letter-spacing:.05em;color:var(--accent);margin-top:2px;display:flex;justify-content:space-between;gap:8px}
-.sid{font-family:var(--mono);color:var(--muted3);font-size:10px}
-h1{font-size:27px;font-weight:500;letter-spacing:-.01em;line-height:1.15;margin:4px 0 0;text-wrap:balance}
-h2{font-size:19px;font-weight:500;margin:6px 0 0}
-main{flex:1;padding:16px 18px 28px;display:flex;flex-direction:column;gap:12px;animation:enter .28s ease}
+/* הכותרת, קומפקטית (אבחון: חמישית מהמסך): חזרה עם חץ ימינה (ממצא 38), ומצב כהה כאייקון שנשמר (27) */
+header.hd{padding:12px 18px 2px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.hd-main{flex:1;min-width:0}
+.back{display:inline-flex;align-items:center;gap:2px;color:var(--accent);background:none;border:0;font-size:14px;font-weight:500;min-height:36px;padding:0;cursor:pointer}
+.theme{width:44px;height:44px;flex:none;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);border-radius:999px;cursor:pointer;color:var(--ink);padding:0}
+.eyebrow{font-size:12px;color:var(--muted);margin-top:2px;display:flex;justify-content:space-between;gap:8px}
+.sid{color:var(--muted3);font-size:10px;font-variant-numeric:tabular-nums}
+h1{font-size:24px;font-weight:700;letter-spacing:-.01em;line-height:1.2;margin:2px 0 0;text-wrap:balance}
+h2{font-size:16px;font-weight:700;margin:6px 0 0}
+main{flex:1;padding:12px 16px 28px;display:flex;flex-direction:column;gap:12px;animation:enter .28s ease}
 @keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){main{animation:none}}
 
@@ -60,106 +67,152 @@ main{flex:1;padding:16px 18px 28px;display:flex;flex-direction:column;gap:12px;a
 .row{display:flex;align-items:center;gap:10px}
 .between{justify-content:space-between}
 .col{display:flex;flex-direction:column;gap:8px}
-.list{display:flex;flex-direction:column;gap:8px}
+.list{display:flex;flex-direction:column;gap:10px}
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.sechd{display:flex;justify-content:space-between;align-items:baseline;margin-top:6px}
+.sechd{display:flex;justify-content:space-between;align-items:baseline;margin-top:4px}
 .sechd h2{margin:0}
-.muted{color:var(--muted)} .small{font-size:12px}
+.muted{color:var(--muted)} .small{font-size:12.5px}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .ltr{direction:ltr;unicode-bidi:isolate}
 .divider{border-top:1px solid var(--line);padding-top:8px}
 
-/* כרטיסים */
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-.hero{background:var(--hero);color:#fff;border-radius:16px;padding:16px 18px}
-.hero .sub{color:var(--heroSub);font-size:12px}
-.hero .lead{font-size:18px;font-weight:500}
-.hero .num{font-size:24px;font-weight:500;color:var(--heroNum);font-family:var(--mono)}
-.hero .cap{font-size:10px;color:var(--heroSub);letter-spacing:.04em}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:right;color:var(--ink);font-size:14px;width:100%}
-button.tile{cursor:pointer}
-.tile .lbl{font-size:11px;letter-spacing:.04em;color:var(--muted2)}
-.tile .num{font-size:24px;margin-top:6px;font-family:var(--mono);font-variant-numeric:tabular-nums}
-.tile .cap{font-size:12px;color:var(--accent);margin-top:4px}
-.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between;text-align:right;width:100%;color:inherit;font-size:14px;min-height:52px}
-button.item{cursor:pointer}
-button.item:hover{border-color:var(--line-in)}
-.item .grow{flex:1;min-width:0}
-.item .t{font-size:15px}
-.item .s{font-size:12px;color:var(--muted);margin-top:2px}
-.chev{flex:none;color:var(--muted3);display:inline-flex}
-.when{width:52px;flex:none}
-.when .h{font-size:14px;font-family:var(--mono)}
-.when .d{font-size:11px;color:var(--muted);margin-top:2px}
-.av{width:38px;height:38px;border-radius:50%;background:var(--tint);color:var(--tintInk);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex:none}
-.tintrow{display:flex;align-items:center;gap:12px;background:var(--tint);border-radius:14px;padding:12px 14px;width:100%;border:0;text-align:right;color:var(--ink);font-size:13px;cursor:pointer}
-.notice{background:var(--tint);border-radius:14px;padding:12px 14px}
-.warnbox{background:var(--warn);border-radius:14px;padding:12px 14px}
-.confirm{background:var(--warn);border-radius:18px;padding:14px 16px}
+/* אייקון בעיגול צבעוני: הצבע אומר את סוג המידע (אבחון: "נראית בסיסית") */
+.ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--accSoft);color:var(--accent)}
+.ic.ok{background:var(--okSoft);color:var(--ok)} .ic.info{background:var(--infoSoft);color:var(--info)}
+.ic.warn{background:var(--warnSoft);color:var(--warnC)} .ic.bad{background:var(--badSoft);color:var(--danger)}
+/* פס צבע בצד הכרטיס, לפי סוג המידע */
+.stripe{border-inline-start:5px solid var(--sc,var(--acc))}
+.stripe.ok{--sc:var(--ok)} .stripe.info{--sc:var(--info)} .stripe.warn{--sc:var(--warnC)} .stripe.bad{--sc:var(--danger)}
 
-/* תמונות דקורטיביות: מקום שמור. התמונות עצמן נבחרות במשימה 4, באישור הצוות */
-.img{height:170px;border-radius:16px;background:linear-gradient(135deg,var(--img1),var(--img2));display:flex;align-items:flex-end;padding:12px;color:var(--tintInk);font-size:11px}
+/* כרטיסים: לבן, צל רך, בלי מסגרת */
+.card{background:var(--card);border-radius:20px;padding:14px 16px;box-shadow:var(--shadow)}
+.hero{background:var(--acc);color:var(--accInk);border-radius:20px;padding:16px 18px;box-shadow:var(--shadow)}
+.hero .sub{color:var(--accInk);opacity:.85;font-size:12.5px}
+.hero .lead{font-size:18px;font-weight:600}
+.hero .num{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.hero .cap{font-size:11px;opacity:.85}
+.stat{background:var(--card);border-radius:20px;padding:14px 16px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.stat .lead{font-size:16px;font-weight:600}
+.stat .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.coins{display:flex;flex-direction:column;align-items:center;padding:8px 14px;border-radius:16px;background:var(--accSoft);color:var(--accent);min-width:76px}
+.coins .num{font-size:24px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.coins .cap{font-size:12px}
+.tile{background:var(--card);border:0;border-radius:18px;padding:12px;text-align:right;color:var(--ink);font-size:14px;width:100%;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+button.tile{cursor:pointer}
+.tile .lbl{font-size:12.5px;font-weight:500;color:var(--ink)}
+.tile .num{font-size:26px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;order:-1}
+.tile .ic{order:-2;margin-bottom:4px}
+.tile .cap{font-size:12px;color:var(--muted)}
+.tile.zero{background:var(--zero);box-shadow:none;border:1px solid var(--line)}
+.tile.zero .num{color:var(--muted);font-size:22px}
+.tile.zero .ic{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.item{background:var(--card);border:0;border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between;text-align:right;width:100%;color:inherit;font-size:14px;min-height:56px;box-shadow:var(--shadow)}
+button.item{cursor:pointer}
+button.item:hover{box-shadow:var(--shadow),0 0 0 1px var(--line-in)}
+.item .grow{flex:1;min-width:0}
+.item .t{font-size:15px;font-weight:500}
+.item .s{font-size:12.5px;color:var(--muted);margin-top:2px}
+.chev{flex:none;color:var(--muted3);display:inline-flex}
+.when{width:56px;flex:none;background:var(--accSoft);color:var(--accent);border-radius:12px;padding:6px 4px;text-align:center}
+.when .h{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.when .d{font-size:11px;margin-top:1px}
+.meta{display:flex;flex-direction:column;gap:4px}
+.meta>span{display:flex;align-items:center;gap:6px}
+.meta svg{color:var(--muted3)}
+.av{width:38px;height:38px;border-radius:50%;background:var(--accSoft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none}
+.tintrow{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:12px 14px;width:100%;border:0;text-align:right;color:var(--ink);font-size:14px;cursor:pointer;box-shadow:var(--shadow)}
+.notice{background:var(--card);border-radius:18px;padding:12px 14px;box-shadow:var(--shadow);border-inline-start:5px solid var(--info)}
+.warnbox{background:var(--warnSoft);border-radius:18px;padding:12px 14px;color:var(--ink)}
+.confirm{background:var(--warnSoft);border-radius:18px;padding:14px 16px}
+
+/* התקדמות: טבעת ומד (אבחון: "חסרה תחושת התקדמות") */
+.ring{flex:none}
+.ring .tr{stroke:var(--line)} .ring .fg{stroke:var(--acc)} .ring.full .fg{stroke:var(--ok)}
+.ring text{fill:var(--ink);font-family:var(--font);font-weight:700;font-variant-numeric:tabular-nums}
+.meter{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.meter span{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .3s ease}
+.meter.full span{background:var(--ok)}
+@media (prefers-reduced-motion:reduce){.meter span{transition:none}}
+
+/* תמונות דקורטיביות */
+.img{height:170px;border-radius:20px;background:linear-gradient(135deg,var(--img1),var(--img2));display:flex;align-items:flex-end;padding:12px;color:var(--imgInk);font-size:11px}
 .img.tall{height:230px}
 .img.short{height:120px}
 
 /* תגיות בלי שבירה ובלי מתיחה (ממצא 33) */
-.badge{display:inline-block;flex:none;align-self:center;white-space:nowrap;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:500;background:var(--chip);color:var(--ink)}
-.badge.ok{background:var(--tint2);color:var(--tintInk)}
-.badge.warn{background:var(--warn);color:var(--warnInk)}
+.badge{display:inline-block;flex:none;align-self:center;white-space:nowrap;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:600;background:var(--chip);color:var(--ink);font-variant-numeric:tabular-nums}
+.badge.ok{background:var(--okSoft);color:var(--ok)}
+.badge.acc{background:var(--accSoft);color:var(--accent)}
+.badge.warn{background:var(--warnSoft);color:var(--warnC)}
 .badge.demo{background:var(--demo);color:var(--demoInk)}
 
 /* כפתורים: מצב "שולח" (16), שטח לחיצה 44 (26), כפתור קטן בלי גובה קבוע (13) */
-.btn{min-height:50px;width:100%;border-radius:999px;border:0;background:var(--lime);color:var(--limeInk);font-size:15px;font-weight:500;cursor:pointer;padding:0 18px}
-.btn.sec{background:var(--card);border:1px solid var(--line);color:var(--ink)}
-.btn.small{min-height:36px;width:auto;padding:6px 16px;font-size:13px}
+.btn{min-height:50px;width:100%;border-radius:14px;border:0;background:var(--acc);color:var(--accInk);font-size:16px;font-weight:600;cursor:pointer;padding:0 18px;box-shadow:0 6px 16px rgba(106,69,245,.22)}
+.btn.sec{background:var(--card);border:1px solid var(--line-in);color:var(--ink);box-shadow:none}
+.btn.small{min-height:38px;width:auto;padding:6px 16px;font-size:13.5px;border-radius:12px}
 .btn:disabled{opacity:.55;cursor:progress}
-.btn:focus-visible,.item:focus-visible,.pill:focus-visible,.tile:focus-visible,.link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.link{background:none;border:0;color:var(--accent);cursor:pointer;font-size:13px;padding:0 4px;min-height:44px;display:inline-flex;align-items:center;gap:4px}
+.btn:focus-visible,.item:focus-visible,.pill:focus-visible,.tile:focus-visible,.link:focus-visible,.tintrow:focus-visible,.check:focus-visible,.theme:focus-visible,nav.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.link{background:none;border:0;color:var(--accent);cursor:pointer;font-size:13.5px;font-weight:500;padding:0 4px;min-height:44px;display:inline-flex;align-items:center;gap:4px}
 
 /* טפסים: תווית מקושרת לשדה (18), מייל וקישור משמאל לימין (8) */
 input,select,textarea{width:100%;font-size:15px;padding:11px 12px;border-radius:12px;border:1px solid var(--line-in);background:var(--card);color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:0;border-color:transparent}
 textarea{resize:vertical;line-height:1.45}
 input[type=email],input[type=url],input.ltr{direction:ltr;text-align:left}
 input[type=email]::placeholder,input[type=url]::placeholder{text-align:left}
-label{font-size:12px;color:var(--muted2);display:block;margin-bottom:4px}
+label{font-size:12.5px;color:var(--muted2);display:block;margin-bottom:4px}
 .checkline{display:flex;align-items:center;gap:10px;min-height:44px}
-.checkline input{width:20px;height:20px}
+.checkline input{width:20px;height:20px;accent-color:var(--acc)}
 .seg{display:flex;background:var(--seg);border-radius:999px;padding:3px;gap:4px}
-.seg button{flex:1;height:34px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;font-size:13px}
-.seg button.on{background:var(--card);color:var(--ink);font-weight:500}
-.pill{min-height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:12px;color:var(--ink)}
-.pill.on{background:var(--sel);color:var(--selFg);border-color:transparent}
-.setrow{display:grid;grid-template-columns:36px 1fr 1fr 44px;gap:6px;align-items:center}
-.setrow input{padding:9px;text-align:center}
-.check{width:44px;height:44px;border-radius:12px;border:1px solid var(--line-in);background:var(--card);cursor:pointer;color:var(--ink);font-size:16px}
-.check.on,.check[aria-pressed=true]{background:var(--tint2);color:var(--tintInk);border-color:transparent}
+.seg button{flex:1;height:36px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;font-size:13.5px}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:var(--shadow)}
+.pill{min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line-in);background:var(--card);cursor:pointer;font-size:13px;color:var(--ink)}
+.pill.on{background:var(--acc);color:var(--accInk);border-color:transparent}
+/* סטים: מה שבוצע ירוק ומלא, מה שנשאר לבן עם מסגרת מקווקוות (אבחון: S14 צפוף) */
+.setrow{display:grid;grid-template-columns:30px 1fr 1fr 44px;gap:8px;align-items:center}
+.setrow.head{padding:0 8px}
+.setrow.done,.setrow.todo{padding:6px 8px;border-radius:14px}
+.setrow.done{background:var(--okSoft)}
+.setrow.todo{outline:1.5px dashed var(--line-in);outline-offset:-1.5px}
+.setrow .n{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.setrow input{padding:9px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.check{width:44px;height:44px;border-radius:12px;border:2px solid var(--line-in);background:var(--card);cursor:pointer;color:transparent;display:grid;place-items:center;padding:0}
+.check.on,.check[aria-pressed=true]{background:var(--ok);color:var(--card);border-color:transparent}
 .status{border:0;background:none;min-height:44px;padding:0 4px;font-size:13px;cursor:pointer;color:var(--muted3)}
-.status[aria-pressed=true]{color:var(--accent);font-weight:500}
+.status[aria-pressed=true]{color:var(--ok);font-weight:600}
 .exline{display:flex;flex-direction:column;gap:6px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start}
-.setchip{direction:ltr;unicode-bidi:isolate;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;background:var(--chip);border-radius:8px;padding:3px 8px;white-space:nowrap}
-.linkbox{direction:ltr;text-align:left;font-family:var(--mono);font-size:12px;background:var(--chip);border-radius:12px;padding:10px 12px;word-break:break-all}
+.setchip{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums;font-size:12.5px;background:var(--chip);border-radius:8px;padding:3px 8px;white-space:nowrap}
+.linkbox{direction:ltr;text-align:left;font-size:12.5px;background:var(--chip);border-radius:12px;padding:10px 12px;word-break:break-all}
 
 /* מצבים: טוען (6), שגיאה עם "לנסות שוב" (2), ריק (30) */
-.skel{background:var(--card);border:1px solid var(--line);border-radius:14px;height:64px;position:relative;overflow:hidden}
+.skel{background:var(--card);border-radius:18px;height:64px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
 .skel::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--chip),transparent);animation:sh 1.2s infinite}
 @keyframes sh{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
 @media (prefers-reduced-motion:reduce){.skel::after{animation:none}}
-.state{background:var(--card);border:1px dashed var(--line-in);border-radius:14px;padding:18px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
-.state .t{font-size:15px;font-weight:500}
+.state{background:var(--card);border:1.5px dashed var(--line-in);border-radius:18px;padding:18px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.state .t{font-size:15px;font-weight:600}
 .state .s{font-size:13px;color:var(--muted)}
 .state.err .t{color:var(--danger)}
 
-/* וידאו וגרף */
-.video{background:#0d100d;color:#fff;border-radius:16px;height:170px;display:flex;align-items:center;justify-content:center;font-size:13px;text-align:center;padding:12px}
-svg.chart text{fill:var(--muted2);font-size:10px;font-family:var(--mono)}
+/* רגע של חגיגה בסיום אימון (S15; אבחון: "אין רגע של חגיגה") */
+.celebrate{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0 4px;text-align:center}
+.celebrate .badgeic{width:72px;height:72px;border-radius:24px;display:grid;place-items:center;background:var(--accSoft);color:var(--accent);animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.celebrate .badgeic{animation:none}}
 
-/* סרגל הלשוניות עם אייקונים (26); לשונית לא פעילה בניגודיות תקינה (17) */
-nav.tabs{position:sticky;bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);display:flex;background:var(--card);border-top:1px solid var(--line)}
-nav.tabs button{flex:1;padding:8px 4px 12px;border:0;background:none;color:var(--muted3);font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px}
-nav.tabs button.on{color:var(--accent);font-weight:500}
-.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--hero);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center;z-index:5}
+/* וידאו וגרף */
+.video{background:#14112a;color:#fff;border-radius:20px;height:170px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;text-align:center;padding:12px}
+svg.chart text{fill:var(--muted2);font-size:10.5px;font-family:var(--font)}
+
+/* סרגל הלשוניות עם אייקונים (26); הלשונית הפעילה בגלולה סגולה; לא פעילה בניגודיות תקינה (17) */
+nav.tabs{position:sticky;bottom:0;padding:6px 6px calc(8px + env(safe-area-inset-bottom,0px));display:flex;background:var(--card);border-top:1px solid var(--line)}
+nav.tabs button{flex:1;padding:4px 4px 6px;border:0;background:none;color:var(--muted3);font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;border-radius:12px}
+nav.tabs button .pi{padding:4px 16px;border-radius:999px;display:grid;place-items:center}
+nav.tabs button.on{color:var(--accent);font-weight:600}
+nav.tabs button.on .pi{background:var(--accSoft)}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center;z-index:5}
 .toast.show{opacity:1;transform:translate(-50%,-8px)}
 
 /* כלי אב הטיפוס, מחוץ לאפליקציה */
@@ -167,7 +220,9 @@ nav.tabs button.on{color:var(--accent);font-weight:500}
 .proto label{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:12px;color:var(--muted)}
 .proto input{width:auto}
 .proto button{background:none;border:0;color:var(--accent);cursor:pointer;font-size:12px;padding:6px 0}
-.proto-box{border:1px dashed var(--line-in);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.proto-box{border:1.5px dashed var(--line-in);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.newtext{text-decoration:underline dotted var(--warnC) 2px;text-underline-offset:3px}
+body.nonew .newtext{text-decoration:none}
 </style>
 </head>
 <body>
@@ -208,6 +263,14 @@ nav.tabs button.on{color:var(--accent);font-weight:500}
    - נוסחי השגיאה כמו ב-ERROR_CODES (ממצא 36): "ההזמנה כבר לא בתוקף. אפשר לבקש הזמנה חדשה", בלי "מהמאמן", כי היא משמשת גם למאמן.
    גרסה 3.3 (02.10.2026, אושרה בידי הצוות): מדוח שלב 7ב, פער 2: דרישת הסיסמה "עם אותיות באנגלית וספרות", כי שירות הזהות סופר רק אותיות באנגלית.
    גרסה 3.4 (03.10.2026, אושרה בידי הצוות): מבדיקת הטלפון בשלב 7ג: S23, סיסמה חדשה שזהה לקודמת נדחית בנוסח "הסיסמה החדשה צריכה להיות שונה מהקודמת".
+   גרסה 4 (03.10.2026, טיוטה לאישור הצוות): רענון העיצוב, כיוון א׳ "סגול רך" (doc-design-refresh-brief; בחירת הצוות).
+   אותו מבנה, אותן זרימות ואותם נוסחים. מה השתנה במראה בלבד:
+   - מודול העיצוב: סגול אחד מוביל, רקע קריר, כרטיסים לבנים עם צל רך, פס צבע לפי סוג המידע, גופן Rubik, מספרים בלי מונו.
+   - הכותרת קומפקטית, ו"מצב כהה" הוא אייקון עם תווית נגישה. בסרגל הלשוניות הלשונית הפעילה בגלולה.
+   - אייקונים בתוכן במקום אמוג'י (🔔, 💬, 🏆, 🎯, ⭐).
+   - התקדמות: טבעת לאתגר השבועי (S13, S20), מד ומונה סטים באימון (S14), טבעת סטים ורגע חגיגה במשוב (S15), גרף גדול עם שטח (S21).
+   - S14: סט שבוצע ירוק ומלא, סט שנשאר מקווקו. S01: אריח עם 0 נחלש, ואריח שדורש פעולה מקבל צבע ואייקון.
+   - נוסח חדש אחד, מסומן בקו מנוקד, לאישור: "X מתוך Y סטים" בראש S14.
    ============================================================ */
 const TODAY = new Date(2026, 8, 28, 12, 0); // יום שני, 28.09.2026 [נתוני דוגמה]
 const DAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
@@ -236,7 +299,28 @@ const I={
   chev:svg('<path d="M12 5l-5 5 5 5"/>',14),     // חץ רשימה: מצביע שמאלה (ממצא 38)
   chart:svg('<path d="M3.5 16.5h13M6 13.5v-3M10 13.5v-7M14 13.5v-5"/>'),
   wifi:svg('<path d="M3 8.5a10 10 0 0 1 14 0M5.5 11.3a6.5 6.5 0 0 1 9 0M8.2 14a2.6 2.6 0 0 1 3.6 0M3 3l14 14"/>',28),
+  // גרסה 4: אייקונים בתוכן, באותו קו (אבחון: "אין אייקונים בתוכן")
+  bell:svg('<path d="M5 13.5V9.5a5 5 0 0 1 10 0v4l1.3 1.7H3.7z"/><path d="M8.3 17.2a1.8 1.8 0 0 0 3.4 0"/>'),
+  clock:svg('<circle cx="10" cy="10" r="7"/><path d="M10 6.3V10l2.5 1.7"/>',18),
+  pin:svg('<path d="M10 17.5s-5.3-4.9-5.3-9a5.3 5.3 0 0 1 10.6 0c0 4.1-5.3 9-5.3 9z"/><circle cx="10" cy="8.5" r="1.9"/>',18),
+  play:svg('<circle cx="10" cy="10" r="7.3"/><path d="M8.6 7.3v5.4l4.2-2.7z"/>',18),
+  flame:svg('<path d="M10 17.5c-3.2 0-5.3-2.1-5.3-5.1 0-2.8 2-4.3 3-6.8.3 1.6 1.1 2.5 2.1 3 .3-2.2 1.3-4.2 3.2-5.8-.1 2.5 1.6 4 2.1 5.8.2.7.2 1.5.2 2.2 0 3.9-2.1 6.7-5.3 6.7z"/>'),
+  trophy:svg('<path d="M6.7 3.5h6.6v4.2a3.3 3.3 0 0 1-6.6 0zM6.7 5H3.8c0 1.9 1.2 3.3 3 3.3M13.3 5h2.9c0 1.9-1.2 3.3-3 3.3M10 11v3M7.2 17h5.6M8.3 14h3.4v3H8.3z"/>'),
+  card:svg('<rect x="2.5" y="4.5" width="15" height="11" rx="2.2"/><path d="M2.5 8.3h15M5.8 12.5h2.5"/>'),
+  xcal:svg('<rect x="3" y="4.5" width="14" height="12.5" rx="2.5"/><path d="M3 8.5h14M7 2.8v3.4M13 2.8v3.4M8.3 11l3.4 3.4M11.7 11l-3.4 3.4"/>'),
+  gift:svg('<rect x="3.3" y="8" width="13.4" height="9" rx="1.3"/><path d="M2.5 8h15M10 8v9M10 8C8.8 5 5.8 4.6 5.8 6.4 5.8 7.6 7.9 8 10 8zm0 0c1.2-3 4.2-3.4 4.2-1.6 0 1.2-2.1 1.6-4.2 1.6z"/>'),
+  moon:svg('<path d="M16.3 12.1A6.5 6.5 0 1 1 7.9 3.7a5.2 5.2 0 0 0 8.4 8.4z"/>',18),
+  sun:svg('<circle cx="10" cy="10" r="3.3"/><path d="M10 2.5v1.7M10 15.8v1.7M2.5 10h1.7M15.8 10h1.7M4.7 4.7l1.2 1.2M14.1 14.1l1.2 1.2M4.7 15.3l1.2-1.2M14.1 5.9l1.2-1.2"/>',18),
+  check:svg('<path d="M4.5 10.5l3.7 3.7L15.5 6.5"/>',20).replace('stroke-width="1.8"','stroke-width="2.6"'),
+  coin:svg('<circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.7"/>'),
+  target:svg('<circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3.8"/><circle cx="10" cy="10" r=".9"/>'),
+  star:svg('<path d="M10 3l2.1 4.4 4.8.6-3.5 3.3.9 4.8L10 13.8l-4.3 2.3.9-4.8L3.1 8l4.8-.6z"/>'),
+  note:svg('<path d="M4 3.5h12v9.5l-3.5 3.5H4z"/><path d="M12.5 16.5V13H16M7 7.5h6M7 10.5h4"/>'),
 };
+// טבעת התקדמות (גרסה 4): ערך מתוך יעד, עם התווית בתוכה; מלאה בירוק כשהושלמה
+const ring=(v,t,size=52,stroke=6,label)=>{const r=(size-stroke)/2,c=2*Math.PI*r,f=Math.min(1,t?v/t:0);
+  return `<svg class="ring${f>=1?' full':''}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${v} מתוך ${t}"><circle class="tr" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}" fill="none"/><circle class="fg" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-f)}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="50%" y="52%" text-anchor="middle" dominant-baseline="middle" font-size="${size*.27}">${label??`${v}/${t}`}</text></svg>`};
+const meter=(v,t)=>`<div class="meter${v>=t?' full':''}" role="img" aria-label="${v} מתוך ${t}"><span style="width:${t?Math.round(v/t*100):0}%"></span></div>`;
 
 /* ---- טבלת הייחוס (SETTINGS): ערכים שהמאמן משנה בלי קוד ---- */
 const ref = {
@@ -390,7 +474,7 @@ const img=(what,cls='')=>`<div class="img ${cls}" role="img" aria-label="${what}
 const empty=(t,s='',image='')=>`<div class="state">${image}<div class="t">${t}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
 const skeleton=()=>`<div class="skel" aria-hidden="true"></div><div class="skel" aria-hidden="true"></div><div class="skel" aria-hidden="true"></div><div class="muted small" role="status">טוען...</div>`;
 const errorState=()=>`<div class="state err" role="alert"><span class="muted">${I.wifi}</span><div class="t">אין חיבור כרגע</div><div class="s">הנתונים לא הגיעו. אין צורך להזין שוב דבר.</div><button class="btn sec small" data-a="retry">לנסות שוב</button></div>`;
-const tile=(lbl,n,cap='',a='',v='',p='')=>`<${a?'button':'div'} class="tile" ${a?`data-a="${a}" data-v="${v}" data-p="${p}"`:''}><div class="lbl">${lbl}</div><div class="num">${n}</div>${cap?`<div class="cap">${cap}</div>`:''}</${a?'button':'div'}>`;
+const tile=(lbl,n,cap='',a='',v='',p='',ic='',tone='')=>{const z=n===0;return `<${a?'button':'div'} class="tile${z?' zero':ic?' stripe '+tone:''}" ${a?`data-a="${a}" data-v="${v}" data-p="${p}"`:''}>${ic?`<span class="ic ${tone}">${I[ic]}</span>`:''}<div class="lbl">${lbl}</div><div class="num">${n}</div>${cap?`<div class="cap">${cap}</div>`:''}</${a?'button':'div'}>`};
 const classRow=(c,side,a='',p='')=>`<${a?'button':'div'} class="item" ${a?`data-a="${a}" data-v="classCoach" data-p="${p}"`:''}><div class="when"><div class="h">${c.time}</div><div class="d">${DAYS[c.date.getDay()]} ${fmt(c.date)}</div></div><div class="grow"><div class="t">${c.place}</div><div class="s">${c.cancelled?'בוטל':`${c.reg.length}/${c.cap} רשומים${c.wait.length?' · '+c.wait.length+' בהמתנה':''}`}</div></div>${side}</${a?'button':'div'}>`;
 
 const SCREEN_ID={signIn:'S23',joinInvite:'S22',joinExpired:'S22',forgotPassword:'S23',newPassword:'S23',challengeEdit:'S09',coachHome:'S01',trainees:'S02',invite:'S02',inviteDone:'S02',traineeCard:'S03',programEdit:'S04',swap:'S04',itemTarget:'S04',exercises:'S05',exerciseNew:'S05',exercise:'S05',resultsCoach:'S06',noteAdd:'S06',goalEdit:'S07',paymentsCoach:'S08',payRequest:'S08',invoice:'S08',challengeCoach:'S09',challengeNew:'S09',rewardsCoach:'S10',classesCoach:'S11',classNew:'S11',classCoach:'S11',settings:'S12',more:'עוד',traineeHome:'S13',workoutPick:'S14',workout:'S14',exerciseView:'S14',feedback:'S15',myWorkouts:'S16',correct:'S16',classesTrainee:'S17',lateCancel:'S17',coins:'S18',paymentsTrainee:'S19',challengeTrainee:'S20',progress:'S21',me:'אני',ownerHome:'S24',coaches:'S25',coachInvite:'S25',coachCard:'S27',kpis:'S26',ownerMore:'עוד',roleChoice:'S23'};
@@ -405,11 +489,11 @@ function shell(eyebrow,title,body,{backBtn=true}={}){
   const c=cur(); const sid=SCREEN_ID[c.screen]||'';
   const content = (!NO_DATA.has(c.screen) && S.offline) ? errorState() : (!NO_DATA.has(c.screen) && S.loading) ? skeleton() : body;
   return `<div class="demo-bar">תשלומים וחשבוניות הם הדגמה בלבד.</div>
-  <header class="hd"><div class="hd-top">${S.stack.length>1&&backBtn?`<button class="back" data-a="back">${I.back}<span>חזרה</span></button>`:'<span></span>'}
-  <button class="theme" data-a="theme">${isDark()?'מצב בהיר':'מצב כהה'}</button></div>
-  <div class="eyebrow"><span>${eyebrow}</span>${S.sid&&sid?`<span class="sid">${sid}</span>`:''}</div><h1>${title}</h1></header>
+  <header class="hd"><div class="hd-main">${S.stack.length>1&&backBtn?`<button class="back" data-a="back">${I.back}<span>חזרה</span></button>`:''}
+  <div class="eyebrow"><span>${eyebrow}</span>${S.sid&&sid?`<span class="sid">${sid}</span>`:''}</div><h1>${title}</h1></div>
+  <button class="theme" data-a="theme" aria-label="${isDark()?'מצב בהיר':'מצב כהה'}" title="${isDark()?'מצב בהיר':'מצב כהה'}">${isDark()?I.sun:I.moon}</button></header>
   <main>${content}</main>
-  ${tabs.length?`<nav class="tabs" aria-label="ניווט ראשי">${tabs.map(([k,l,ic])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}" ${S.tab===k?'aria-current="page"':''}>${ic}<span>${l}</span></button>`).join('')}</nav>`:''}`;
+  ${tabs.length?`<nav class="tabs" aria-label="ניווט ראשי">${tabs.map(([k,l,ic])=>`<button class="${S.tab===k?'on':''}" data-a="tab" data-v="${k}" ${S.tab===k?'aria-current="page"':''}><span class="pi">${ic}</span><span>${l}</span></button>`).join('')}</nav>`:''}`;
 }
 
 /* ================= מסכים ================= */
@@ -469,16 +553,16 @@ screens.coachHome=()=>{
   const pendRed=redemptions.filter(r=>r.status==='ממתין לאספקה').length;
   const pendLate=lateRequests.filter(r=>r.status==='ממתינה').length;
   return shell(`${greeting()} · ${fmtDay(TODAY)}`,'הבית שלי',`
-  <div class="hero row between"><div><div class="sub">השיעור של היום</div><div class="lead" style="margin-top:3px">${todayCls.length?`${todayCls[0].time} · ${todayCls[0].place}`:'אין שיעור היום'}</div></div>
-   <div style="text-align:center"><div class="num">${trainees.filter(t=>t.joined).length}</div><div class="cap">מתאמנים פעילים</div></div></div>
+  <div class="card grid2" style="align-items:center"><div class="row"><span class="ic info">${I.cal}</span><div><div class="muted small">השיעור של היום</div><div style="font-weight:600">${todayCls.length?`${todayCls[0].time} · ${todayCls[0].place}`:'אין שיעור היום'}</div></div></div>
+   <div class="row"><span class="ic">${I.users}</span><div><div class="mono" style="font-size:22px;font-weight:700;line-height:1">${trainees.filter(t=>t.joined).length}</div><div class="muted small">מתאמנים פעילים</div></div></div></div>
   <h2>דורש תשומת לב</h2>
   <div class="grid2">
-   ${tile('תשלומים פתוחים',open,open?'לצפייה ברשימה':'הכול שולם','go','paymentsCoach')}
-   ${tile('בקשות ביטול חריגות',pendLate,pendLate?'ממתינות להחלטה':'אין בקשות','go','classesCoach')}
-   ${tile('תגמולים לאספקה',pendRed,pendRed?'ממתינים לך':'אין ממתינים','go','rewardsCoach')}
-   ${tile('שיעורים היום',todayCls.length,todayCls.length?'לרשימת הנרשמים':'אין היום','go','classesCoach')}
+   ${tile('תשלומים פתוחים',open,open?'לצפייה ברשימה':'הכול שולם','go','paymentsCoach','','card','warn')}
+   ${tile('בקשות ביטול חריגות',pendLate,pendLate?'ממתינות להחלטה':'אין בקשות','go','classesCoach','','xcal','bad')}
+   ${tile('תגמולים לאספקה',pendRed,pendRed?'ממתינים לך':'אין ממתינים','go','rewardsCoach','','gift','')}
+   ${tile('שיעורים היום',todayCls.length,todayCls.length?'לרשימת הנרשמים':'אין היום','go','classesCoach','','cal','info')}
   </div>
-  <button class="tintrow" data-a="go" data-v="challengeCoach"><span class="grow" style="flex:1"><b>האתגר השבועי:</b> ${challenge.name}</span><span class="badge ok">${challenge.completions.length} השלימו</span></button>`,{backBtn:false});
+  <button class="tintrow" data-a="go" data-v="challengeCoach"><span class="ic warn">${I.trophy}</span><span class="grow" style="flex:1"><span class="muted small" style="display:block">האתגר השבועי:</span><b>${challenge.name}</b></span><span class="badge ok">${challenge.completions.length} השלימו</span></button>`,{backBtn:false});
 };
 
 /* ----- S02 מתאמנים והזמנה ----- */
@@ -783,18 +867,18 @@ screens.traineeHome=()=>{
   const offers=classes.filter(c=>c.offer&&c.offer.tid===me);
   const msgs=inbox[me]||[];
   return shell(ref.reminder,`${greeting()}, ${nm(tname(me).replace(/\s*\(.*\)/,''))}`,`
-  <div class="hero row between"><div><div class="lead">רצף של ${streak(me)} אימונים</div><div class="sub" style="margin-top:3px">לא מתאפס עד ${ref.streakGapDays} ימים בין אימונים</div></div>
-   <div style="text-align:center"><div class="num">${num(balance(me))}</div><div class="cap">מטבעות</div></div></div>
+  <div class="stat"><div class="row"><span class="ic">${I.flame}</span><div><div class="lead">רצף של ${streak(me)} אימונים</div><div class="sub">לא מתאפס עד ${ref.streakGapDays} ימים בין אימונים</div></div></div>
+   <div class="coins"><span class="num">${num(balance(me))}</span><span class="cap">מטבעות</span></div></div>
   ${offers.map(c=>`<div class="notice col"><b>התפנה מקום!</b><div>בשיעור ב${fmtDay(c.date)} בשעה ${c.time}. המקום שמור לך ${ref.spotOfferHours} שעות.</div>
     <div class="row"><button class="btn small" data-a="offerYes" data-p="${c.id}">כן, להירשם</button><button class="btn sec small" data-a="offerNo" data-p="${c.id}">לא הפעם</button></div></div>`).join('')}
-  ${msgs.map(m=>`<div class="notice row between small"><span>🔔 ${m.text}</span><button class="link" data-a="markRead" data-p="${m.id}">סימון כנקרא</button></div>`).join('')}
+  ${msgs.map(m=>`<div class="notice col"><div class="row"><span class="ic info">${I.bell}</span><span style="flex:1">${m.text}</span></div><div class="row" style="justify-content:flex-end"><button class="link" data-a="markRead" data-p="${m.id}">סימון כנקרא</button></div></div>`).join('')}
   <div class="sechd"><h2>האימון הבא</h2>${p?'<button class="link" data-a="tab" data-v="workoutPick">לכל האימונים</button>':''}</div>
-  ${nextW?`<button class="item" data-a="startWorkout" data-p="${nextW.id}"><div class="grow"><div class="t">${nextW.name}</div><div class="s">${nextW.items.map(i=>ex(i.ex).name).join(' · ')}</div></div>${chev}</button>`
+  ${nextW?`<button class="item stripe" data-a="startWorkout" data-p="${nextW.id}"><span class="ic">${I.dumbbell}</span><div class="grow"><div class="t">${nextW.name}</div><div class="s">${nextW.items.map(i=>ex(i.ex).name).join(' · ')}</div></div>${chev}</button>`
     :empty('התוכנית שלך בהכנה אצל המאמן','היא תופיע כאן כשתהיה מוכנה.')}
   <div class="sechd"><h2>השיעור הבא</h2><button class="link" data-a="tab" data-v="classesTrainee">לכל השיעורים</button></div>
-  ${nextC?`<div class="item"><div class="when"><div class="h">${nextC.time}</div><div class="d">${DAYS[nextC.date.getDay()]} ${fmt(nextC.date)}</div></div><div class="grow"><div class="t">${nextC.place}</div></div><span class="badge ok">רשום</span></div>`
+  ${nextC?`<div class="item stripe ok"><div class="grow meta"><span>${I.clock}<b>${nextC.date.toDateString()===TODAY.toDateString()?'היום':`${DAYS[nextC.date.getDay()]} ${fmt(nextC.date)}`} · <span class="mono">${nextC.time}</span></b></span><span>${I.pin}${nextC.place}</span></div><span class="badge ok">רשום</span></div>`
     :empty('לא נרשמת לשיעור')}
-  <button class="tintrow" data-a="go" data-v="challengeTrainee"><span style="flex:1"><b>האתגר השבועי:</b> ${challenge.name}</span><span class="${cp.exempt?'muted':'badge ok'}">${cpText(cp)}</span></button>`,{backBtn:false});
+  <button class="tintrow" data-a="go" data-v="challengeTrainee"><span class="ic warn">${I.trophy}</span><span style="flex:1"><span class="muted small" style="display:block">האתגר השבועי:</span><b>${challenge.name}</b></span>${cp.exempt?`<span class="muted small">${cpText(cp)}</span>`:ring(cp.value,cp.target,52,6,cp.value>=cp.target?'✓':undefined)}</button>`,{backBtn:false});
 };
 
 /* ----- S14 אימון והזנת תוצאות (מקרה שימוש 3) ----- */
@@ -806,27 +890,30 @@ let draft=null;
 screens.workout=({id})=>{
   const w=programs[S.me].workouts.find(x=>x.id===id);
   if(!draft||draft.wid!==id) draft={wid:id,items:w.items.map(it=>({ex:it.ex,sets:Array.from({length:it.sets},()=>({reps:it.reps,weight:it.weight,done:true}))}))};
+  const allSets=draft.items.flatMap(it=>it.sets), doneN=allSets.filter(s=>s.done).length;
   return shell('ממולא לפי היעד · משנים רק מה ששונה',w.name,`
-  ${draft.items.map((it,ii)=>{const e=ex(it.ex);const tgt=w.items[ii];return `<div class="card col">
-    <div class="row between"><b>${e.name}</b>${e.video?`<button class="link" data-a="go" data-v="exerciseView" data-p="${e.id}">▶︎ סרטון הדגמה</button>`:''}</div>
+  <div class="card col"><div class="row between"><b class="newtext">${doneN} מתוך ${allSets.length} סטים</b><span class="muted small mono">${Math.round(doneN/allSets.length*100)}%</span></div>${meter(doneN,allSets.length)}</div>
+  ${draft.items.map((it,ii)=>{const e=ex(it.ex);const tgt=w.items[ii];const d=it.sets.filter(s=>s.done).length;return `<div class="card col">
+    <div class="row between"><div class="row" style="gap:8px"><b style="font-size:16px">${e.name}</b><span class="badge ${d===it.sets.length?'ok':'acc'}">${d}/${it.sets.length}</span></div>${e.video?`<button class="link" data-a="go" data-v="exerciseView" data-p="${e.id}">${I.play}סרטון הדגמה</button>`:''}</div>
     <div class="muted small">יעד: <span class="mono">${tgt.sets} סטים × ${tgt.reps}${tgt.weight?' · '+tgt.weight+' ק"ג':''}</span></div>
-    <div class="setrow muted small" aria-hidden="true"><span>סט</span><span>חזרות</span><span>${e.body?'':'משקל'}</span><span>בוצע</span></div>
-    ${it.sets.map((s,si)=>`<div class="setrow"><span class="mono">${si+1}</span>
+    <div class="setrow head muted small" aria-hidden="true"><span>סט</span><span>חזרות</span><span>${e.body?'':'משקל'}</span><span>בוצע</span></div>
+    ${it.sets.map((s,si)=>`<div class="setrow ${s.done?'done':'todo'}"><span class="n">${si+1}</span>
       <input type="number" inputmode="numeric" aria-label="${e.name}, סט ${si+1}, חזרות" value="${s.reps}" data-set="${ii}|${si}|reps">
       ${e.body?'<span></span>':`<input type="number" inputmode="decimal" step="2.5" aria-label="${e.name}, סט ${si+1}, משקל" value="${s.weight}" data-set="${ii}|${si}|weight">`}
-      <button class="check" data-a="toggleSet" data-p="${ii}|${si}" aria-pressed="${s.done}" aria-label="${e.name}, סט ${si+1} בוצע">${s.done?'✓':''}</button></div>`).join('')}
+      <button class="check" data-a="toggleSet" data-p="${ii}|${si}" aria-pressed="${s.done}" aria-label="${e.name}, סט ${si+1} בוצע">${I.check}</button></div>`).join('')}
   </div>`}).join('')}
   <button class="btn" data-a="saveWorkout" data-busy="שומר...">שמירת האימון</button>`);
 };
-screens.exerciseView=({id})=>{const e=ex(id);return shell('סרטון הדגמה',e.name,`<div class="video">▶︎ ${e.video==='youtube'?'סרטון הדגמה מיוטיוב (קישור לדוגמה)':'סרטון שהמאמן העלה (דוגמה)'}</div>`)};
+screens.exerciseView=({id})=>{const e=ex(id);return shell('סרטון הדגמה',e.name,`<div class="video">${I.play} ${e.video==='youtube'?'סרטון הדגמה מיוטיוב (קישור לדוגמה)':'סרטון שהמאמן העלה (דוגמה)'}</div>`)};
 
 /* ----- S15 משוב (מקרה שימוש 6) ----- */
 screens.feedback=({id})=>{const f=id;return shell('משוב','כל הכבוד!',`
-  <div class="hero row between"><div><div class="sub">הושלמו</div><div class="lead">${f.done}/${f.total} סטים</div></div><div style="text-align:center"><div class="num">${signed(f.coins)}</div><div class="cap">מטבעות</div></div></div>
-  ${f.prs.length?`<div class="notice"><b>🏆 ${ref.feedback.pr}</b><div class="small">${f.prs.join(', ')}</div></div>`:''}
+  <div class="celebrate"><span class="badgeic">${f.prs.length?svg(I.trophy.match(/<path[^>]*>/g).join(''),38):svg('<path d="M4.5 10.5l3.7 3.7L15.5 6.5"/>',38)}</span></div>
+  <div class="stat"><div class="row">${ring(f.done,f.total,64,7)}<div><div class="sub">הושלמו</div><div class="lead">${f.done}/${f.total} סטים</div></div></div><div class="coins"><span class="num">${signed(f.coins)}</span><span class="cap">מטבעות</span></div></div>
+  ${f.prs.length?`<div class="notice col" style="border-color:var(--warnC)"><div class="row"><span class="ic warn">${I.trophy}</span><div><b>${ref.feedback.pr}</b><div class="small">${f.prs.join(', ')}</div></div></div></div>`:''}
   <div class="card">${f.done===f.total?ref.feedback.full:ref.feedback.partial}</div>
-  ${f.goal?`<div class="notice">🎯 השגת את היעד האישי! ${signed(ref.coins.goal)} מטבעות</div>`:''}
-  ${f.chal?`<div class="notice">⭐ השלמת את האתגר השבועי! ${signed(ref.coins.challenge)} מטבעות</div>`:''}
+  ${f.goal?`<div class="notice row" style="border-color:var(--ok)"><span class="ic ok">${I.target}</span><span>השגת את היעד האישי! ${signed(ref.coins.goal)} מטבעות</span></div>`:''}
+  ${f.chal?`<div class="notice row" style="border-color:var(--acc)"><span class="ic">${I.star}</span><span>השלמת את האתגר השבועי! ${signed(ref.coins.challenge)} מטבעות</span></div>`:''}
   <button class="btn" data-a="tab" data-v="traineeHome">חזרה לבית</button>
   <button class="btn sec" data-a="go" data-v="myWorkouts">האימונים שלי ותיקון תוצאה</button>`,{backBtn:false})};
 
@@ -836,7 +923,7 @@ screens.myWorkouts=()=>{
   return shell('היסטוריה','האימונים שלי',`
   ${list.length?list.map(([k,w])=>`<div class="card col"><div class="row between"><b>${fmtDay(w.date)} · ${wName(w.wid)}</b><button class="link" data-a="go" data-v="correct" data-p="${k}">תיקון</button></div>
    ${w.rows.map(r=>exLine(r,r.corrected?' <span class="badge warn">תוקן</span>':'')).join('')}
-   ${notes[k]?`<div class="notice small">💬 הערת המאמן: ${notes[k]}</div>`:''}</div>`).join('')
+   ${notes[k]?`<div class="notice small row"><span class="ic info">${I.note}</span><span>הערת המאמן: ${notes[k]}</span></div>`:''}</div>`).join('')
    :empty('עוד אין אימונים','אחרי השמירה הראשונה, האימונים יופיעו כאן.',img('ריצה בפארק','short'))}`);
 };
 // תיקון מקובץ לפי תרגיל, עם כותרות עמודות, ובלי משקל בתרגיל משקל גוף (ממצא 10)
@@ -855,7 +942,7 @@ screens.progress=({id})=>{
   const sel=S.params.pex&&exIds.includes(S.params.pex)?S.params.pex:(planEx[0]||exIds[0]);
   if(!sel) return shell(nm(tname(tid)),'גרף התקדמות',empty('הגרף יופיע אחרי האימונים הראשונים','כל אימון שנשמר מוסיף נקודה.'));
   const pts=chartPoints(tid,sel); const e=ex(sel);
-  const W=340,H=190,P=30; const vals=pts.map(x=>x.v); const mn=Math.min(...vals)*0.9, mx=Math.max(...vals)*1.05||1;
+  const W=340,H=220,P=30; const vals=pts.map(x=>x.v); const mn=Math.min(...vals)*0.9, mx=Math.max(...vals)*1.05||1;
   const t0=+pts[0].date, t1=+pts[pts.length-1].date, span=(t1-t0)||1;
   const X=q=>pts.length>1?P+(W-2*P)*((+q.date-t0)/span):W/2; // ציר זמן לפי תאריך, הישן משמאל כמקובל בגרפים
   const Y=v=>H-P-(H-2*P)*((v-mn)/((mx-mn)||1));
@@ -863,8 +950,10 @@ screens.progress=({id})=>{
   const labelIdx=[...new Set([0,Math.round((pts.length-1)/3),Math.round(2*(pts.length-1)/3),pts.length-1])];
   const chart=`<svg class="chart" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="גרף התקדמות ב${e.name}: שיא ${best}${e.body?' חזרות':' ק&quot;ג'}">
     <line x1="${P}" x2="${W-P}" y1="${H-P}" y2="${H-P}" stroke="var(--line-in)"/>
-    <polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="${pts.map(q=>X(q)+','+Y(q.v)).join(' ')}"/>
-    ${pts.map((q,i)=>`<circle cx="${X(q)}" cy="${Y(q.v)}" r="${i===bi?6:3.5}" fill="${i===bi?'var(--lime)':'var(--accent)'}" stroke="${i===bi?'var(--ink)':'none'}"/>`).join('')}
+    ${[1,2,3].map(k=>`<line x1="${P}" x2="${W-P}" y1="${P+(H-2*P)*(k-1)/3}" y2="${P+(H-2*P)*(k-1)/3}" stroke="var(--line)" stroke-dasharray="3 4"/>`).join('')}
+    <polygon fill="var(--accSoft)" points="${X(pts[0])},${H-P} ${pts.map(q=>X(q)+','+Y(q.v)).join(' ')} ${X(pts[pts.length-1])},${H-P}"/>
+    <polyline fill="none" stroke="var(--acc)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="${pts.map(q=>X(q)+','+Y(q.v)).join(' ')}"/>
+    ${pts.map((q,i)=>`<circle cx="${X(q)}" cy="${Y(q.v)}" r="${i===bi?7:3.5}" fill="${i===bi?'var(--acc)':'var(--card)'}" stroke="var(--acc)" stroke-width="${i===bi?3:2}"/>`).join('')}
     ${labelIdx.map(i=>`<text x="${X(pts[i])}" y="${H-10}" text-anchor="middle">${fmt(pts[i].date)}</text>`).join('')}
     <text x="${X(pts[bi])}" y="${Y(best)-12}" text-anchor="middle">שיא ${best}</text></svg>`;
   const picker=exIds.length>4
@@ -918,7 +1007,7 @@ screens.coins=()=>{const me=S.me;const bal=balance(me);const lbl={workout:'אי�
 /* ----- S20 אתגר שבועי למתאמן ----- */
 screens.challengeTrainee=()=>{const cp=challengeProgress(S.me);const done=!cp.exempt&&cp.value>=cp.target;return shell(`עד ${fmtDay(challenge.end)}`,'האתגר השבועי',`
   <div class="hero row between"><div><div class="sub">${challenge.name}</div><div class="lead" style="margin-top:4px">${cp.exempt?'פטור השבוע':done?'השלמת ✓':'בדרך ליעד'}</div><div class="sub" style="margin-top:4px">פרס: ${ref.coins.challenge} מטבעות${challenge.prize?' + '+challenge.prize:''}</div></div>
-   ${cp.exempt?'':`<div style="text-align:center"><div class="num">${cp.value}/${cp.target}</div><div class="cap">${challenge.type==='count'?'אימונים':'ק"ג'}</div></div>`}</div>
+   ${cp.exempt?'':`<div style="text-align:center">${ring(cp.value,cp.target,76,8)}<div class="cap">${challenge.type==='count'?'אימונים':'ק"ג'}</div></div>`}</div>
   <div class="muted small">${cp.exempt?'התרגיל של האתגר אינו בתוכנית שלך, ולכן האתגר השבוע לא חל עליך.':'ההשלמה נספרת לבד מהאימונים שנשמרים. אין צורך לדווח שוב.'}</div>`)};
 
 /* ----- S19 תשלומים למתאמן ----- */
