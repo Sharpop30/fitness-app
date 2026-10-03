@@ -1,0 +1,4 @@
+Tool: built-in image_gen
+Reference: ~/Desktop/download.webp
+
+Use case: lighting-weather. Edit the provided image, keeping the same composition, same objects and camera angle. Rolled purple yoga mat on the left, dark grey hex dumbbell with purple handle across the foreground center, pair of lavender running shoes on the right, three rising purple rounded bar chart columns and a soft rising curve behind them. Preserve the exact placement, shapes, proportions, textures and soft 3D render style of all these objects. Change the background and ground to very dark violet-black (#12111a) with a subtle purple glow behind the chart. Keep the same lighting direction and soft shadows, with readable charcoal dumbbell edges against the dark floor. Keep the chart and curve purple. Output 16:9 landscape, preserving original composition with minimal framing adjustment. No new objects, no text, no logos, no watermarks.

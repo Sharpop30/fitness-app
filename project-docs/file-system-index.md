@@ -114,6 +114,7 @@
 | doc-design-refresh-brief.md | project-docs | 03.10.2026. תדריך לסשן רענון העיצוב |
 | doc-design-refresh-plan.md | project-docs | 03.10.2026. תוכנית שלב רענון העיצוב (5ב), מאושרת |
 | findings-stage-5b.md | project-docs | 03.10.2026. דוח שלב 5ב, רענון העיצוב |
+| תמונות וגרפיקה/ | שורש הפרויקט | 03.10.2026. מקורות האיורים, התמונות והאייקון (PNG ברזולוציה מלאה), הגרסאות הכהות, הגלריות, הפרומפטים וההנחיות (הנחיות-לגרסאות-כהות.md, הנחיות-לאייקון-האפליקציה.md). נוצרו בידי הצוות בכלי AI, מותרים לשימוש. האתר משתמש בעותקים המוקטנים ב-app/public/images |
 | .github/workflows/deploy.yml | .github/workflows | 02.10.2026. הבנייה בכל push ל-main; הפריסה ל-GitHub Pages רק כש-PAGES_ENABLED=true |
 | doc-design-stage-plan.md, findings-design-stage.md | project-docs | 30.09.2026. שלב העיצוב (5א) נסגר |
 | findings-design-review.md, doc-design-images.md | project-docs | 30.09.2026. סקירת העיצוב, והתמונות שנבחרו |

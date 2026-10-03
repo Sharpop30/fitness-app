@@ -1,0 +1,40 @@
+{
+  "tool": "built-in image_gen",
+  "jobs": [
+    {
+      "n": 1,
+      "name": "אייקון-01-משקולת-והתקדמות",
+      "title": "משקולת והתקדמות",
+      "description": "זיהוי ברור של עולם הכושר, עם דגש על מעקב והתקדמות.",
+      "prompt": "Use case: logo-brand. Produce ONE original finished application icon concept for a personal fitness coaching app, used by coaches and trainees for workouts and progress. Square 1:1 canvas. The entire square canvas is the app icon artwork with full-bleed colored background; do not show the icon on a phone, presentation board or separate mockup. One centered bold recognizable symbol with generous safe margins, visually readable at 48px. Cohesive premium soft-purple visual language. No text, letters, numerals, badges, existing brand logos, borders or watermark. No tiny details. Concept: a bold ivory-white horizontal dumbbell with simple rounded weight plates, centered within a thick almost-complete lavender circular progress ring. Ring has one clearly open gap at upper right, no arrowhead and no numbers. Solid vivid purple background #6A45F5, accent ring #C4B5FD. Flat clean geometric design, crisp edges, symmetric dumbbell and optically centered ring. Ring and dumbbell do not touch. Avoid rendering a photo or a detailed gym scene."
+    },
+    {
+      "n": 2,
+      "name": "אייקון-02-צמיחה-אישית",
+      "title": "צמיחה אישית",
+      "description": "כיוון נקי שמדגיש שיפור מתמשך והישגים.",
+      "prompt": "Use case: logo-brand. Produce ONE original finished application icon concept for a personal fitness coaching app, used by coaches and trainees for workouts and progress. Square 1:1 canvas. The entire square canvas is the app icon artwork with full-bleed colored background; do not show the icon on a phone, presentation board or separate mockup. One centered bold recognizable symbol with generous safe margins, visually readable at 48px. Cohesive premium soft-purple visual language. No text, letters, numerals, badges, existing brand logos, borders or watermark. No tiny details. Concept: three thick rounded vertical bar-chart columns ascending from left to right, with a single simple upward-curving lavender swoosh floating above them. Bars are warm ivory and pale lavender. Uniform deep purple background #5230DD. Flat graphic geometric minimalism. Make the ascending movement bold and recognizable; no axes, grid, labels or separate arrowhead. Center the compact cohesive mark."
+    },
+    {
+      "n": 3,
+      "name": "אייקון-03-קטלבל-סגול",
+      "title": "קטלבל סגול",
+      "description": "מתאים לשפה התלת־ממדית של איורי הציוד באפליקציה.",
+      "prompt": "Use case: logo-brand. Produce ONE original finished application icon concept for a personal fitness coaching app, used by coaches and trainees for workouts and progress. Square 1:1 canvas. The entire square canvas is the app icon artwork with full-bleed colored background; do not show the icon on a phone, presentation board or separate mockup. One centered bold recognizable symbol with generous safe margins, visually readable at 48px. Cohesive premium soft-purple visual language. No text, letters, numerals, badges, existing brand logos, borders or watermark. No tiny details. Concept: one substantial sculptural lavender kettlebell, upright, with a large clear rounded handle opening and a simple bulb-shaped body. Soft matte 3D render matching contemporary purple fitness equipment illustrations. Very dark violet-black full-bleed background #12111a, subtle purple glow immediately behind the kettlebell, soft upper-left studio light. Kettlebell in #9c85ff lavender, high contrast silhouette, a quiet ground shadow. Front view with very slight three-quarter depth. No other objects or numbers on the kettlebell. The kettlebell fills approximately 60 percent of the canvas."
+    },
+    {
+      "n": 4,
+      "name": "אייקון-04-מאמן-ומתאמן",
+      "title": "מאמן ומתאמן",
+      "description": "מדגיש את הקשר האישי והליווי בין המאמן למתאמן.",
+      "prompt": "Use case: logo-brand. Produce ONE original finished application icon concept for a personal fitness coaching app, used by coaches and trainees for workouts and progress. Square 1:1 canvas. The entire square canvas is the app icon artwork with full-bleed colored background; do not show the icon on a phone, presentation board or separate mockup. One centered bold recognizable symbol with generous safe margins, visually readable at 48px. Cohesive premium soft-purple visual language. No text, letters, numerals, badges, existing brand logos, borders or watermark. No tiny details. Concept: two minimal abstract human figures made only from two round heads and two thick friendly curved torso strokes. One ivory figure and one pale lavender figure face inward, their broad flowing torso curves forming a compact shared open circular shape as a symbol of coaching and partnership. Solid purple background #6A45F5. Flat geometric brand mark, balanced, warm and mature, bold strokes. No faces, hands, anatomical details, heart, infinity symbol or extra objects. The symbol should clearly read as two people supporting each other and be distinct from a bar-chart or dumbbell."
+    },
+    {
+      "n": 5,
+      "name": "אייקון-05-יעד-והצלחה",
+      "title": "יעד והצלחה",
+      "description": "מדגיש השלמת אימונים, התמדה והשגת יעדים.",
+      "prompt": "Use case: logo-brand. Produce ONE original finished application icon concept for a personal fitness coaching app, used by coaches and trainees for workouts and progress. Square 1:1 canvas. The entire square canvas is the app icon artwork with full-bleed colored background; do not show the icon on a phone, presentation board or separate mockup. One centered bold recognizable symbol with generous safe margins, visually readable at 48px. Cohesive premium soft-purple visual language. No text, letters, numerals, badges, existing brand logos, borders or watermark. No tiny details. Concept: a thick clean lavender target ring with a bold ivory-white check mark centered inside it, visually united into one simple achievement mark. One outer ring only, no concentric rings or tiny bullseye details. Very dark violet-black full-bleed background #12111a, flat lavender ring #9c85ff, ivory check mark. Flat crisp geometric design with subtle quiet purple glow behind the mark. Keep clear spacing between check mark and ring. Bold, calm, premium app icon. No arrow, dart, trophy or secondary object."
+    }
+  ]
+}
