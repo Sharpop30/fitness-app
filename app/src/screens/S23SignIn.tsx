@@ -5,21 +5,23 @@
 // moves between them later from "more" (rule 10).
 import { useEffect, useRef, useState } from "react";
 import { call, setErrorTexts } from "../api/client";
-import { Art, Button, Chevron, Field, Item, LinkButton, Screen } from "../design/components";
-import { identityConfigured, isRecoveryReturn, PASSWORD_RULE, passwordOK, requestPasswordReset, restoreSession, setPassword as setIdentityPassword, signInWithPassword, signOutIdentity, takeSessionFromAddress } from "../identity/auth";
+import { Art, Button, Chevron, Field, Item, LinkButton, Notice, Screen } from "../design/components";
+import { identityConfigured, isRecoveryReturn, takeLinkError, PASSWORD_RULE, passwordOK, requestPasswordReset, restoreSession, setPassword as setIdentityPassword, signInWithPassword, signOutIdentity, takeSessionFromAddress } from "../identity/auth";
 import { useNav, type SignedRole } from "../nav";
 
 const DEMO_NOA = "d0000000-0000-4000-8000-000000001001";
 
 // Stage 7 plan, task 14 (design review, finding 24; prototype 3.2): "forgot" asks for the email, and the link in the
 // email returns to "a new password", both as states of S23, through the identity service only (I01; map v13).
-export default function S23SignIn({ forgot }: { forgot?: boolean }) {
+// A reset link that no longer works opens "forgot" with a short note, and does not sign in (team approval of the
+// wording, 03.10.2026).
+export default function S23SignIn({ forgot, expired }: { forgot?: boolean; expired?: boolean }) {
   const live = identityConfigured();
-  if (forgot) return <ForgotPassword />;
+  if (forgot) return <ForgotPassword expired={expired} />;
   return <SignIn live={live} />;
 }
 
-function ForgotPassword() {
+function ForgotPassword({ expired }: { expired?: boolean }) {
   const nav = useNav();
   const [email, setEmail] = useState("");
   const send = async () => {
@@ -29,6 +31,7 @@ function ForgotPassword() {
   };
   return (
     <Screen eyebrow="כניסה" title="שחזור סיסמה">
+      {expired && <Notice icon="clock" tone="warn">הקישור לסיסמה חדשה כבר לא בתוקף. אפשר לבקש קישור חדש.</Notice>}
       <Field label="מייל"><input id="forgotEmail" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" /></Field>
       <Button onClick={send}>שליחת קישור לסיסמה חדשה</Button>
       <div className="muted small">אם המייל רשום באפליקציה, יגיע אליו קישור. הקישור תקף לזמן קצר.</div>
@@ -69,6 +72,7 @@ function SignIn({ live }: { live: boolean }) {
   useEffect(() => {
     if (restored.current) return;
     restored.current = true;
+    if (live && takeLinkError()) return nav.go("S23", { forgot: true, expired: true }); // no sign-in from a dead link
     if (live && isRecoveryReturn() && takeSessionFromAddress()) return setRecovering(true);
     if (live) void restoreSession().then((o) => { if (o === "ok") void enterLive(true); });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

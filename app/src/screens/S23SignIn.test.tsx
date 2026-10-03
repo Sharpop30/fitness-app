@@ -2,7 +2,7 @@
 // once raced, and the one that failed signed the other out). Synthetic values, no network.
 import { StrictMode } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { isRecoveryReturn, requestPasswordReset, restoreSession, setPassword, takeSessionFromAddress } from "../identity/auth";
+import { isRecoveryReturn, requestPasswordReset, restoreSession, setPassword, takeLinkError, takeSessionFromAddress } from "../identity/auth";
 import { NavContext, type Nav } from "../nav";
 import S23 from "./S23SignIn";
 
@@ -13,6 +13,7 @@ vi.mock("../identity/auth", async (original) => {
     signInWithPassword: vi.fn(), signOutIdentity: vi.fn(), accessToken: vi.fn(() => null),
     // Stage 7 plan, task 14: the password reset.
     isRecoveryReturn: vi.fn(() => false), takeSessionFromAddress: vi.fn(() => true), setPassword: vi.fn(async () => "ok"),
+    takeLinkError: vi.fn(() => null),
     requestPasswordReset: vi.fn(async () => "ok"), PASSWORD_RULE: real.PASSWORD_RULE, passwordOK: real.passwordOK,
   };
 });
@@ -80,4 +81,28 @@ test("back from the reset link, a new password equal to the old one is refused w
   await waitFor(() => expect(toasts.at(-1)).toBe("הסיסמה החדשה צריכה להיות שונה מהקודמת"));
   expect(screen.getByRole("heading", { level: 1, name: "סיסמה חדשה" })).toBeTruthy(); // still asking
   vi.mocked(isRecoveryReturn).mockReturnValue(false);
+});
+
+// Found in the cloud after stage 5b: a reset link already used or expired came back with an error, and the app opened
+// with a sign-in kept from an earlier visit. Now it opens "forgot" with a note, and does not restore the sign-in.
+test("a reset link that no longer works opens \"forgot\" with the note, and does not sign in", async () => {
+  vi.mocked(takeLinkError).mockReturnValueOnce("otp_expired");
+  vi.mocked(restoreSession).mockClear(); vi.mocked(takeSessionFromAddress).mockClear();
+  const go = vi.fn();
+  render(<NavContext.Provider value={{ ...nav, go }}><S23 /></NavContext.Provider>);
+  await waitFor(() => expect(go).toHaveBeenCalledWith("S23", { forgot: true, expired: true }));
+  expect(restoreSession).not.toHaveBeenCalled();
+  expect(takeSessionFromAddress).not.toHaveBeenCalled();
+  cleanup();
+  render(<NavContext.Provider value={nav}><S23 forgot expired /></NavContext.Provider>);
+  expect(screen.getByText("הקישור לסיסמה חדשה כבר לא בתוקף. אפשר לבקש קישור חדש.")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "שליחת קישור לסיסמה חדשה" })).toBeTruthy();
+});
+
+test("takeLinkError reads the error after the # and clears it; no error, nothing", async () => {
+  const real = await vi.importActual<typeof import("../identity/auth")>("../identity/auth");
+  history.replaceState(null, "", "/fitness-app/#error=access_denied&error_code=otp_expired&error_description=x");
+  expect(real.takeLinkError()).toBe("otp_expired");
+  expect(window.location.hash).toBe("");
+  expect(real.takeLinkError()).toBeNull();
 });

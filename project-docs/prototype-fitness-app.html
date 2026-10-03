@@ -281,6 +281,7 @@ body.nonew .newtext{text-decoration:none}
    - איורים מהצוות (כלי AI, מותרים לשימוש), ביחס המלא: S22 מאמן ומתאמנת, S15 סיום אימון, S04 ו-S14 תכנון אימון, S16 האימון הבא, S17 אימון בקבוצה.
    - S23: תמונת 3D רכה שהצוות יצר בכלי AI (מותרת לשימוש), במקום התמונה הישנה. לכל איור גרסה בהירה וגרסה כהה מהצוות, שמתחלפות לפי מצב התצוגה.
    - מסכי בעל העסק באותה שפה: אייקון וסוג מידע לכל אריח ב-S24 וב-S27 (משימה 4).
+   - S23, אחרי 5ב: קישור לסיסמה חדשה שכבר לא בתוקף פותח את השחזור עם "הקישור לסיסמה חדשה כבר לא בתוקף. אפשר לבקש קישור חדש." (נוסח באישור הצוות), ואינו מכניס.
    - נוסח חדש אחד, אושר: "X מתוך Y סטים" בראש S14 (מסומן באב הטיפוס בקו מנוקד).
    ============================================================ */
 const TODAY = new Date(2026, 8, 28, 12, 0); // יום שני, 28.09.2026 [נתוני דוגמה]
@@ -492,9 +493,9 @@ const errorState=()=>`<div class="state err" role="alert"><span class="muted">${
 const tile=(lbl,n,cap='',a='',v='',p='',ic='',tone='')=>{const z=n===0;return `<${a?'button':'div'} class="tile${z?' zero':ic?' stripe '+tone:''}" ${a?`data-a="${a}" data-v="${v}" data-p="${p}"`:''}>${ic?`<span class="ic ${tone}">${I[ic]}</span>`:''}<div class="lbl">${lbl}</div><div class="num">${n}</div>${cap?`<div class="cap">${cap}</div>`:''}</${a?'button':'div'}>`};
 const classRow=(c,side,a='',p='')=>`<${a?'button':'div'} class="item" ${a?`data-a="${a}" data-v="classCoach" data-p="${p}"`:''}><div class="when"><div class="h">${c.time}</div><div class="d">${DAYS[c.date.getDay()]} ${fmt(c.date)}</div></div><div class="grow"><div class="t">${c.place}</div><div class="s">${c.cancelled?'בוטל':`${c.reg.length}/${c.cap} רשומים${c.wait.length?' · '+c.wait.length+' בהמתנה':''}`}</div></div>${side}</${a?'button':'div'}>`;
 
-const SCREEN_ID={signIn:'S23',joinInvite:'S22',joinExpired:'S22',forgotPassword:'S23',newPassword:'S23',challengeEdit:'S09',coachHome:'S01',trainees:'S02',invite:'S02',inviteDone:'S02',traineeCard:'S03',programEdit:'S04',swap:'S04',itemTarget:'S04',exercises:'S05',exerciseNew:'S05',exercise:'S05',resultsCoach:'S06',noteAdd:'S06',goalEdit:'S07',paymentsCoach:'S08',payRequest:'S08',invoice:'S08',challengeCoach:'S09',challengeNew:'S09',rewardsCoach:'S10',classesCoach:'S11',classNew:'S11',classCoach:'S11',settings:'S12',more:'עוד',traineeHome:'S13',workoutPick:'S14',workout:'S14',exerciseView:'S14',feedback:'S15',myWorkouts:'S16',correct:'S16',classesTrainee:'S17',lateCancel:'S17',coins:'S18',paymentsTrainee:'S19',challengeTrainee:'S20',progress:'S21',me:'אני',ownerHome:'S24',coaches:'S25',coachInvite:'S25',coachCard:'S27',kpis:'S26',ownerMore:'עוד',roleChoice:'S23'};
+const SCREEN_ID={signIn:'S23',joinInvite:'S22',joinExpired:'S22',forgotPassword:'S23',forgotExpired:'S23',newPassword:'S23',challengeEdit:'S09',coachHome:'S01',trainees:'S02',invite:'S02',inviteDone:'S02',traineeCard:'S03',programEdit:'S04',swap:'S04',itemTarget:'S04',exercises:'S05',exerciseNew:'S05',exercise:'S05',resultsCoach:'S06',noteAdd:'S06',goalEdit:'S07',paymentsCoach:'S08',payRequest:'S08',invoice:'S08',challengeCoach:'S09',challengeNew:'S09',rewardsCoach:'S10',classesCoach:'S11',classNew:'S11',classCoach:'S11',settings:'S12',more:'עוד',traineeHome:'S13',workoutPick:'S14',workout:'S14',exerciseView:'S14',feedback:'S15',myWorkouts:'S16',correct:'S16',classesTrainee:'S17',lateCancel:'S17',coins:'S18',paymentsTrainee:'S19',challengeTrainee:'S20',progress:'S21',me:'אני',ownerHome:'S24',coaches:'S25',coachInvite:'S25',coachCard:'S27',kpis:'S26',ownerMore:'עוד',roleChoice:'S23'};
 // מסכים שטוענים נתונים מהשרת: מציגים טעינה ושגיאה (ממצאים 2, 6)
-const NO_DATA=new Set(['signIn','joinInvite','joinExpired','forgotPassword','newPassword','invite','inviteDone','exerciseNew','noteAdd','classNew','challengeNew','feedback','more','lateCancel','coachInvite','ownerMore','roleChoice']);
+const NO_DATA=new Set(['signIn','forgotExpired','joinInvite','joinExpired','forgotPassword','newPassword','invite','inviteDone','exerciseNew','noteAdd','classNew','challengeNew','feedback','more','lateCancel','coachInvite','ownerMore','roleChoice']);
 
 function shell(eyebrow,title,body,{backBtn=true}={}){
   const tabs = S.role==='coach'
@@ -534,7 +535,14 @@ screens.forgotPassword=()=>shell('כניסה','שחזור סיסמה',`
   ${field('מייל','<input id="fpMail" type="email" autocomplete="username" placeholder="name@example.com">')}
   <button class="btn" data-a="sendReset">שליחת קישור לסיסמה חדשה</button>
   <div class="muted small">אם המייל רשום באפליקציה, יגיע אליו קישור. הקישור תקף לזמן קצר.</div>
-  <button class="link" data-a="go" data-v="newPassword">מה רואים כשפותחים את הקישור?</button>`);
+  <button class="link" data-a="go" data-v="newPassword">מה רואים כשפותחים את הקישור?</button>
+  <button class="link" data-a="go" data-v="forgotExpired">מה רואים כשהקישור כבר לא בתוקף?</button>`);
+/* S23, קישור לסיסמה חדשה שכבר נוצל או פג: אין כניסה, וחוזרים לשחזור עם הודעה (גרסה 4, אחרי 5ב; הנוסח באישור הצוות) */
+screens.forgotExpired=()=>shell('כניסה','שחזור סיסמה',`
+  <div class="notice row" style="border-color:var(--warnC)"><span class="ic warn">${I.clock}</span><span>הקישור לסיסמה חדשה כבר לא בתוקף. אפשר לבקש קישור חדש.</span></div>
+  ${field('מייל','<input type="email" autocomplete="username" placeholder="name@example.com">')}
+  <button class="btn" data-a="sendReset">שליחת קישור לסיסמה חדשה</button>
+  <div class="muted small">אם המייל רשום באפליקציה, יגיע אליו קישור. הקישור תקף לזמן קצר.</div>`);
 screens.newPassword=()=>shell('כניסה','סיסמה חדשה',`
   ${field('סיסמה חדשה','<input type="password" autocomplete="new-password">')}
   <div class="muted small">לפחות 8 תווים, עם אותיות באנגלית וספרות.</div>
