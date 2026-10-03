@@ -3,6 +3,9 @@
 # no secret key reached the built files (CLAUDE.md section 9, test 8). The deploy job runs only once the team has
 # approved deploying and turned Pages on: the repository variable PAGES_ENABLED is "true" (stage 7c). Until then the
 # workflow only builds.
+# Stage 8a, task 1: the actions are on versions that run on Node 24 (checked against GitHub, 03.10.2026), and the
+# runner is pinned to ubuntu-24.04 so the move of ubuntu-latest to Ubuntu 26 does not change the build unannounced.
+# The app itself stays on Node 20 (CLAUDE.md section 3).
 name: deploy
 
 on:
@@ -19,13 +22,13 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
@@ -53,14 +56,14 @@ jobs:
               if (role !== "anon") { console.log(`A key with role "${role}" is in the built site`); process.exit(1); }
             }
             console.log(`${keys.length} key(s) in the built site, all anon`);'
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: app/dist
 
   deploy:
     needs: build
     if: vars.PAGES_ENABLED == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       pages: write
       id-token: write
@@ -69,4 +72,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
