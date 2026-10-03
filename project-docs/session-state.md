@@ -102,4 +102,4 @@
 - app/.env.local מגדיר את שירות הזהות גם ל-Vitest. בדיקה על נתוני ההדגמה צריכה לנטרל אותו (vi.stubEnv).
 - שינוי ב-config.toml נטען רק אחרי supabase stop ואז supabase start.
 - ההזמנה של רון בנתוני ההדגמה נושאת אסימון קצר, ולכן check_invite מחזיר עליה INVITE_EXPIRED (דוח 7א, פער 1). יוצאת עם ההדגמה.
-- Supabase CLI 2.119.0 ממתין ב-~/bin/supabase-2.119.0 לאישור גישה ל-Keychain; הפעילה היא 2.118.0, והיא עובדת.
+- Supabase CLI 2.119.0 פעיל ב-~/bin/supabase מאז 03.10.2026 (שלב 8א, משימה 2), אחרי גישה ל-Keychain. הקודמת נשמרה ב-~/bin/supabase-2.118.0 לחזרה.
