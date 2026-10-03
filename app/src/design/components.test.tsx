@@ -27,9 +27,32 @@ test("rule 11: no screen defines its own style, color or font", () => {
   }
 });
 
-test("finding 7: Hebrew in the mono stack falls back to Heebo", () => {
+// Version 4: numbers are in the text face (Rubik, with Hebrew), and the stack falls back to Heebo (finding 7).
+test("finding 7: the numbers' face has Hebrew, and falls back to Heebo", () => {
   const css = readFileSync(join(__dirname, "tokens.css"), "utf8");
-  expect(css).toMatch(/--mono:\s*"Geist Mono",\s*Heebo/);
+  expect(css).toMatch(/--mono:\s*Rubik,\s*Heebo/);
+  expect(css).toMatch(/--font:\s*Rubik,\s*Heebo/);
+});
+
+// Stage 5b, task 1: every text color on the ground it is drawn on reaches 4.5:1, in the light and in the dark tokens.
+test("stage 5b: text contrast is 4.5:1 or more in both modes", () => {
+  const css = readFileSync(join(__dirname, "tokens.css"), "utf8");
+  const block = (start: string) => { const i = css.indexOf(start); return css.slice(i, css.indexOf("}", i)); };
+  const read = (b: string) => Object.fromEntries([...b.matchAll(/--([\w-]+):\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
+  const light = read(block(":root {"));
+  const dark = { ...light, ...read(block(':root[data-theme="dark"] {')) };
+  const lum = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const pairs: [string, string][] = [
+    ["ink", "bg"], ["ink", "card"], ["muted", "card"], ["muted", "bg"], ["muted3", "card"], ["muted3", "bg"], ["accent", "card"], ["accent", "bg"],
+    ["accInk", "acc"], ["accent", "accSoft"], ["ok", "okSoft"], ["ok", "card"], ["info", "infoSoft"], ["warnC", "warnSoft"], ["danger", "card"],
+    ["danger", "badSoft"], ["demoInk", "demo"], ["ink", "warnSoft"], ["ink", "chip"], ["muted", "zero"],
+  ];
+  for (const [mode, t] of [["light", light], ["dark", dark]] as const)
+    for (const [fg, bg] of pairs) expect([mode, fg, bg, ratio(t[fg], t[bg]) >= 4.5]).toEqual([mode, fg, bg, true]);
 });
 
 test("finding 38: back points right and says so; the tab bar has icons and marks the current tab", () => {
