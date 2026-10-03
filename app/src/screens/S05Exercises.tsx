@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { call, isLive, uploadFile } from "../api/client";
 import { useCall } from "../api/useCall";
-import { Button, CheckLine, Empty, Field, FileButton, LinkButton, Load, Row, Screen, VideoPlayer } from "../design/components";
+import { Button, CheckLine, Empty, Field, FileButton, ICONS, LinkButton, Load, Row, Screen, VideoPlayer } from "../design/components";
 import { useNav } from "../nav";
 
 export default function S05Exercises({ exerciseID, create }: { exerciseID?: string; create?: boolean }) {
@@ -103,7 +103,7 @@ function OneExercise({ exerciseID }: { exerciseID: string }) {
     return (
       <Screen eyebrow="מהרשימה המוכנה" title={e.exerciseName}>
         {live && e.videoUrl ? <VideoPlayer key={e.videoUrl} videoType={e.videoType} videoUrl={e.videoUrl} />
-          : e.videoType ? <div className="video">▶︎ סרטון הדגמה מיוטיוב (קישור לדוגמה)</div> : <Empty title="לתרגיל עוד אין סרטון" />}
+          : e.videoType ? <div className="video">{ICONS.play} סרטון הדגמה מיוטיוב (קישור לדוגמה)</div> : <Empty title="לתרגיל עוד אין סרטון" />}
         <div className="muted small">התרגיל מהרשימה המוכנה, והסרטון שלו משותף לכל המאמנים בעסק. לסרטון משלך אפשר ליצור תרגיל חדש.</div>
       </Screen>
     );
@@ -113,7 +113,7 @@ function OneExercise({ exerciseID }: { exerciseID: string }) {
       <Load state={one}>{(e: any) => <>
         {!e.videoType ? <Empty title="לתרגיל עוד אין סרטון" sub="אפשר לצרף קישור או להעלות מהטלפון." />
           : live && e.videoUrl ? <VideoPlayer key={e.videoUrl} videoType={e.videoType} videoUrl={e.videoUrl} />
-          : <div className="video">▶︎ {e.videoType === "youtube" ? "סרטון הדגמה מיוטיוב (קישור לדוגמה)" : "סרטון שהמאמן העלה (דוגמה)"}</div>}
+          : <div className="video">{ICONS.play} {e.videoType === "youtube" ? "סרטון הדגמה מיוטיוב (קישור לדוגמה)" : "סרטון שהמאמן העלה (דוגמה)"}</div>}
         <div className="muted small">הסרטון שייך לתרגיל, ומופיע בכל התוכניות שבהן התרגיל נמצא.</div>
         <Field label="קישור לסרטון"><input id="videoUrl" type="url" value={url} onChange={(ev) => setUrl(ev.target.value)} placeholder="https://www.youtube.com/..." /></Field>
         <Button secondary onClick={() => attach({ kind: "link", url }, "הסרטון צורף, ומופיע בכל התוכניות")}>צירוף קישור</Button>

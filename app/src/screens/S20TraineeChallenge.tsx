@@ -1,8 +1,9 @@
 // S20 weekly challenge, trainee (UC8, story 5): progress counts itself from saved workouts.
 // Design stage: a completed challenge says so, not "5/3" (finding 31); neutral wording for an exemption (37); "no
 // challenge" only when the reply came (2); the end day with its weekday (32).
+// Stage 5b (prototype 4): the progress as a ring in the hero.
 import { useCall } from "../api/useCall";
-import { Empty, Hero, HeroStat, Load, Screen, fmtDay } from "../design/components";
+import { Empty, Hero, Load, Ring, Screen, fmtDay } from "../design/components";
 
 export default function S20TraineeChallenge() {
   const ch = useCall("S20", "challenges", "get_current_challenge");
@@ -21,7 +22,7 @@ export default function S20TraineeChallenge() {
               <div className="lead">{p?.exempt ? "פטור השבוע" : done ? "השלמת ✓" : "בדרך ליעד"}</div>
               <div className="sub">פרס: {c.coins} מטבעות{c.extraPrize ? ` + ${c.extraPrize}` : ""}</div>
             </div>
-            {p && !p.exempt && <HeroStat value={`${p.value}/${p.target}`} label={c.challengeType === "exercise" ? 'ק"ג' : "אימונים"} />}
+            {p && !p.exempt && <div className="side"><Ring value={p.value} target={p.target} size={76} stroke={8} /><div className="cap">{c.challengeType === "exercise" ? 'ק"ג' : "אימונים"}</div></div>}
           </Hero>
           <div className="muted small">{p?.exempt ? "התרגיל של האתגר אינו בתוכנית שלך, ולכן האתגר השבוע לא חל עליך." : "ההשלמה נספרת לבד מהאימונים שנשמרים. אין צורך לדווח שוב."}</div>
         </>;

@@ -3,6 +3,7 @@
 // Design stage, finding 29: the points sit on a time axis by date, with at most four date labels; with many exercises
 // the choice is a list. Tiles for the record and the count; the trainee's name for the coach (11); loading and an error
 // with a retry (2, 6).
+// Stage 5b (prototype 4): a larger chart with a faint grid and a filled area, the record as a full violet point.
 import { useState } from "react";
 import { useCall } from "../api/useCall";
 import { Empty, Field, Load, Name, Pill, Screen, Tile, fmtDate, fmtDateYear } from "../design/components";
@@ -15,7 +16,7 @@ export default function S21Progress({ traineeID, name }: { traineeID?: string; n
       <Load state={chart}>{(data: any) => {
         if (!data.points.length) return <Empty title="הגרף יופיע אחרי האימונים הראשונים" sub="כל אימון שנשמר מוסיף נקודה." />;
         const pts = data.points as { date: string; value: number }[];
-        const W = 340, H = 190, P = 30;
+        const W = 340, H = 220, P = 30;
         const vals = pts.map((p) => p.value);
         const lo = Math.min(...vals) * 0.9, hi = Math.max(...vals) * 1.05 || 1;
         const t0 = +new Date(pts[0].date), span = +new Date(pts[pts.length - 1].date) - t0 || 1;
@@ -37,8 +38,10 @@ export default function S21Progress({ traineeID, name }: { traineeID?: string; n
           <div className="card">
             <svg className="chart" viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`גרף התקדמות: שיא ${best}${data.isBodyweight ? " חזרות" : unit}`}>
               <line x1={P} x2={W - P} y1={H - P} y2={H - P} stroke="var(--line-in)" />
-              <polyline fill="none" stroke="var(--accent)" strokeWidth="2.5" points={pts.map((p) => `${X(p)},${Y(p.value)}`).join(" ")} />
-              {pts.map((p, i) => <circle key={i} cx={X(p)} cy={Y(p.value)} r={i === bi ? 6 : 3.5} fill={i === bi ? "var(--lime)" : "var(--accent)"} stroke={i === bi ? "var(--ink)" : "none"} />)}
+              {[0, 1, 2].map((k) => <line key={"g" + k} x1={P} x2={W - P} y1={P + ((H - 2 * P) * k) / 3} y2={P + ((H - 2 * P) * k) / 3} stroke="var(--line)" strokeDasharray="3 4" />)}
+              <polygon fill="var(--accSoft)" points={`${X(pts[0])},${H - P} ${pts.map((p) => `${X(p)},${Y(p.value)}`).join(" ")} ${X(pts[pts.length - 1])},${H - P}`} />
+              <polyline fill="none" stroke="var(--acc)" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" points={pts.map((p) => `${X(p)},${Y(p.value)}`).join(" ")} />
+              {pts.map((p, i) => <circle key={i} cx={X(p)} cy={Y(p.value)} r={i === bi ? 7 : 3.5} fill={i === bi ? "var(--acc)" : "var(--card)"} stroke="var(--acc)" strokeWidth={i === bi ? 3 : 2} />)}
               {labels.map((i) => <text key={"t" + i} x={X(pts[i])} y={H - 10} textAnchor="middle">{fmtDate(pts[i].date)}</text>)}
               <text x={X(pts[bi])} y={Y(best) - 12} textAnchor="middle">שיא {best}</text>
             </svg>

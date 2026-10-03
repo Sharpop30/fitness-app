@@ -10,9 +10,9 @@ export default function S27CoachCard({ coachID, name }: { coachID: string; name?
     <Screen eyebrow="כרטיס מאמן" title={<Name>{title}</Name>}>
       <Load state={card}>{(d: any) => <>
         <div className="grid3">
-          <Tile label="מתאמנים" value={d.trainees === null ? "–" : d.trainees.length} />
-          <Tile label="הכנסות" value={d.income === null ? "–" : fmtMoney(d.income)} />
-          <Tile label="שיעורים קרובים" value={d.upcomingClasses ?? "–"} />
+          <Tile icon="users" label="מתאמנים" value={d.trainees === null ? "–" : d.trainees.length} />
+          <Tile icon="card" tone="ok" label="הכנסות" value={d.income === null ? "–" : fmtMoney(d.income)} />
+          <Tile icon="calendar" tone="info" label="שיעורים קרובים" value={d.upcomingClasses ?? "–"} />
         </div>
         <h2>המתאמנים</h2>
         {d.trainees?.length

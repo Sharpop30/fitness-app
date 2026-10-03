@@ -142,3 +142,13 @@
 2026-10-03,CLAUDE.md גרסה 13 (דוח 7ג פער 1),CLAUDE.md,CLAUDE.md,CLAUDE.md
 2026-10-03,מפת המודולים 13.2 ו-usecase-01 גרסה 3 (כלל 13; דוח 7ג פער 2),doc-module-map.md,doc-module-map.md,project-docs/doc-module-map.md
 2026-10-03,תוכנית שלב 8 (כל ההמלצות; הביצוע לא התחיל),doc-stage-8-plan.md,doc-stage-8-plan.md,project-docs/doc-stage-8-plan.md
+2026-10-03,אב הטיפוס גרסה 4 (רענון העיצוב, כיוון א׳, כולל הנוסח "X מתוך Y סטים"),prototype-fitness-app.html,prototype-fitness-app.html,project-docs/prototype-fitness-app.html
+2026-10-03,תמונת הכניסה S23 (3D רך; נוצרה בידי הצוות בכלי AI; מותרת לשימוש),signin-hero.webp,signin-hero.webp,app/public/images/signin-hero.webp
+2026-10-03,מיפוי האיורים למסכים S22 S15 S04 S14 S16 S17 והצגה ביחס מלא; גרסאות כהות לכל איור,app/public/images,app/public/images,project-docs/doc-design-refresh-plan.md
+2026-10-03,תוכנית רענון העיצוב 5ב (הכרעות 1 3 4 לפי ההמלצות),doc-design-refresh-plan.md,doc-design-refresh-plan.md,project-docs/doc-design-refresh-plan.md
+2026-10-03,חמש הגרסאות הכהות של האיורים,app/public/images,app/public/images,app/public/images
+2026-10-03,תוכנית שלב 8: מספור הגרסאות (CLAUDE.md 15 ואב הטיפוס 4.1; הכרעה 4 ברענון),doc-stage-8-plan.md,doc-stage-8-plan.md,project-docs/doc-stage-8-plan.md
+2026-10-03,CLAUDE.md גרסה 14 (רענון העיצוב: אב הטיפוס 4 ושלב 5ב),CLAUDE.md,CLAUDE.md,CLAUDE.md
+2026-10-03,דוח שלב 5ב (ממתין לאישור הצוות על המסכים),findings-stage-5b.md,findings-stage-5b.md,project-docs/findings-stage-5b.md
+2026-10-03,אייקון האפליקציה: קטלבל 02 לבן על סגול (בחירת הצוות),app/public/icon-*.png,app/public/icon-*.png,app/public
+2026-10-03,שלב 5ב: אישור הצוות על המסכים ומיזוג ל-main,findings-stage-5b.md,findings-stage-5b.md,project-docs/findings-stage-5b.md

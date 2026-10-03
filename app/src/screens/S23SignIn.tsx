@@ -5,7 +5,7 @@
 // moves between them later from "more" (rule 10).
 import { useEffect, useRef, useState } from "react";
 import { call, setErrorTexts } from "../api/client";
-import { Button, Chevron, Field, Item, LinkButton, Picture, Screen } from "../design/components";
+import { Art, Button, Chevron, Field, Item, LinkButton, Screen } from "../design/components";
 import { identityConfigured, isRecoveryReturn, PASSWORD_RULE, passwordOK, requestPasswordReset, restoreSession, setPassword as setIdentityPassword, signInWithPassword, signOutIdentity, takeSessionFromAddress } from "../identity/auth";
 import { useNav, type SignedRole } from "../nav";
 
@@ -115,7 +115,7 @@ function SignIn({ live }: { live: boolean }) {
 
   return (
     <Screen eyebrow="ביצועים, מעקב ותשלומים" title="כניסה לאפליקציה" noBack>
-      <Picture size="tall" src={`${import.meta.env.BASE_URL}images/signin.jpg`} />
+      <Art name="signin-hero" />
       <div className="lead-text">אפליקציה אחת למאמן כושר אישי ולמתאמנים שלו: תוכניות, תשלומים ומעקב במקום אחד.</div>
       {live ? <>
         <Field label="מייל"><input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
